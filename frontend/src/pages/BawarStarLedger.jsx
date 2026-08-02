@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Factory, 
   Plus, 
@@ -21,8 +23,18 @@ import { api } from '../services/api';
 import QuickAddBawarStarModal from '../components/bawar_star/QuickAddBawarStarModal';
 import { useToast } from '../components/ToastProvider';
 
+function isBawarAccountName(name) {
+  if (!name || typeof name !== 'string') return false;
+  const s = name.toLowerCase();
+  return s.includes('bawar') || s.includes('factory') || s.includes('plastic') || s.includes('preform') || s.includes('foctory') || s.includes('rent');
+}
+
 export default function BawarStarLedger() {
+  const { t } = useTranslation();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
+  const urlPartnerId = searchParams.get('partnerId');
+
   const [accounts, setAccounts] = useState([]);
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
   const [summary, setSummary] = useState(null);
@@ -52,7 +64,12 @@ export default function BawarStarLedger() {
       const data = await api.getAccounts();
       setAccounts(data || []);
       if (data && data.length > 0 && !selectedPartnerId) {
-        setSelectedPartnerId(data[0].id);
+        if (urlPartnerId && data.some(a => String(a.id) === String(urlPartnerId))) {
+          setSelectedPartnerId(String(urlPartnerId));
+        } else {
+          const bawarAcc = data.find(a => isBawarAccountName(a.name));
+          setSelectedPartnerId(bawarAcc ? String(bawarAcc.id) : String(data[0].id));
+        }
       }
     } catch (err) {
       console.error('Failed to load accounts:', err);
@@ -148,6 +165,16 @@ export default function BawarStarLedger() {
     }
   };
 
+  const sortedAccounts = useMemo(() => {
+    return [...accounts].sort((a, b) => {
+      const aBawar = isBawarAccountName(a.name);
+      const bBawar = isBawarAccountName(b.name);
+      if (aBawar && !bBawar) return -1;
+      if (!aBawar && bBawar) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [accounts]);
+
   return (
     <div className="h-[calc(100vh-105px)] flex flex-col gap-3 p-2 sm:p-4 max-w-[1700px] mx-auto overflow-hidden text-slate-900 dark:text-slate-100 font-sans">
       
@@ -181,14 +208,17 @@ export default function BawarStarLedger() {
               <select
                 value={selectedPartnerId}
                 onChange={(e) => setSelectedPartnerId(e.target.value)}
-                className="h-11 pl-10 pr-8 rounded-2xl bg-slate-800/90 border border-slate-700 text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none backdrop-blur-md cursor-pointer min-w-[200px]"
+                className="h-11 pl-10 pr-8 rounded-2xl bg-slate-800/90 border border-slate-700 text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none backdrop-blur-md cursor-pointer min-w-[220px]"
               >
                 <option value="">Select Customer / Partner</option>
-                {accounts.map(acc => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} ({acc.account_type})
-                  </option>
-                ))}
+                {sortedAccounts.map(acc => {
+                  const isBawar = isBawarAccountName(acc.name);
+                  return (
+                    <option key={acc.id} value={acc.id}>
+                      {isBawar ? '🏭 ' : ''}{acc.name} ({acc.account_type || 'Account'})
+                    </option>
+                  );
+                })}
               </select>
               <Building2 className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
             </div>

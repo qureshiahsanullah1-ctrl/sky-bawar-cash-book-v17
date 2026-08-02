@@ -87,11 +87,15 @@ export function generateExportLedgerPrintHtml({
     ? '<img src="' + escapeHtml(logoSrc) + '" class="logo-img" alt="Logo" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" /><div class="logo-placeholder" style="display:none;">' + svgLogoFallback + '</div>'
     : '<div class="logo-placeholder">' + svgLogoFallback + '</div>';
 
+  const clientSubtitleHtml = clientNameDari
+    ? '<small class="dir-rtl">' + escapeHtml(clientNameDari) + '</small>'
+    : '<small>Master Export Account</small>';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Export Statement - ${clientName}</title>
+  <title>Export Statement - ${escapeHtml(clientName)}</title>
   <style>
     @page {
       size: A4 landscape;
@@ -391,7 +395,7 @@ export function generateExportLedgerPrintHtml({
         <div class="kpi-card">
           <span>Account Holder / Client</span>
           <strong>${escapeHtml(clientName)}</strong>
-          ${clientNameDari ? `<small class="dir-rtl">${escapeHtml(clientNameDari)}</small>` : '<small>Master Export Account</small>'}
+          ${clientSubtitleHtml}
         </div>
         <div class="kpi-card kpi-amber">
           <span>Total Invoices (Credit)</span>

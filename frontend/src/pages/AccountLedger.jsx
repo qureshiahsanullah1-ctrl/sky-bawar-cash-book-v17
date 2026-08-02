@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight,
@@ -19,7 +20,8 @@ import {
   Sparkles,
   ArrowUpRight,
   ArrowDownLeft,
-  CheckCircle2
+  CheckCircle2,
+  Factory
 } from 'lucide-react';
 import LedgerTable from '../components/LedgerTable';
 
@@ -36,8 +38,16 @@ function unescapeText(str) {
     .replace(/&#039;/g, "'");
 }
 
+function isBawarAccountName(name) {
+  if (!name || typeof name !== 'string') return false;
+  const s = name.toLowerCase();
+  return s.includes('bawar') || s.includes('factory') || s.includes('plastic') || s.includes('preform') || s.includes('foctory') || s.includes('rent');
+}
+
 export default function AccountLedger(props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const ledgerRightPanelRef = useRef(null);
   const visibleAccounts = props.accounts || [];
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -46,6 +56,10 @@ export default function AccountLedger(props) {
   const [currencyFilter, setCurrencyFilter] = useState('all');
   const [accountTypeFilter, setAccountTypeFilter] = useState('all');
 
+  const bawarAccountsCount = useMemo(() => {
+    return visibleAccounts.filter((a) => isBawarAccountName(a.name)).length;
+  }, [visibleAccounts]);
+
   // Filter accounts based on account type tab filter
   const filteredAccounts = useMemo(() => {
     let list = visibleAccounts;
@@ -53,6 +67,8 @@ export default function AccountLedger(props) {
       list = list.filter((a) => Number(a.balance || a.opening_balance_afn || 0) < 0);
     } else if (accountTypeFilter === 'payable') {
       list = list.filter((a) => Number(a.balance || a.opening_balance_afn || 0) > 0);
+    } else if (accountTypeFilter === 'bawar') {
+      list = list.filter((a) => isBawarAccountName(a.name));
     }
     return list;
   }, [visibleAccounts, accountTypeFilter]);
@@ -130,6 +146,16 @@ export default function AccountLedger(props) {
           >
             <Download size={15} />
             <span>{t('accountLedger.exportLedger', 'Export Ledger')}</span>
+          </button>
+
+          <button
+            type="button"
+            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/25 transition-all flex items-center gap-2 transform active:scale-95 border border-blue-400/30"
+            onClick={() => navigate('/bawar-star')}
+            title="Open Bawar Star Manufacturing Module"
+          >
+            <Factory size={15} />
+            <span>{t('accountLedger.bawarStarModuleBtn', 'Bawar Star Module 🏭')}</span>
           </button>
         </div>
       </header>
@@ -281,11 +307,11 @@ export default function AccountLedger(props) {
               </div>
 
               {/* Account Quick Filter Tabs */}
-              <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800/90 p-1 rounded-xl text-[11px] font-bold">
+              <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800/90 p-1 rounded-xl text-[11px] font-bold overflow-x-auto no-scrollbar">
                 <button
                   type="button"
                   onClick={() => setAccountTypeFilter('all')}
-                  className={`flex-1 py-1.5 rounded-lg transition-all text-center ${
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center whitespace-nowrap ${
                     accountTypeFilter === 'all'
                       ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-extrabold'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -296,7 +322,7 @@ export default function AccountLedger(props) {
                 <button
                   type="button"
                   onClick={() => setAccountTypeFilter('receivable')}
-                  className={`flex-1 py-1.5 rounded-lg transition-all text-center ${
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center whitespace-nowrap ${
                     accountTypeFilter === 'receivable'
                       ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-xs font-extrabold'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -307,13 +333,30 @@ export default function AccountLedger(props) {
                 <button
                   type="button"
                   onClick={() => setAccountTypeFilter('payable')}
-                  className={`flex-1 py-1.5 rounded-lg transition-all text-center ${
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center whitespace-nowrap ${
                     accountTypeFilter === 'payable'
                       ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs font-extrabold'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
                   {t('accountLedger.credits', 'Credits')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountTypeFilter('bawar')}
+                  className={`flex-1 py-1.5 px-2 rounded-lg transition-all text-center whitespace-nowrap flex items-center justify-center gap-1 ${
+                    accountTypeFilter === 'bawar'
+                      ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                      : 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40'
+                  }`}
+                >
+                  <Factory size={11} />
+                  <span>{t('accountLedger.bawarStarTab', 'Factory')}</span>
+                  {bawarAccountsCount > 0 && (
+                    <span className={`text-[9px] px-1 rounded-full font-black ${accountTypeFilter === 'bawar' ? 'bg-white text-blue-700' : 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300'}`}>
+                      {bawarAccountsCount}
+                    </span>
+                  )}
                 </button>
               </div>
             </div>
@@ -331,12 +374,18 @@ export default function AccountLedger(props) {
                   const cleanName = unescapeText(account.name);
                   const bal = Number(account.balance || account.opening_balance_afn || 0);
                   const isNegative = bal < 0;
+                  const isBawar = isBawarAccountName(account.name);
 
                   return (
                     <button
                       key={account.id}
                       type="button"
-                      onClick={() => props.onSelectAccount(account)}
+                      onClick={() => {
+                        props.onSelectAccount(account);
+                        if (ledgerRightPanelRef.current && window.innerWidth < 1024) {
+                          ledgerRightPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
                       className={`w-full p-3.5 text-left rounded-xl transition-all flex items-center justify-between gap-3 ${
                         isActive
                           ? 'bg-amber-500/10 dark:bg-amber-500/15 border-l-4 border-amber-500 text-amber-950 dark:text-amber-200 shadow-xs'
@@ -347,6 +396,8 @@ export default function AccountLedger(props) {
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0 shadow-xs ${
                         isActive
                           ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-amber-500/30 shadow-md'
+                          : isBawar
+                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60'
                       }`}>
                         {cleanName.slice(0, 1).toUpperCase()}
@@ -357,11 +408,19 @@ export default function AccountLedger(props) {
                           <strong className={`text-sm font-bold truncate block ${isActive ? 'text-amber-900 dark:text-amber-200 font-extrabold' : 'text-slate-900 dark:text-slate-100'}`}>
                             {cleanName}
                           </strong>
-                          <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-extrabold shrink-0 ${
-                            isNegative ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : bal > 0 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                          }`}>
-                            {isNegative ? t('accountLedger.debitBadge', 'Debit') : bal > 0 ? t('accountLedger.creditBadge', 'Credit') : t('accountLedger.zeroBadge', 'Zero')}
-                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {isBawar && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold border border-blue-500/20">
+                                <Factory size={9} />
+                                <span>Bawar Star</span>
+                              </span>
+                            )}
+                            <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-extrabold ${
+                              isNegative ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : bal > 0 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            }`}>
+                              {isNegative ? t('accountLedger.debitBadge', 'Debit') : bal > 0 ? t('accountLedger.creditBadge', 'Credit') : t('accountLedger.zeroBadge', 'Zero')}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
                           <span className="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-sans font-semibold">{t('accountLedger.balance', 'Balance')}</span>
@@ -381,9 +440,46 @@ export default function AccountLedger(props) {
         </aside>
 
         {/* RIGHT COLUMN: Ledger Details & Table */}
-        <main className="ledger-right-panel md:col-span-7 lg:col-span-8 xl:col-span-9 flex flex-col min-w-0">
+        <main ref={ledgerRightPanelRef} className="ledger-right-panel md:col-span-7 lg:col-span-8 xl:col-span-9 flex flex-col min-w-0">
           <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col">
             
+            {/* BAWAR STAR SPECIAL MANUFACTURING BANNER */}
+            {isBawarAccountName(props.selectedAccountName) && (
+              <div className="p-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border-b border-blue-500/40 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md relative overflow-hidden">
+                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+                <div className="flex items-center gap-3.5 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md border border-blue-400/30 shrink-0">
+                    <Factory className="w-5.5 h-5.5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[10px] font-bold uppercase tracking-wider">
+                        {t('accountLedger.bawarStarBadge', 'Bawar Star Factory Partner')}
+                      </span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-black text-white mt-0.5">
+                      {t('accountLedger.bawarStarBannerTitle', 'Bawar Star Plastic Industry Partner Statement')}
+                    </h4>
+                    <p className="text-[11px] text-slate-300 dir-rtl text-right font-medium mt-0.5">
+                      د باوار سټار تولیدي شرکت معامله، پریفارم، کرایه او ګټې پرمختللی حساب
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const foundObj = visibleAccounts.find(a => a.name === props.selectedAccountName);
+                    navigate(`/bawar-star?partnerId=${foundObj?.id || ''}`);
+                  }}
+                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 shrink-0 transform active:scale-95 border border-blue-400/30 relative z-10"
+                >
+                  <Factory size={15} />
+                  <span>{t('accountLedger.openBawarStarCalculator', 'Open Bawar Star Profit Calculator')}</span>
+                  <ArrowUpRight size={15} />
+                </button>
+              </div>
+            )}
+
             {/* LEDGER SUMMARY HEADER & STATS */}
             <div className="p-6 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/60 space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

@@ -322,8 +322,15 @@
     "usdTransactions": "USD Transactions",
     "resetFilters": "Reset Filters",
     "noAccountSelected": "No Account Selected",
-    "noAccountSelectedDesc": "Select an account from the left sidebar to view its complete statement, running balance, and real-time transaction history."
+    "noAccountSelectedDesc": "Select an account from the left sidebar to view its complete statement, running balance, and real-time transaction history.",
+    "bawarStarTab": "Bawar Star Factory",
+    "bawarStarBadge": "Bawar Star Factory",
+    "bawarStarModuleBtn": "Bawar Star Module 🏭",
+    "bawarStarBannerTitle": "Bawar Star Plastic Industry Partner Statement",
+    "bawarStarBannerSub": "Manufacturing, Preform, Freight & Gross Profit Tracking",
+    "openBawarStarCalculator": "Open Bawar Star Profit Calculator"
   }
 }
+
 
 
