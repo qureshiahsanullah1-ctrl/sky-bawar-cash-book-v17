@@ -129,11 +129,29 @@ function getPlasticErpDict(l) {
   return PLASTICORP_DICT.English;
 }
 
-export default function PlasticErpDashboard() {
+export default function PlasticErpDashboard({ theme }) {
   const [activeTab, setActiveTab] = useState('HUD');
   const [selectedBranch, setSelectedBranch] = useState('PLANT-KND');
   const [lang, setLang] = useState(() => localStorage.getItem('cashbook_language') || 'English');
+  const [themeMode, setThemeMode] = useState(() => {
+    const saved = localStorage.getItem('plastic_erp_theme');
+    if (saved) return saved;
+    if (theme) return theme;
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+    return 'light';
+  });
 
+  // Sync theme if global theme changes
+  useEffect(() => {
+    if (!localStorage.getItem('plastic_erp_theme')) {
+      const isDocDark = document.documentElement.classList.contains('dark');
+      setThemeMode(isDocDark ? 'dark' : 'light');
+    }
+  }, [theme]);
+
+  const isLight = themeMode === 'light';
   const dict = getPlasticErpDict(lang);
 
   const [kpi, setKpi] = useState({
@@ -161,22 +179,34 @@ export default function PlasticErpDashboard() {
   ];
 
   return (
-    <div className="w-full max-w-full min-h-[calc(100vh-64px)] flex flex-col bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 font-sans relative p-3 sm:p-5 overflow-x-hidden no-print rounded-2xl border border-slate-800/80 shadow-2xl">
+    <div className={`w-full max-w-full min-h-[calc(100vh-64px)] flex flex-col font-sans relative p-3 sm:p-5 overflow-x-hidden no-print rounded-2xl border shadow-2xl transition-colors duration-300 ${
+      isLight
+        ? 'bg-gradient-to-br from-slate-100 via-sky-50 to-slate-200 text-slate-900 border-slate-300'
+        : 'bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 border-slate-800/80'
+    }`}>
       
-      {/* 1. TOP EXECUTIVE BAR & BRANCH / LANGUAGE SWITCHER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 backdrop-blur-2xl border border-white/15 shadow-2xl shrink-0 mb-4">
+      {/* 1. TOP EXECUTIVE BAR & BRANCH / LANGUAGE / THEME SWITCHER */}
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl backdrop-blur-2xl border shadow-2xl shrink-0 mb-4 transition-colors ${
+        isLight
+          ? 'bg-white/90 border-slate-200 shadow-slate-300/50'
+          : 'bg-slate-900/80 border-white/15 shadow-black/40'
+      }`}>
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-lg shrink-0">
             <Building2 size={24} />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black tracking-tight text-white uppercase">{dict.title}</h1>
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold">
+              <h1 className={`text-base sm:text-lg font-black tracking-tight uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                {dict.title}
+              </h1>
+              <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+                isLight ? 'bg-cyan-100 text-cyan-800 border-cyan-300' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+              }`}>
                 {dict.mfgErpVersion}
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+            <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               {dict.subtitle}
             </p>
           </div>
@@ -184,15 +214,36 @@ export default function PlasticErpDashboard() {
 
         {/* Branch & Language Selector Controls */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Light / Dark Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              const nextTheme = isLight ? 'dark' : 'light';
+              setThemeMode(nextTheme);
+              localStorage.setItem('plastic_erp_theme', nextTheme);
+            }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 border ${
+              isLight
+                ? 'bg-slate-200 text-slate-800 border-slate-300 hover:bg-slate-300'
+                : 'bg-slate-950 text-cyan-400 border-slate-800 hover:bg-slate-900'
+            }`}
+          >
+            <span>{isLight ? '☀️ Light' : '🌙 Dark'}</span>
+          </button>
+
           {/* Language Switcher */}
-          <div className="flex items-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800">
+          <div className={`flex items-center gap-1 p-1 rounded-xl border ${
+            isLight ? 'bg-slate-200/80 border-slate-300' : 'bg-slate-950/90 border-slate-800'
+          }`}>
             {['English', 'Pashto', 'Dari'].map((l) => (
               <button
                 key={l}
                 type="button"
                 onClick={() => { setLang(l); localStorage.setItem('cashbook_language', l); }}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  lang === l ? 'bg-cyan-500 text-slate-950 font-black shadow-md' : 'text-slate-400 hover:text-white'
+                  lang === l
+                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
+                    : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {l === 'English' ? 'EN' : l === 'Pashto' ? 'پښتو' : 'دری'}
@@ -201,16 +252,20 @@ export default function PlasticErpDashboard() {
           </div>
 
           {/* Branch Selector Switcher */}
-          <div className="flex items-center gap-2 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800">
-            <Building2 size={16} className="text-cyan-400" />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
+            isLight ? 'bg-slate-200/80 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+          }`}>
+            <Building2 size={16} className="text-cyan-500" />
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
-              className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+              className={`bg-transparent text-xs font-bold focus:outline-none cursor-pointer ${
+                isLight ? 'text-slate-900' : 'text-white'
+              }`}
             >
-              <option value="PLANT-KND" className="bg-slate-900 text-white">{dict.branchKnd}</option>
-              <option value="PLANT-HRT" className="bg-slate-900 text-white">{dict.branchHrt}</option>
-              <option value="ALL" className="bg-slate-900 text-white">{dict.branchAll}</option>
+              <option value="PLANT-KND" className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>{dict.branchKnd}</option>
+              <option value="PLANT-HRT" className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>{dict.branchHrt}</option>
+              <option value="ALL" className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>{dict.branchAll}</option>
             </select>
           </div>
         </div>
@@ -228,42 +283,82 @@ export default function PlasticErpDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* Revenue */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-2 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">{dict.grossRevenue}</span>
-              <strong className="text-2xl font-mono font-black text-emerald-400 block">${kpi.gross_revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+              isLight
+                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
+            }`}>
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                {dict.grossRevenue}
+              </span>
+              <strong className="text-2xl font-mono font-black text-emerald-500 dark:text-emerald-400 block">
+                ${kpi.gross_revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </strong>
+              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+                isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
+              }`}>
                 <span>30-Day Batch Sales</span>
-                <span className="text-emerald-400 font-bold">+14.2%</span>
+                <span className="text-emerald-500 dark:text-emerald-400 font-bold">+14.2%</span>
               </div>
             </div>
 
             {/* COGM */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-2 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">{dict.cogm}</span>
-              <strong className="text-2xl font-mono font-black text-cyan-400 block">${kpi.cogm.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+              isLight
+                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
+            }`}>
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                {dict.cogm}
+              </span>
+              <strong className="text-2xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
+                ${kpi.cogm.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </strong>
+              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+                isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
+              }`}>
                 <span>{dict.materialPowerLabor}</span>
-                <span className="text-cyan-400 font-bold">10k Units/Batch</span>
+                <span className="text-cyan-600 dark:text-cyan-400 font-bold">10k Units/Batch</span>
               </div>
             </div>
 
             {/* Gross Profit Margin */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-2 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">{dict.grossProfit}</span>
-              <strong className="text-2xl font-mono font-black text-amber-400 block">{kpi.gross_margin}% (${kpi.gross_profit.toLocaleString('en-US', { minimumFractionDigits: 2 })})</strong>
-              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+              isLight
+                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
+            }`}>
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                {dict.grossProfit}
+              </span>
+              <strong className="text-2xl font-mono font-black text-amber-600 dark:text-amber-400 block">
+                {kpi.gross_margin}% (${kpi.gross_profit.toLocaleString('en-US', { minimumFractionDigits: 2 })})
+              </strong>
+              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+                isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
+              }`}>
                 <span>{dict.targetMargin}</span>
-                <span className="text-emerald-400 font-bold">{dict.healthyProfit}</span>
+                <span className="text-emerald-500 dark:text-emerald-400 font-bold">{dict.healthyProfit}</span>
               </div>
             </div>
 
             {/* Inventory Asset */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-2 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">{dict.inventoryVal}</span>
-              <strong className="text-2xl font-mono font-black text-purple-400 block">${kpi.inventory_val.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
-              <div className="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+              isLight
+                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
+            }`}>
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                {dict.inventoryVal}
+              </span>
+              <strong className="text-2xl font-mono font-black text-purple-600 dark:text-purple-400 block">
+                ${kpi.inventory_val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </strong>
+              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+                isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
+              }`}>
                 <span>{dict.resinsWipSkus}</span>
-                <span className="text-purple-400 font-bold">{dict.auditedAsset}</span>
+                <span className="text-purple-600 dark:text-purple-400 font-bold">{dict.auditedAsset}</span>
               </div>
             </div>
 
@@ -271,22 +366,46 @@ export default function PlasticErpDashboard() {
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-3 hover:border-cyan-500/40 transition-all">
-              <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">{dict.outputVol}</h3>
-              <strong className="text-3xl font-mono font-black text-white block">{kpi.total_units.toLocaleString()} Units</strong>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">{dict.outputVolDesc}</p>
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all ${
+              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+            }`}>
+              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                {dict.outputVol}
+              </h3>
+              <strong className={`text-3xl font-mono font-black block ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                {kpi.total_units.toLocaleString()} Units
+              </strong>
+              <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {dict.outputVolDesc}
+              </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-3 hover:border-cyan-500/40 transition-all">
-              <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">{dict.granulatorScrap}</h3>
-              <strong className="text-3xl font-mono font-black text-emerald-400 block">{kpi.total_scrap_kg.toLocaleString()} KG</strong>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">{dict.granulatorScrapDesc}</p>
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all ${
+              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+            }`}>
+              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                {dict.granulatorScrap}
+              </h3>
+              <strong className="text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400 block">
+                {kpi.total_scrap_kg.toLocaleString()} KG
+              </strong>
+              <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {dict.granulatorScrapDesc}
+              </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-xl space-y-3 hover:border-cyan-500/40 transition-all sm:col-span-2 lg:col-span-1">
-              <h3 className="text-xs font-black uppercase text-slate-300 tracking-wider">{dict.fleetStatus}</h3>
-              <strong className="text-3xl font-mono font-black text-cyan-400 block">{kpi.running_machines} / {kpi.total_machines} Running</strong>
-              <p className="text-xs text-slate-400 font-medium leading-relaxed">{dict.fleetStatusDesc}</p>
+            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all sm:col-span-2 lg:col-span-1 ${
+              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+            }`}>
+              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                {dict.fleetStatus}
+              </h3>
+              <strong className="text-3xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
+                {kpi.running_machines} / {kpi.total_machines} Running
+              </strong>
+              <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                {dict.fleetStatusDesc}
+              </p>
             </div>
           </div>
 
@@ -309,7 +428,11 @@ export default function PlasticErpDashboard() {
 
 
       <div className="fixed bottom-16 md:bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-24px)] no-print">
-        <div className="flex items-center gap-1.5 md:gap-2 p-2 rounded-3xl bg-slate-900/90 backdrop-blur-2xl border border-white/15 shadow-2xl ring-1 ring-black/40 overflow-x-auto no-scrollbar max-w-full">
+        <div className={`flex items-center gap-1.5 md:gap-2 p-2 rounded-3xl backdrop-blur-2xl border shadow-2xl overflow-x-auto no-scrollbar max-w-full ${
+          isLight
+            ? 'bg-white/95 border-slate-300 ring-1 ring-slate-200 shadow-slate-400/40'
+            : 'bg-slate-900/90 border-white/15 ring-1 ring-black/40 shadow-black/50'
+        }`}>
           {dockItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -321,6 +444,8 @@ export default function PlasticErpDashboard() {
                 className={`relative group flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 ${
                   isActive
                     ? 'bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-lg scale-110 -translate-y-1'
+                    : isLight
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 hover:scale-105'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105'
                 }`}
                 title={item.label}
@@ -328,7 +453,9 @@ export default function PlasticErpDashboard() {
                 <Icon size={20} />
 
                 {/* Tooltip */}
-                <span className="absolute -top-10 px-2.5 py-1 rounded-lg bg-slate-950 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-slate-800 shadow-xl">
+                <span className={`absolute -top-10 px-2.5 py-1 rounded-lg text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border shadow-xl ${
+                  isLight ? 'bg-white text-slate-900 border-slate-300' : 'bg-slate-950 text-white border-slate-800'
+                }`}>
                   {item.label}
                 </span>
 

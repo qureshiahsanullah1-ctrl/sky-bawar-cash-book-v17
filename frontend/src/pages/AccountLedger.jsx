@@ -44,6 +44,25 @@ function isBawarAccountName(name) {
   return s.includes('bawar') || s.includes('factory') || s.includes('plastic') || s.includes('preform') || s.includes('foctory') || s.includes('rent');
 }
 
+function getAvatarGradient(name) {
+  if (!name) return 'from-amber-500 to-amber-600 text-white';
+  const gradients = [
+    'from-amber-500 to-orange-600 text-white shadow-amber-500/20',
+    'from-indigo-500 to-purple-600 text-white shadow-indigo-500/20',
+    'from-cyan-500 to-blue-600 text-white shadow-cyan-500/20',
+    'from-emerald-500 to-teal-600 text-white shadow-emerald-500/20',
+    'from-violet-500 to-fuchsia-600 text-white shadow-violet-500/20',
+    'from-rose-500 to-pink-600 text-white shadow-rose-500/20',
+    'from-blue-600 to-cyan-600 text-white shadow-blue-600/20',
+    'from-amber-600 to-amber-700 text-white shadow-amber-600/20'
+  ];
+  let charCodeSum = 0;
+  for (let i = 0; i < name.length; i++) {
+    charCodeSum += name.charCodeAt(i);
+  }
+  return gradients[charCodeSum % gradients.length];
+}
+
 export default function AccountLedger(props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -55,6 +74,33 @@ export default function AccountLedger(props) {
   const [toDate, setToDate] = useState('');
   const [currencyFilter, setCurrencyFilter] = useState('all');
   const [accountTypeFilter, setAccountTypeFilter] = useState('all');
+
+  const portfolioStats = useMemo(() => {
+    let totalDebit = 0;
+    let totalCredit = 0;
+    let debitCount = 0;
+    let creditCount = 0;
+
+    visibleAccounts.forEach((a) => {
+      const bal = Number(a.balance || a.opening_balance_afn || 0);
+      if (bal < 0) {
+        totalDebit += Math.abs(bal);
+        debitCount++;
+      } else if (bal > 0) {
+        totalCredit += bal;
+        creditCount++;
+      }
+    });
+
+    return {
+      totalDebit,
+      totalCredit,
+      netBalance: totalCredit - totalDebit,
+      debitCount,
+      creditCount,
+      totalCount: visibleAccounts.length
+    };
+  }, [visibleAccounts]);
 
   const bawarAccountsCount = useMemo(() => {
     return visibleAccounts.filter((a) => isBawarAccountName(a.name)).length;
@@ -103,11 +149,11 @@ export default function AccountLedger(props) {
   }, [props.selectedAccountName]);
 
   return (
-    <div className="account-ledger-page min-h-[calc(100vh-100px)] flex flex-col gap-5 p-3 sm:p-6 bg-slate-50/50 dark:bg-slate-950/50 transition-colors">
+    <div className="account-ledger-page w-full max-w-full min-w-0 overflow-x-hidden min-h-[calc(100vh-100px)] flex flex-col gap-5 p-3 sm:p-6 bg-slate-50/50 dark:bg-slate-950/50 transition-colors">
       {/* 1. PAGE HEADER */}
-      <header className="account-ledger-header bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+      <header className="account-ledger-header bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 w-full min-w-0">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               <span>{t('accountLedger.title', 'Account Ledger')}</span>
             </h2>
@@ -159,6 +205,48 @@ export default function AccountLedger(props) {
           </button>
         </div>
       </header>
+
+      {/* EXECUTIVE PORTFOLIO SUMMARY KPI BANNER */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full min-w-0">
+        {/* Total Debits (Receivable) */}
+        <div className="p-4 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/40 dark:via-amber-950/20 dark:to-transparent rounded-2xl border border-amber-500/30 dark:border-amber-500/20 shadow-xs space-y-1 relative overflow-hidden group hover:border-amber-500/50 transition-all w-full min-w-0">
+          <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider truncate">{t('accountLedger.totalDebitsReceivable', 'Total Receivables (Debits)')}</span>
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-200 text-[10px] font-black shrink-0">
+              {portfolioStats.debitCount} {t('accountLedger.accountsCount', 'Accts')}
+            </span>
+          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-amber-700 dark:text-amber-300 tracking-tight tabular-nums truncate">
+            AFN {portfolioStats.totalDebit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+
+        {/* Total Credits (Payable) */}
+        <div className="p-4 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/40 dark:via-emerald-950/20 dark:to-transparent rounded-2xl border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs space-y-1 relative overflow-hidden group hover:border-emerald-500/50 transition-all w-full min-w-0">
+          <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-300 gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider truncate">{t('accountLedger.totalCreditsPayable', 'Total Payables (Credits)')}</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-[10px] font-black shrink-0">
+              {portfolioStats.creditCount} {t('accountLedger.accountsCount', 'Accts')}
+            </span>
+          </div>
+          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300 tracking-tight tabular-nums truncate">
+            AFN {portfolioStats.totalCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+
+        {/* Portfolio Net Balance */}
+        <div className="p-4 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-950/40 dark:via-blue-950/20 dark:to-transparent rounded-2xl border border-blue-500/30 dark:border-blue-500/20 shadow-xs space-y-1 relative overflow-hidden group hover:border-blue-500/50 transition-all w-full min-w-0">
+          <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider truncate">{t('accountLedger.portfolioNetBalance', 'Net Portfolio Balance')}</span>
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-800 dark:text-blue-200 text-[10px] font-black shrink-0">
+              {portfolioStats.totalCount} {t('accountLedger.totalAccounts', 'Total')}
+            </span>
+          </div>
+          <div className={`text-xl sm:text-2xl font-black font-mono tracking-tight tabular-nums truncate ${portfolioStats.netBalance >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-amber-600 dark:text-amber-400'}`}>
+            AFN {portfolioStats.netBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+      </div>
 
       {/* CREATE NEW ACCOUNT MODAL */}
       {showCreateForm && (
@@ -277,10 +365,10 @@ export default function AccountLedger(props) {
       </div>
 
       {/* 2. TWO-COLUMN RESPONSIVE LAYOUT (SIDE-BY-SIDE FROM MD UPWARDS) */}
-      <div className="account-ledger-layout flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="account-ledger-layout flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 items-start w-full min-w-0 max-w-full">
         
-        {/* LEFT COLUMN: Accounts Sidebar (Sticky on md screens, minimum 420px height when stacked) */}
-        <aside className="ledger-left-panel md:col-span-5 lg:col-span-4 xl:col-span-3 md:sticky md:top-20 md:max-h-[calc(100vh-130px)] flex flex-col min-h-[420px] max-h-[600px] md:min-h-0">
+        {/* LEFT COLUMN: Accounts Sidebar (Sticky on md screens) */}
+        <aside className="ledger-left-panel md:col-span-5 lg:col-span-4 xl:col-span-3 md:sticky md:top-20 md:max-h-[calc(100vh-130px)] flex flex-col w-full min-w-0 max-h-[380px] md:max-h-[600px]">
           
           {/* Search + Accounts List Card */}
           <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col h-full">
@@ -386,45 +474,49 @@ export default function AccountLedger(props) {
                           ledgerRightPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
                       }}
-                      className={`w-full p-3.5 text-left rounded-xl transition-all flex items-center justify-between gap-3 ${
+                      className={`w-full p-3.5 text-left rounded-xl transition-all flex items-center justify-between gap-3 active:scale-[0.98] ${
                         isActive
-                          ? 'bg-amber-500/10 dark:bg-amber-500/15 border-l-4 border-amber-500 text-amber-950 dark:text-amber-200 shadow-xs'
-                          : 'bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+                          ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent dark:from-amber-500/30 dark:via-amber-500/15 dark:to-transparent border-l-4 border-amber-500 text-slate-900 dark:text-white shadow-sm ring-1 ring-amber-500/30'
+                          : 'bg-transparent hover:bg-slate-100/70 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
                       }`}
                     >
                       {/* Avatar Circle */}
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs shrink-0 shadow-xs ${
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-sm border ${
                         isActive
-                          ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-amber-500/30 shadow-md'
+                          ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-amber-500/40 shadow-md ring-2 ring-amber-400/50 border-amber-300'
                           : isBawar
-                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60'
+                          ? 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-blue-500/20 border-blue-400/30'
+                          : `bg-gradient-to-br ${getAvatarGradient(cleanName)} border-white/20`
                       }`}>
                         {cleanName.slice(0, 1).toUpperCase()}
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1.5">
-                          <strong className={`text-sm font-bold truncate block ${isActive ? 'text-amber-900 dark:text-amber-200 font-extrabold' : 'text-slate-900 dark:text-slate-100'}`}>
+                          <strong className={`text-sm truncate block ${isActive ? 'text-amber-950 dark:text-amber-100 font-black' : 'text-slate-900 dark:text-slate-100 font-bold'}`}>
                             {cleanName}
                           </strong>
                           <div className="flex items-center gap-1 shrink-0">
                             {isBawar && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-[9px] font-bold border border-blue-500/20">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-300 text-[9px] font-black border border-blue-500/30">
                                 <Factory size={9} />
-                                <span>Bawar Star</span>
+                                <span>{t('accountLedger.bawarStarBadge', 'Factory')}</span>
                               </span>
                             )}
-                            <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-extrabold ${
-                              isNegative ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400' : bal > 0 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                            <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-md font-black tracking-wide ${
+                              isNegative
+                                ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                                : bal > 0
+                                ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700'
                             }`}>
                               {isNegative ? t('accountLedger.debitBadge', 'Debit') : bal > 0 ? t('accountLedger.creditBadge', 'Credit') : t('accountLedger.zeroBadge', 'Zero')}
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between mt-1 text-[11px] font-mono">
-                          <span className="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-sans font-semibold">{t('accountLedger.balance', 'Balance')}</span>
-                          <span className={`font-extrabold tracking-tight ${isNegative ? 'text-amber-600 dark:text-amber-400' : bal > 0 ? 'text-emerald-600 dark:text-emerald-400 font-black' : 'text-slate-500'}`}>
+                          <span className="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-sans font-extrabold">{t('accountLedger.balance', 'Balance')}</span>
+                          <span className={`font-black tracking-tight ${isNegative ? 'text-amber-700 dark:text-amber-300' : bal > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-500'}`}>
                             {t('accountLedger.afn', 'AFN')} {bal.toLocaleString('en-US')}
                           </span>
                         </div>

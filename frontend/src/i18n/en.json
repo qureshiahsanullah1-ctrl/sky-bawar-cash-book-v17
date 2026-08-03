@@ -329,8 +329,53 @@
     "bawarStarBannerTitle": "Bawar Star Plastic Industry Partner Statement",
     "bawarStarBannerSub": "Manufacturing, Preform, Freight & Gross Profit Tracking",
     "openBawarStarCalculator": "Open Bawar Star Profit Calculator"
+  },
+  "bawarStar": {
+    "productSale": "Product Sale",
+    "freightLogistics": "Freight / Logistics",
+    "packaging": "Packaging",
+    "paymentReceived": "Payment Received",
+    "manufacturingModule": "Manufacturing Module",
+    "plasticIndustry": "Bawar Star Plastic Industry",
+    "advancedLedgerTitle": "Advanced Ledger & Profit Calculator",
+    "selectPartner": "Select Customer / Partner",
+    "printLedger": "Print Ledger",
+    "quickAddEntry": "Quick Add Entry",
+    "netOutstandingBalance": "Net Outstanding Balance",
+    "afn": "AFN",
+    "billed": "Billed:",
+    "paid": "Paid:",
+    "revenueBreakdown": "Revenue Breakdown",
+    "afnProduct": "AFN Product",
+    "afnPassThrough": "AFN Pass-Through",
+    "freight": "Freight:",
+    "pkg": "Pkg:",
+    "manufacturingProfitability": "Manufacturing Profitability",
+    "afnProfit": "AFN Profit",
+    "grossMargin": "Gross Margin:",
+    "margin": "Margin",
+    "partnerTransactions": "Partner Ledger Transactions",
+    "entries": "entries",
+    "viewingHistoryFor": "Viewing account history for",
+    "selectPartnerAccount": "Select a partner account",
+    "searchPlaceholder": "Search description or Pashto...",
+    "allTypes": "All Types",
+    "productSales": "Product Sales",
+    "paymentsReceived": "Payments Received",
+    "date": "Date",
+    "type": "Type",
+    "description": "Description (Pashto / English)",
+    "qty": "Qty",
+    "unitPrice": "Unit Price",
+    "billedAmount": "Billed Amount",
+    "paidAmount": "Paid Amount",
+    "runningBalance": "Running Balance",
+    "action": "Action",
+    "loadingRecords": "Loading ledger records...",
+    "noTransactions": "No transactions found for this account."
   }
 }
+
 
 
 

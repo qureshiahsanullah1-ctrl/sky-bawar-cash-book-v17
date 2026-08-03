@@ -54,7 +54,7 @@ export default function AppShell({
   };
 
   return (
-    <div className={`app-shell ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'} print:p-0 print:m-0 print:w-full print:bg-white`}>
+    <div className={`app-shell ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'} print:p-0 print:m-0 print:w-full print:bg-white w-full max-w-full min-w-0 overflow-x-hidden`}>
       <Sidebar 
         activeView={activeView} 
         setView={setView} 
@@ -71,7 +71,7 @@ export default function AppShell({
         onLogout={onLogout}
       />
       
-      <div className="app-workspace print:p-0 print:m-0 print:w-full print:block">
+      <div className="app-workspace print:p-0 print:m-0 print:w-full print:block flex-1 w-full min-w-0 max-w-full overflow-x-hidden">
         <TopHeader 
           title={title}
           onThemeToggle={onThemeToggle}
@@ -86,7 +86,7 @@ export default function AppShell({
           isCollapsed={isCollapsed}
         />
         
-        <main className="app-main-scroll pb-16 md:pb-0 print:p-0 print:m-0 print:w-full print:block print:overflow-visible">
+        <main className="app-main-scroll pb-16 md:pb-0 print:p-0 print:m-0 print:w-full print:block print:overflow-visible w-full min-w-0 max-w-full overflow-x-hidden">
           {children || <Outlet />}
         </main>
       </div>

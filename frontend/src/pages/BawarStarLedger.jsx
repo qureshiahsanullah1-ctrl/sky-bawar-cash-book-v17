@@ -135,25 +135,25 @@ export default function BawarStarLedger() {
       case 'SELL_PRODUCT':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            Product Sale
+            {t('bawarStar.productSale', 'Product Sale')}
           </span>
         );
       case 'PASS_THROUGH_FREIGHT':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-            Freight / Logistics
+            {t('bawarStar.freightLogistics', 'Freight / Logistics')}
           </span>
         );
       case 'PASS_THROUGH_PKG':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-            Packaging
+            {t('bawarStar.packaging', 'Packaging')}
           </span>
         );
       case 'PAYMENT_RECEIVED':
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            Payment Received
+            {t('bawarStar.paymentReceived', 'Payment Received')}
           </span>
         );
       default:
@@ -189,12 +189,12 @@ export default function BawarStarLedger() {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="px-2.5 py-0.5 rounded-md bg-blue-500/20 border border-blue-400/30 text-blue-300 font-bold text-[10px] uppercase tracking-wider">
-                  Manufacturing Module
+                  {t('bawarStar.manufacturingModule', 'Manufacturing Module')}
                 </span>
-                <span className="text-xs text-slate-400">Bawar Star Plastic Industry</span>
+                <span className="text-xs text-slate-400">{t('bawarStar.plasticIndustry', 'Bawar Star Plastic Industry')}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
-                Advanced Ledger & Profit Calculator
+                {t('bawarStar.advancedLedgerTitle', 'Advanced Ledger & Profit Calculator')}
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 mt-1 dir-rtl text-right font-medium">
                 د باوار سټار پلاستیک تولیدي باقې‌داري، پریفارم، کرایه او ګټې محاسبه
@@ -210,7 +210,7 @@ export default function BawarStarLedger() {
                 onChange={(e) => setSelectedPartnerId(e.target.value)}
                 className="h-11 pl-10 pr-8 rounded-2xl bg-slate-800/90 border border-slate-700 text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none backdrop-blur-md cursor-pointer min-w-[220px]"
               >
-                <option value="">Select Customer / Partner</option>
+                <option value="">{t('bawarStar.selectPartner', 'Select Customer / Partner')}</option>
                 {sortedAccounts.map(acc => {
                   const isBawar = isBawarAccountName(acc.name);
                   return (
@@ -236,7 +236,7 @@ export default function BawarStarLedger() {
               className="h-11 px-4 rounded-2xl bg-slate-800/80 border border-slate-700 hover:bg-slate-700/80 text-slate-200 hover:text-white text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Ledger</span>
+              <span>{t('bawarStar.printLedger', 'Print Ledger')}</span>
             </button>
 
             <button
@@ -244,7 +244,7 @@ export default function BawarStarLedger() {
               className="h-11 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center space-x-2 shadow-lg shadow-blue-600/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <Plus className="w-4.5 h-4.5" />
-              <span>Quick Add Entry</span>
+              <span>{t('bawarStar.quickAddEntry', 'Quick Add Entry')}</span>
             </button>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function BawarStarLedger() {
         <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Net Outstanding Balance
+              {t('bawarStar.netOutstandingBalance', 'Net Outstanding Balance')}
             </span>
             <div className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
               <Scale className="w-4 h-4" />
@@ -266,13 +266,13 @@ export default function BawarStarLedger() {
 
           <div className="mt-2">
             <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              {(summary?.net_outstanding_balance || 0).toLocaleString()} <span className="text-xs font-semibold text-slate-400">AFN</span>
+              {(summary?.net_outstanding_balance || 0).toLocaleString()} <span className="text-xs font-semibold text-slate-400">{t('bawarStar.afn', 'AFN')}</span>
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-medium">
-            <span className="text-slate-500">Billed: <strong className="text-slate-800 dark:text-slate-200">{(summary?.total_billed_amount || 0).toLocaleString()}</strong></span>
-            <span className="text-slate-500">Paid: <strong className="text-emerald-600 dark:text-emerald-400">{(summary?.total_payments_received || 0).toLocaleString()}</strong></span>
+            <span className="text-slate-500">{t('bawarStar.billed', 'Billed:')} <strong className="text-slate-800 dark:text-slate-200">{(summary?.total_billed_amount || 0).toLocaleString()}</strong></span>
+            <span className="text-slate-500">{t('bawarStar.paid', 'Paid:')} <strong className="text-emerald-600 dark:text-emerald-400">{(summary?.total_payments_received || 0).toLocaleString()}</strong></span>
           </div>
         </div>
 
@@ -280,7 +280,7 @@ export default function BawarStarLedger() {
         <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Revenue Breakdown
+              {t('bawarStar.revenueBreakdown', 'Revenue Breakdown')}
             </span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
               <PieChart className="w-4 h-4" />
@@ -289,21 +289,21 @@ export default function BawarStarLedger() {
 
           <div className="mt-2">
             <div className="text-xl font-bold text-slate-900 dark:text-white">
-              {(summary?.revenue_split?.product_revenue || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">AFN Product</span>
+              {(summary?.revenue_split?.product_revenue || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">{t('bawarStar.afnProduct', 'AFN Product')}</span>
             </div>
             <div className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-0.5">
-              +{(summary?.revenue_split?.total_pass_through || 0).toLocaleString()} AFN Pass-Through
+              +{(summary?.revenue_split?.total_pass_through || 0).toLocaleString()} {t('bawarStar.afnPassThrough', 'AFN Pass-Through')}
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 grid grid-cols-2 gap-2 text-[10.5px] font-medium">
             <div className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 truncate">
               <Truck className="w-3 h-3 text-amber-500 shrink-0" />
-              <span>Freight: <strong>{(summary?.revenue_split?.freight_billed || 0).toLocaleString()}</strong></span>
+              <span>{t('bawarStar.freight', 'Freight:')} <strong>{(summary?.revenue_split?.freight_billed || 0).toLocaleString()}</strong></span>
             </div>
             <div className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 truncate">
               <Box className="w-3 h-3 text-purple-500 shrink-0" />
-              <span>Pkg: <strong>{(summary?.revenue_split?.packaging_billed || 0).toLocaleString()}</strong></span>
+              <span>{t('bawarStar.pkg', 'Pkg:')} <strong>{(summary?.revenue_split?.packaging_billed || 0).toLocaleString()}</strong></span>
             </div>
           </div>
         </div>
@@ -312,7 +312,7 @@ export default function BawarStarLedger() {
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-900/90 via-slate-900 to-slate-900 border border-emerald-500/30 p-4 shadow-xs text-white">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
-              Manufacturing Profitability
+              {t('bawarStar.manufacturingProfitability', 'Manufacturing Profitability')}
             </span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
               <TrendingUp className="w-4 h-4" />
@@ -321,14 +321,14 @@ export default function BawarStarLedger() {
 
           <div className="mt-2">
             <div className="text-2xl font-black text-white tracking-tight">
-              {(summary?.estimated_gross_profit || 0).toLocaleString()} <span className="text-xs font-semibold text-emerald-400/80">AFN Profit</span>
+              {(summary?.estimated_gross_profit || 0).toLocaleString()} <span className="text-xs font-semibold text-emerald-400/80">{t('bawarStar.afnProfit', 'AFN Profit')}</span>
             </div>
           </div>
 
           <div className="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[11px] font-semibold">
-            <span className="text-slate-300">Gross Margin:</span>
+            <span className="text-slate-300">{t('bawarStar.grossMargin', 'Gross Margin:')}</span>
             <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-bold">
-              {summary?.profit_margin_percentage || 0}% Margin
+              {summary?.profit_margin_percentage || 0}% {t('bawarStar.margin', 'Margin')}
             </span>
           </div>
         </div>
@@ -341,13 +341,13 @@ export default function BawarStarLedger() {
         <div className="p-3 sm:p-4 border-b border-slate-200/80 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-              <span>Partner Ledger Transactions</span>
+              <span>{t('bawarStar.partnerTransactions', 'Partner Ledger Transactions')}</span>
               <span className="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">
-                {filteredTransactions.length} entries
+                {filteredTransactions.length} {t('bawarStar.entries', 'entries')}
               </span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              {selectedPartner ? `Viewing account history for ${selectedPartner.name}` : 'Select a partner account'}
+              {selectedPartner ? `${t('bawarStar.viewingHistoryFor', 'Viewing account history for')} ${selectedPartner.name}` : t('bawarStar.selectPartnerAccount', 'Select a partner account')}
             </p>
           </div>
 
@@ -356,7 +356,7 @@ export default function BawarStarLedger() {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search description or Pashto..."
+                placeholder={t('bawarStar.searchPlaceholder', 'Search description or Pashto...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-10 pl-9 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none w-56"
@@ -370,11 +370,11 @@ export default function BawarStarLedger() {
               onChange={(e) => setTypeFilter(e.target.value)}
               className="h-10 px-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              <option value="ALL">All Types</option>
-              <option value="SELL_PRODUCT">Product Sales</option>
-              <option value="PASS_THROUGH_FREIGHT">Freight / Logistics</option>
-              <option value="PASS_THROUGH_PKG">Packaging</option>
-              <option value="PAYMENT_RECEIVED">Payments Received</option>
+              <option value="ALL">{t('bawarStar.allTypes', 'All Types')}</option>
+              <option value="SELL_PRODUCT">{t('bawarStar.productSales', 'Product Sales')}</option>
+              <option value="PASS_THROUGH_FREIGHT">{t('bawarStar.freightLogistics', 'Freight / Logistics')}</option>
+              <option value="PASS_THROUGH_PKG">{t('bawarStar.packaging', 'Packaging')}</option>
+              <option value="PAYMENT_RECEIVED">{t('bawarStar.paymentsReceived', 'Payments Received')}</option>
             </select>
           </div>
         </div>
@@ -385,15 +385,15 @@ export default function BawarStarLedger() {
             <thead>
               <tr className="sticky top-0 z-20 bg-slate-900 dark:bg-slate-950 text-slate-200 uppercase font-bold tracking-wider text-[10px] border-b border-slate-800">
                 <th className="py-2.5 px-3">#</th>
-                <th className="py-2.5 px-3">Date</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3">Description (Pashto / English)</th>
-                <th className="py-3.5 px-4 text-right">Qty</th>
-                <th className="py-3.5 px-4 text-right">Unit Price</th>
-                <th className="py-3.5 px-4 text-right">Billed Amount</th>
-                <th className="py-3.5 px-4 text-right">Paid Amount</th>
-                <th className="py-3.5 px-4 text-right">Running Balance</th>
-                <th className="py-3.5 px-4 text-center">Action</th>
+                <th className="py-2.5 px-3">{t('bawarStar.date', 'Date')}</th>
+                <th className="py-2.5 px-3">{t('bawarStar.type', 'Type')}</th>
+                <th className="py-2.5 px-3">{t('bawarStar.description', 'Description (Pashto / English)')}</th>
+                <th className="py-3.5 px-4 text-right">{t('bawarStar.qty', 'Qty')}</th>
+                <th className="py-3.5 px-4 text-right">{t('bawarStar.unitPrice', 'Unit Price')}</th>
+                <th className="py-3.5 px-4 text-right">{t('bawarStar.billedAmount', 'Billed Amount')}</th>
+                <th className="py-3.5 px-4 text-right">{t('bawarStar.paidAmount', 'Paid Amount')}</th>
+                <th className="py-3.5 px-4 text-right">{t('bawarStar.runningBalance', 'Running Balance')}</th>
+                <th className="py-3.5 px-4 text-center">{t('bawarStar.action', 'Action')}</th>
               </tr>
             </thead>
 
@@ -402,13 +402,13 @@ export default function BawarStarLedger() {
                 <tr>
                   <td colSpan="10" className="py-12 text-center text-slate-400">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-500" />
-                    <span>Loading ledger records...</span>
+                    <span>{t('bawarStar.loadingRecords', 'Loading ledger records...')}</span>
                   </td>
                 </tr>
               ) : filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan="10" className="py-12 text-center text-slate-400">
-                    No transactions found for this account.
+                    {t('bawarStar.noTransactions', 'No transactions found for this account.')}
                   </td>
                 </tr>
               ) : (

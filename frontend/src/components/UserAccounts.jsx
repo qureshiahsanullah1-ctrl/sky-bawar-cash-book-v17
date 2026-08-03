@@ -7,8 +7,31 @@ const emptyUser = { id: null, full_name: '', username: '', password: '', confirm
 const PASSWORD_MESSAGE = 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.';
 
 function avatarFromFile(file, callback) {
+  if (!file) return callback('');
   const reader = new FileReader();
-  reader.onload = () => callback(reader.result);
+  reader.onload = (e) => {
+    const rawUrl = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const size = 128;
+        canvas.width = size;
+        canvas.height = size;
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        callback(compressedDataUrl);
+      } catch (err) {
+        callback(rawUrl);
+      }
+    };
+    img.onerror = () => callback(rawUrl);
+    img.src = rawUrl;
+  };
   reader.onerror = () => callback('');
   reader.readAsDataURL(file);
 }
@@ -78,13 +101,15 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
   }
   
   function friendlyError(error, fallback) {
-    const text = error?.message || fallback;
-    if (text.includes('Username already exists')) return 'Username already exists.';
-    if (text.includes('Passwords do not match')) return 'Password does not match.';
-    if (text.includes('Password must')) return text.replace(/^Server error \(\d+\):\s*/, '');
-    if (text.includes('Login required')) return 'Your admin session expired. Please log in again.';
-    if (text.includes('Administrator access required')) return 'Administrator access required.';
-    return fallback;
+    if (!error) return fallback;
+    const rawText = typeof error === 'string' ? error : (error.message || '');
+    if (!rawText) return fallback;
+    const cleanText = rawText.replace(/^Server error \(\d+\):\s*/, '').trim();
+    if (cleanText.includes('Username already exists')) return 'Username already exists.';
+    if (cleanText.includes('Passwords do not match')) return 'Password does not match.';
+    if (cleanText.includes('Login required') || cleanText.includes('Unauthorized') || cleanText.includes('Could not validate credentials')) return 'Your admin session expired. Please log in again.';
+    if (cleanText.includes('Administrator access required')) return 'Administrator access required.';
+    return cleanText || fallback;
   }
 
   async function save(event) {

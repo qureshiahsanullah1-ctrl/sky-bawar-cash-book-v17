@@ -238,10 +238,17 @@ export default function App() {
     }
   });
   const [pageError, setPageError] = useState('');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cashbook-current-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loginUsers, setLoginUsers] = useState([]);
   const [managedUsers, setManagedUsers] = useState([]);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(() => !localStorage.getItem('cashbook-current-user'));
   const [setupRequired, setSetupRequired] = useState(false);
   const [passwordChangeRequired, setPasswordChangeRequired] = useState(false);
   const [diagnostics, setDiagnostics] = useState(null);
@@ -441,40 +448,51 @@ export default function App() {
   }, []);
 
   async function initializeAuth() {
-    setAuthLoading(true);
     setPageError('');
     try {
-      await api.health();
-      const status = await api.getAuthStatus();
-      setLoginUsers(status.users || []);
-      setSetupRequired(Boolean(status.setup_required));
-      
       const token = localStorage.getItem('cashbook-session-token');
       if (token) {
         setAuthToken(token);
-        const user = await api.getMe();
-        setCurrentUser(user);
-        setPasswordChangeRequired(Boolean(user.must_change_password));
-        persistCurrentUser(user);
+      }
+      
+      const status = await api.getAuthStatus().catch(() => null);
+      if (status) {
+        setLoginUsers(status.users || []);
+        setSetupRequired(Boolean(status.setup_required));
+      }
+      
+      if (token) {
+        try {
+          const user = await api.getMe();
+          setCurrentUser(user);
+          setPasswordChangeRequired(Boolean(user.must_change_password));
+          persistCurrentUser(user);
+        } catch (meErr) {
+          if (meErr.message && (meErr.message.includes('401') || meErr.message.includes('Could not validate credentials'))) {
+            setAuthToken('');
+            localStorage.removeItem('cashbook-session-token');
+            localStorage.removeItem('cashbook-current-user');
+            setCurrentUser(null);
+            setPasswordChangeRequired(false);
+            setPageError('Session expired. Please enter your credentials to log in.');
+          }
+          // Network errors or offline mode keep cached currentUser intact!
+        }
       } else {
         setAuthToken('');
         localStorage.removeItem('cashbook-current-user');
         setCurrentUser(null);
         setPasswordChangeRequired(false);
-        setIsLoading(false);
       }
     } catch (error) {
-      setAuthToken('');
-      localStorage.removeItem('cashbook-session-token');
-      localStorage.removeItem('cashbook-current-user');
       if (error.message && (error.message.includes('401') || error.message.includes('Could not validate credentials'))) {
+        setAuthToken('');
+        localStorage.removeItem('cashbook-session-token');
+        localStorage.removeItem('cashbook-current-user');
+        setCurrentUser(null);
+        setPasswordChangeRequired(false);
         setPageError('Session expired. Please enter your credentials to log in.');
-      } else {
-        setPageError(error.message);
       }
-      setCurrentUser(null);
-      setPasswordChangeRequired(false);
-      setIsLoading(false);
     } finally {
       setAuthLoading(false);
     }
@@ -1630,6 +1648,59 @@ export default function App() {
     );
   }
 
+  const accountBalancesMap = useMemo(() => {
+    const map = {};
+    (accounts || []).forEach((acct) => {
+      const openBal = Number(acct.opening_balance_afn || acct.balance || 0);
+      if (acct.id !== undefined && acct.id !== null) {
+        map[acct.id] = openBal;
+      }
+      if (acct.name) {
+        map[acct.name.trim().toLowerCase()] = openBal;
+      }
+    });
+
+    (transactions || []).forEach((tx) => {
+      const inAmt = Number(tx.cash_in_afn || 0);
+      const outAmt = Number(tx.cash_out_afn || 0);
+      const isCashIn = tx.transaction_type === 'cash_in' || inAmt > 0;
+      const val = isCashIn ? (inAmt || Number(tx.amount || 0)) : -(outAmt || Number(tx.amount || 0));
+
+      if (tx.account_id && map[tx.account_id] !== undefined) {
+        map[tx.account_id] += val;
+      }
+      if (tx.account_name) {
+        const key = String(tx.account_name).trim().toLowerCase();
+        if (map[key] !== undefined) {
+          map[key] += val;
+        }
+      }
+    });
+
+    return map;
+  }, [accounts, transactions]);
+
+  const accountsWithCalculatedBalances = useMemo(() => {
+    return (accounts || []).map((account) => {
+      const computed = accountBalancesMap[account.id] !== undefined 
+        ? accountBalancesMap[account.id] 
+        : (accountBalancesMap[account.name?.trim().toLowerCase()] !== undefined 
+          ? accountBalancesMap[account.name.trim().toLowerCase()] 
+          : Number(account.opening_balance_afn || account.balance || 0));
+
+      const isSelected = ledger && selectedAccount?.id === account.id;
+      const finalBal = isSelected && ledger.final_balance_afn !== undefined 
+        ? Number(ledger.final_balance_afn) 
+        : computed;
+
+      return {
+        ...account,
+        balance: finalBal,
+        opening_balance_afn: account.opening_balance_afn ?? 0
+      };
+    });
+  }, [accounts, accountBalancesMap, ledger, selectedAccount]);
+
   if (!currentUser) {
     return (
       <Routes>
@@ -1786,10 +1857,7 @@ export default function App() {
                 } />
                 <Route path="/ledger" element={
                   <TenantModuleRouter
-                    accounts={accounts.filter((account) => !ledgerSearch || account.name.toLowerCase().includes(ledgerSearch.toLowerCase())).map((account) => ({
-                      ...account,
-                      balance: ledger && selectedAccount?.id === account.id ? ledger.final_balance_afn : account.opening_balance_afn
-                    }))}
+                    accounts={accountsWithCalculatedBalances.filter((account) => !ledgerSearch || account.name.toLowerCase().includes(ledgerSearch.toLowerCase()))}
                     accountName={accountName}
                     setAccountName={setAccountName}
                     openingBalance={openingBalance}
@@ -1813,7 +1881,7 @@ export default function App() {
                 } />
                 <Route path="/accounts" element={
                   <Accounts
-                    accounts={accounts}
+                    accounts={accountsWithCalculatedBalances}
                     form={accountForm}
                     setForm={setAccountForm}
                     onSave={onSaveAccount}
@@ -1971,7 +2039,7 @@ export default function App() {
                   />
                 } />
                 <Route path="/exports" element={<MultiAccountDashboard />} />
-                <Route path="/plastic-erp" element={<PlasticErpDashboard />} />
+                <Route path="/plastic-erp" element={<PlasticErpDashboard theme={theme} />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
 
