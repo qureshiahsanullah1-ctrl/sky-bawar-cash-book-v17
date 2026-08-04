@@ -961,7 +961,34 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
 
         <div className="salary-edit-grid">
           <label className="form-field">
-            <span className="form-label">{t('payroll.amountToPay')} *</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="form-label">{t('payroll.amountToPay')} *</span>
+              {payableLimit > 0 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    className="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 transition-all"
+                    onClick={() => updateAmount(salaryPaymentInputValue(payableLimit))}
+                  >
+                    100% (Full)
+                  </button>
+                  <button
+                    type="button"
+                    className="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 transition-all"
+                    onClick={() => updateAmount(salaryPaymentInputValue(Math.round(payableLimit / 2)))}
+                  >
+                    50%
+                  </button>
+                  <button
+                    type="button"
+                    className="px-2 py-0.5 text-[10px] font-bold rounded-lg bg-slate-500/15 text-slate-600 dark:text-slate-400 hover:bg-slate-500/25 transition-all"
+                    onClick={() => updateAmount('')}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
             <input 
               className="form-control"
               type="number" 

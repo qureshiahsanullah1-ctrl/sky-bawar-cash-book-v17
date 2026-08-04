@@ -5346,6 +5346,138 @@ body.dark .receipt-btn:hover {
     backdrop-filter: blur(28px) saturate(190%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
   }
+
+  /* Employees & Salary Mobile Responsive Enhancements */
+  .salary-page {
+    padding: 10px 8px 96px !important;
+  }
+
+  .salary-page-header {
+    padding: 14px 16px !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .salary-page-header h3 {
+    font-size: 20px !important;
+    line-height: 1.25 !important;
+  }
+
+  .salary-page-header p {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+
+  .salary-page-actions {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .salary-page-actions button {
+    width: 100% !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    border-radius: 12px !important;
+    justify-content: center !important;
+  }
+
+  .salary-tabs {
+    min-height: 48px !important;
+    padding: 4px !important;
+    gap: 4px !important;
+    border-radius: 14px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .salary-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .salary-tab {
+    min-height: 38px !important;
+    padding: 0 14px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .salary-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .salary-metric-card {
+    min-height: 100px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .salary-stat-body {
+    margin-top: 8px !important;
+  }
+
+  .salary-stat-label {
+    font-size: 10px !important;
+  }
+
+  .salary-metric-value {
+    font-size: 16px !important;
+    margin-top: 2px !important;
+  }
+
+  .salary-employee-row {
+    padding: 12px !important;
+    border-radius: 16px !important;
+    margin-bottom: 10px !important;
+    gap: 10px !important;
+  }
+
+  .salary-report-workspace {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .salary-report-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .salary-mini-stat {
+    padding: 8px 10px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+  }
+
+  .salary-report-filters {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .salary-report-filters label {
+    grid-column: 1 / -1 !important;
+  }
+
+  .salary-report-filters select,
+  .salary-report-filters input,
+  .salary-report-filters button {
+    height: 38px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .salary-report-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+  }
 }
+
 
 

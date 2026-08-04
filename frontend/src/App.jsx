@@ -1628,26 +1628,6 @@ export default function App() {
     setTableFullscreen(node.classList.contains('fullscreen-fallback'));
   }
 
-  if (authLoading) {
-    return <div className="login-loading">{t('Loading workspace...')}</div>;
-  }
-
-  if (setupRequired && !currentUser) {
-    return (
-      <>
-        <SecuritySetup mode="setup" onSetup={onSetupOwner} companyName={companyName} companyLogo={companyLogo} />
-        {authLoading && <div className="login-loading">{t('Preparing secure setup...')}</div>}
-        {pageError && <div className="login-loading error">{pageError}</div>}
-      </>
-    );
-  }
-
-  if (currentUser && passwordChangeRequired) {
-    return (
-      <SecuritySetup mode="change" currentUser={currentUser} onChangePassword={onChangePassword} onLogout={onLogout} companyName={companyName} companyLogo={companyLogo} />
-    );
-  }
-
   const accountBalancesMap = useMemo(() => {
     const map = {};
     (accounts || []).forEach((acct) => {
@@ -1700,6 +1680,26 @@ export default function App() {
       };
     });
   }, [accounts, accountBalancesMap, ledger, selectedAccount]);
+
+  if (authLoading) {
+    return <div className="login-loading">{t('Loading workspace...')}</div>;
+  }
+
+  if (setupRequired && !currentUser) {
+    return (
+      <>
+        <SecuritySetup mode="setup" onSetup={onSetupOwner} companyName={companyName} companyLogo={companyLogo} />
+        {authLoading && <div className="login-loading">{t('Preparing secure setup...')}</div>}
+        {pageError && <div className="login-loading error">{pageError}</div>}
+      </>
+    );
+  }
+
+  if (currentUser && passwordChangeRequired) {
+    return (
+      <SecuritySetup mode="change" currentUser={currentUser} onChangePassword={onChangePassword} onLogout={onLogout} companyName={companyName} companyLogo={companyLogo} />
+    );
+  }
 
   if (!currentUser) {
     return (
