@@ -439,11 +439,20 @@ export default function App() {
       loadAll();
     };
 
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setGlobalSearchOpen((prev) => !prev);
+      }
+    };
+
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     window.addEventListener('company_switched', handleCompanySwitched);
+    window.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
       window.removeEventListener('company_switched', handleCompanySwitched);
+      window.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, []);
 
