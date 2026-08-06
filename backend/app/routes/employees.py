@@ -28,6 +28,7 @@ def read_employees(db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=schemas.EmployeeRead, status_code=201)
+@router.post("/", response_model=schemas.EmployeeRead, status_code=201, include_in_schema=False)
 def add_employee(payload: schemas.EmployeeCreate, db: Session = Depends(get_db)):
     try:
         return payroll.create_employee(db, payload)

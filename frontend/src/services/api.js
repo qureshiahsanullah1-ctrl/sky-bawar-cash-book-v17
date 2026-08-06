@@ -282,6 +282,7 @@ export const api = {
   updateUser: (id, payload) => request(`/api/auth/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   resetUserPassword: (id, payload) => request(`/api/auth/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify(payload) }),
   deleteUser: (id) => request(`/api/auth/users/${id}`, { method: 'DELETE' }),
+  clearAll: () => request('/api/backup/clear-all', { method: 'POST' }),
   exportBackup: () => request('/api/backup/export'),
   createBackupSnapshot: () => request('/api/backup/snapshot', { method: 'POST' }),
   getBackupSnapshots: () => request('/api/backup/snapshots'),

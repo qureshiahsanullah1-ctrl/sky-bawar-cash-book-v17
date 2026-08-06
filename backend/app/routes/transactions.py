@@ -248,6 +248,7 @@ from ..auth_dependencies import get_current_tenant, require_authenticated_reques
 
 
 @router.post("", response_model=schemas.TransactionRead, status_code=201)
+@router.post("/", response_model=schemas.TransactionRead, status_code=201, include_in_schema=False)
 def create_transaction(
     payload: schemas.TransactionCreate,
     user: models.User = Depends(require_authenticated_request),

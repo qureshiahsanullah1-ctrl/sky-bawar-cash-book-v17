@@ -33,6 +33,7 @@ def read_account(account_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("", response_model=schemas.AccountRead, status_code=201)
+@router.post("/", response_model=schemas.AccountRead, status_code=201, include_in_schema=False)
 def create_account(payload: schemas.AccountCreate, db: Session = Depends(get_db)):
     try:
         return crud.create_account(db, payload)

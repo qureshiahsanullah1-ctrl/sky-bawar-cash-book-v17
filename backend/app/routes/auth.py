@@ -351,6 +351,7 @@ def change_password(
 
 
 @router.post("/logout")
+@router.get("/logout")
 def logout(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),

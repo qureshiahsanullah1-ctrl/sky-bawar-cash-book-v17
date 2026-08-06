@@ -76,6 +76,7 @@ async def import_master_excel(
 
 
 @router.delete("/clear-all", dependencies=[Depends(require_administrator_request)])
+@router.post("/clear-all", dependencies=[Depends(require_administrator_request)])
 def clear_all(db: Session = Depends(get_db)):
     return crud.clear_all(db)
 
