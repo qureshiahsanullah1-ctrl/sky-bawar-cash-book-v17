@@ -82,7 +82,10 @@ export default function Accounts({
       customers: accounts.filter((a) => a.account_type === 'customer').length,
       suppliers: accounts.filter((a) => a.account_type === 'supplier').length,
       workers: accounts.filter((a) => a.account_type === 'worker').length,
-      factories: accounts.filter((a) => a.account_type === 'factory').length
+      factories: accounts.filter((a) => a.account_type === 'factory').length,
+      expenses: accounts.filter((a) => a.account_type === 'expense').length,
+      afnTotal: accounts.reduce((acc, a) => acc + Number(a.opening_balance_afn || 0), 0),
+      usdTotal: accounts.reduce((acc, a) => acc + Number(a.opening_balance_usd || 0), 0)
     };
   }, [accounts]);
 
@@ -336,21 +339,30 @@ export default function Accounts({
           </p>
         </div>
 
-        {/* Quick Summary Chips */}
+        {/* Category Filter Pills & Summary Metrics */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
-            <Users size={14} className="text-slate-500" />
-            <span>Total: <strong>{accountCounts.total}</strong></span>
-          </span>
-          <span className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-800 dark:text-blue-300 text-xs font-bold flex items-center gap-1.5 border border-blue-200 dark:border-blue-800">
-            <span>Customers: <strong>{accountCounts.customers}</strong></span>
-          </span>
-          <span className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 text-xs font-bold flex items-center gap-1.5 border border-purple-200 dark:border-purple-800">
-            <span>Suppliers: <strong>{accountCounts.suppliers}</strong></span>
-          </span>
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
-            <span>Workers: <strong>{accountCounts.workers}</strong></span>
-          </span>
+          {[
+            { id: 'all', label: t('All Accounts'), count: accountCounts.total, color: 'slate' },
+            { id: 'customer', label: t('Customers'), count: accountCounts.customers, color: 'blue' },
+            { id: 'supplier', label: t('Suppliers'), count: accountCounts.suppliers, color: 'purple' },
+            { id: 'worker', label: t('Workers'), count: accountCounts.workers, color: 'emerald' },
+            { id: 'factory', label: t('Factories'), count: accountCounts.factories, color: 'amber' },
+            { id: 'expense', label: t('Expenses'), count: accountCounts.expenses, color: 'rose' }
+          ].map(({ id, label, count, color }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setSelectedTypeFilter(id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer ${
+                selectedTypeFilter === id
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm'
+                  : `bg-${color}-50 dark:bg-${color}-950/40 text-${color}-800 dark:text-${color}-300 border-${color}-200/80 dark:border-${color}-800/80 hover:bg-${color}-100`
+              }`}
+            >
+              <span>{label}</span>
+              <span className={`px-1.5 py-0.2 text-[10px] font-black rounded-full ${selectedTypeFilter === id ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : 'bg-black/10 dark:bg-white/10'}`}>{count}</span>
+            </button>
+          ))}
         </div>
       </header>
 
@@ -397,6 +409,28 @@ export default function Accounts({
                 <option value="expense">💸 {t('Expense')}</option>
                 <option value="other">📁 {t('Other')}</option>
               </select>
+              <div className="flex items-center gap-1.5 mt-1.5 overflow-x-auto pb-1 scrollbar-none">
+                {[
+                  { id: 'customer', label: '👤 Customer' },
+                  { id: 'supplier', label: '🏬 Supplier' },
+                  { id: 'worker', label: '🛠️ Worker' },
+                  { id: 'factory', label: '🏭 Factory' },
+                  { id: 'expense', label: '💸 Expense' }
+                ].map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => update('account_type', id)}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all shrink-0 border ${
+                      form.account_type === id
+                        ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
