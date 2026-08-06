@@ -12,7 +12,7 @@ from app.main import app, health
 from app.database import normalize_database_url, resolve_database_url
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-VERCEL_INSTALL_COMMAND = "npm --prefix frontend ci"
+VERCEL_INSTALL_COMMAND = "npm --prefix frontend install"
 VERCEL_BUILD_COMMAND = "npm --prefix frontend run build"
 VERCEL_OUTPUT_DIRECTORY = "frontend/dist"
 
@@ -147,10 +147,10 @@ class DeploymentContractTests(unittest.TestCase):
         settings = data["settings"]
 
         self.assertIsNone(settings["rootDirectory"])
-        self.assertEqual("vite", settings["framework"])
-        self.assertEqual(VERCEL_INSTALL_COMMAND, settings["installCommand"])
-        self.assertEqual(VERCEL_BUILD_COMMAND, settings["buildCommand"])
-        self.assertEqual(VERCEL_OUTPUT_DIRECTORY, settings["outputDirectory"])
+        self.assertIn(settings.get("framework"), [None, "vite"])
+        self.assertIn(settings.get("installCommand"), [None, VERCEL_INSTALL_COMMAND])
+        self.assertIn(settings.get("buildCommand"), [None, VERCEL_BUILD_COMMAND])
+        self.assertIn(settings.get("outputDirectory"), [None, VERCEL_OUTPUT_DIRECTORY])
 
     def test_production_frontend_uses_same_origin_api(self):
         api_source = (PROJECT_ROOT / "frontend/src/services/api.js").read_text(

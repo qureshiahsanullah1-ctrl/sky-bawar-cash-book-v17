@@ -34,11 +34,13 @@ def report_summary(rows):
 
 
 @router.get("/api/summary")
+@router.get("/api/summary/", include_in_schema=False)
 def all_summary(db: Session = Depends(get_db)):
     return crud.summary(db)
 
 
 @router.get("/api/summary/daily")
+@router.get("/api/summary/daily/", include_in_schema=False)
 def daily_summary(db: Session = Depends(get_db)):
     rows = crud.filtered_transactions(
         db, start_date=date.today(), end_date=date.today()
@@ -47,6 +49,7 @@ def daily_summary(db: Session = Depends(get_db)):
 
 
 @router.get("/api/summary/monthly")
+@router.get("/api/summary/monthly/", include_in_schema=False)
 def monthly_summary(db: Session = Depends(get_db)):
     today = date.today()
     rows = crud.filtered_transactions(

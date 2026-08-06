@@ -11,10 +11,15 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
+@router.get("", response_model=schemas.SettingRead)
+@router.get("/", response_model=schemas.SettingRead, include_in_schema=False)
 def read_settings(db: Session = Depends(get_db)):
     return crud.get_settings(db)
 
 
 @router.put("", response_model=schemas.SettingRead)
+@router.put("/", response_model=schemas.SettingRead, include_in_schema=False)
+@router.post("", response_model=schemas.SettingRead, include_in_schema=False)
+@router.post("/", response_model=schemas.SettingRead, include_in_schema=False)
 def update_settings(payload: schemas.SettingUpdate, db: Session = Depends(get_db)):
     return crud.update_settings(db, payload)
