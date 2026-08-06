@@ -314,7 +314,7 @@ export default function Sidebar({
       )}
 
       <aside 
-        className={`app-sidebar ${isCollapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'is-open mobile-open z-50 fixed inset-y-0 left-0 w-[80%] max-w-xs bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out pt-[calc(1rem+env(safe-area-inset-top))]' : ''} print-only-hide print:hidden no-print relative border-r border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md`}
+        className={`app-sidebar ${isCollapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'is-open mobile-open z-50 fixed inset-y-0 left-0 w-[80%] max-w-xs bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out pt-[calc(1rem+env(safe-area-inset-top))]' : 'hidden md:flex flex-col md:relative'} print-only-hide print:hidden no-print border-r border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md`}
         aria-label="Main Navigation"
       >
         {/* Mobile Close Button */}

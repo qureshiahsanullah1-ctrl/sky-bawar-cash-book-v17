@@ -567,16 +567,16 @@ export default function App() {
     const rate = Number(form.exchange_rate || exchangeRate || 0);
     const derivedAfN = afn > 0 ? afn : usd > 0 && rate > 0 ? Number((usd * rate).toFixed(2)) : 0;
     const derivedUsd = usd > 0 ? usd : afn > 0 && rate > 0 ? Number((afn / rate).toFixed(2)) : 0;
-    const accountName = normalizeAccountName(form.account_name);
+    const accountName = normalizeAccountName(form.account_name) || form.detail.trim() || 'General Account';
     const matchingSelectedAccount = selectedAccount?.name?.toLowerCase() === accountName.toLowerCase();
     return {
       date: form.date,
       account_id: form.account_id || (matchingSelectedAccount ? selectedAccount.id : null),
       employee_id: form.employee_id || null,
-      salary_month: form.salary_month,
+      salary_month: form.employee_id && form.salary_month ? form.salary_month : null,
       payroll_kind: form.employee_id ? (form.payroll_kind || 'salary') : null,
       account_name: accountName,
-      detail: form.detail.trim(),
+      detail: form.detail.trim() || accountName || (type === 'cash_in' ? 'Cash In' : 'Cash Out'),
       transaction_type: type,
       cash_in_afn: type === 'cash_in' ? derivedAfN : 0,
       cash_out_afn: type === 'cash_out' ? derivedAfN : 0,
@@ -1682,15 +1682,37 @@ export default function App() {
   }, [accounts, accountBalancesMap, ledger, selectedAccount]);
 
   if (authLoading) {
-    return <div className="login-loading">{t('Loading workspace...')}</div>;
+    return (
+      <WorkspaceLoader 
+        message={t('Loading workspace...')} 
+        companyName={companyName} 
+        companyLogo={companyLogo} 
+        onRetry={initializeAuth} 
+      />
+    );
   }
 
   if (setupRequired && !currentUser) {
     return (
       <>
         <SecuritySetup mode="setup" onSetup={onSetupOwner} companyName={companyName} companyLogo={companyLogo} />
-        {authLoading && <div className="login-loading">{t('Preparing secure setup...')}</div>}
-        {pageError && <div className="login-loading error">{pageError}</div>}
+        {authLoading && (
+          <WorkspaceLoader 
+            message={t('Preparing secure setup...')} 
+            companyName={companyName} 
+            companyLogo={companyLogo} 
+            onRetry={initializeAuth} 
+          />
+        )}
+        {pageError && (
+          <WorkspaceLoader 
+            message={t('Setup Notice')} 
+            error={pageError} 
+            companyName={companyName} 
+            companyLogo={companyLogo} 
+            onRetry={initializeAuth} 
+          />
+        )}
       </>
     );
   }
@@ -1717,7 +1739,14 @@ export default function App() {
               companyName={companyName}
               companyLogo={companyLogo}
             />
-            {authLoading && <div className="login-loading">{t('Preparing secure login...')}</div>}
+            {authLoading && (
+              <WorkspaceLoader 
+                message={t('Preparing secure login...')} 
+                companyName={companyName} 
+                companyLogo={companyLogo} 
+                onRetry={initializeAuth} 
+              />
+            )}
           </>
         } />
       </Routes>

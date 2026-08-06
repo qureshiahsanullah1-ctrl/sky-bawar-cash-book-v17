@@ -10,19 +10,11 @@ from sqlalchemy.orm import Session
 
 from .. import crud
 from ..auth_dependencies import require_authenticated_request
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(
     tags=["reports"], dependencies=[Depends(require_authenticated_request)]
 )
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def report_summary(rows):

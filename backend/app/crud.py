@@ -681,6 +681,11 @@ def _afn_to_usd(amount_afn: float, rate: float) -> float:
 
 
 def _next_transaction_no(db: Session, transaction_date: date) -> str:
+    if isinstance(transaction_date, str):
+        try:
+            transaction_date = datetime.strptime(transaction_date.replace("/", "-"), "%Y-%m-%d").date()
+        except Exception:
+            transaction_date = date.today()
     prefix = transaction_date.strftime("TX-%Y%m%d")
     existing = (
         db.query(models.Transaction.transaction_no)
@@ -734,56 +739,91 @@ def create_transaction(
     account = get_account(db, payload.account_id) if payload.account_id else None
     if employee:
         account = employee.account
+    target_name = (_normalize_text(payload.account_name) or _normalize_text(payload.detail) or "General Account")[:250]
     if not account:
-        account = get_account_by_name(db, payload.account_name)
+        account = get_account_by_name(db, target_name)
     if not account:
         account = models.Account(
-            name=_normalize_text(payload.account_name),
+            name=target_name,
             opening_balance_afn=0,
             opening_balance_usd=0,
+            company_id=(getattr(payload, "company_id", None) or "bawar-star")
         )
         db.add(account)
-        db.flush()
-    transaction = models.Transaction(
-        transaction_no=_next_transaction_no(db, payload.date),
-        date=payload.date,
-        account_id=account.id,
-        employee_id=employee.id if employee else None,
-        company_id=(
-            (employee.company_id or "all")
-            if employee
-            else (getattr(payload, "company_id", None) or "bawar-star")
-        ),
-        salary_month=(
-            (payload.salary_month or payload.date).replace(day=1) if employee else None
-        ),
-        payroll_kind=(payload.payroll_kind or "salary") if employee else None,
-        account_name=account.name,
-        detail=_normalize_text(payload.detail),
-        transaction_type=payload.transaction_type,
-        cash_in_afn=amount_afn if payload.transaction_type == "cash_in" else 0,
-        cash_out_afn=amount_afn if payload.transaction_type == "cash_out" else 0,
-        usd_in=(
-            _amount(payload.usd_in)
-            if payload.transaction_type == "cash_in" and _amount(payload.usd_in)
-            else (derived_usd if payload.transaction_type == "cash_in" else 0)
-        ),
-        usd_out=(
-            _amount(payload.usd_out)
-            if payload.transaction_type == "cash_out" and _amount(payload.usd_out)
-            else (derived_usd if payload.transaction_type == "cash_out" else 0)
-        ),
-        exchange_rate=_amount(payload.exchange_rate),
-        converted_afn=amount_afn,
-        payment_method=payload.payment_method,
-        category="salary" if employee else payload.category,
-        note=_normalize_text(payload.note),
-        branch_id=payload.branch_id,
-    )
-    db.add(transaction)
-    db.commit()
-    db.refresh(transaction)
-    return transaction
+        try:
+            db.commit()
+            db.refresh(account)
+        except Exception:
+            db.rollback()
+            account = get_account_by_name(db, target_name) or db.query(models.Account).first()
+            if not account:
+                account = models.Account(
+                    name="General Account",
+                    opening_balance_afn=0,
+                    opening_balance_usd=0,
+                    company_id="bawar-star"
+                )
+                db.add(account)
+                try:
+                    db.commit()
+                    db.refresh(account)
+                except Exception:
+                    db.rollback()
+                    account = db.query(models.Account).first()
+    if not account:
+        raise ValueError("Target account is required")
+
+    detail_text = _normalize_text(payload.detail) or _normalize_text(payload.account_name) or ("Cash In" if payload.transaction_type == "cash_in" else "Cash Out")
+
+    last_error = None
+    for attempt in range(5):
+        try:
+            tx_no = _next_transaction_no(db, payload.date)
+            transaction = models.Transaction(
+                transaction_no=tx_no,
+                date=payload.date,
+                account_id=account.id,
+                employee_id=employee.id if employee else None,
+                company_id=(
+                    (employee.company_id or "all")
+                    if employee
+                    else (getattr(payload, "company_id", None) or "bawar-star")
+                ),
+                salary_month=(
+                    (payload.salary_month or payload.date).replace(day=1) if employee else None
+                ),
+                payroll_kind=(payload.payroll_kind or "salary") if employee else None,
+                account_name=account.name,
+                detail=detail_text,
+                transaction_type=payload.transaction_type,
+                cash_in_afn=amount_afn if payload.transaction_type == "cash_in" else 0,
+                cash_out_afn=amount_afn if payload.transaction_type == "cash_out" else 0,
+                usd_in=(
+                    _amount(payload.usd_in)
+                    if payload.transaction_type == "cash_in" and _amount(payload.usd_in)
+                    else (derived_usd if payload.transaction_type == "cash_in" else 0)
+                ),
+                usd_out=(
+                    _amount(payload.usd_out)
+                    if payload.transaction_type == "cash_out" and _amount(payload.usd_out)
+                    else (derived_usd if payload.transaction_type == "cash_out" else 0)
+                ),
+                exchange_rate=_amount(payload.exchange_rate),
+                converted_afn=amount_afn,
+                payment_method=payload.payment_method,
+                category="salary" if employee else payload.category,
+                note=_normalize_text(payload.note),
+                branch_id=payload.branch_id,
+            )
+            db.add(transaction)
+            db.commit()
+            db.refresh(transaction)
+            return transaction
+        except Exception as err:
+            db.rollback()
+            last_error = err
+    
+    raise ValueError(f"Failed to record transaction due to database collision: {str(last_error)}")
 
 
 def import_cashbook_csv(
@@ -1307,16 +1347,20 @@ def summary(
     usd_out = _amount(
         base_q.with_entities(func.sum(models.Transaction.usd_out)).scalar()
     )
-    today_transactions = base_q.filter(models.Transaction.date == today).count()
-    monthly_transactions = base_q.filter(
+    today_q = base_q.filter(models.Transaction.date == today)
+    month_q = base_q.filter(
         models.Transaction.date >= month_start,
         models.Transaction.date < next_month,
-    ).count()
-    today_rows = base_q.filter(models.Transaction.date == today).all()
-    month_rows = base_q.filter(
-        models.Transaction.date >= month_start,
-        models.Transaction.date < next_month,
-    ).all()
+    )
+
+    today_transactions = today_q.count()
+    monthly_transactions = month_q.count()
+
+    today_cash_in = _amount(today_q.with_entities(func.sum(models.Transaction.cash_in_afn)).scalar())
+    today_cash_out = _amount(today_q.with_entities(func.sum(models.Transaction.cash_out_afn)).scalar())
+    monthly_cash_in = _amount(month_q.with_entities(func.sum(models.Transaction.cash_in_afn)).scalar())
+    monthly_cash_out = _amount(month_q.with_entities(func.sum(models.Transaction.cash_out_afn)).scalar())
+
     return {
         "cash_in_afn": cash_in_afn,
         "cash_out_afn": cash_out_afn,
@@ -1326,12 +1370,10 @@ def summary(
         "usd_balance": round(usd_in - usd_out, 2),
         "today_transactions": today_transactions,
         "monthly_transactions": monthly_transactions,
-        "today_cash_in": round(sum(_amount(tx.cash_in_afn) for tx in today_rows), 2),
-        "today_cash_out": round(sum(_amount(tx.cash_out_afn) for tx in today_rows), 2),
-        "monthly_cash_in": round(sum(_amount(tx.cash_in_afn) for tx in month_rows), 2),
-        "monthly_cash_out": round(
-            sum(_amount(tx.cash_out_afn) for tx in month_rows), 2
-        ),
+        "today_cash_in": today_cash_in,
+        "today_cash_out": today_cash_out,
+        "monthly_cash_in": monthly_cash_in,
+        "monthly_cash_out": monthly_cash_out,
     }
 
 

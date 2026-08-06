@@ -19,13 +19,15 @@ export const transactionSchema = {
     }
     
     // Validate Account Name
-    if (!data.account_name || !data.account_name.trim()) {
-      errors.account_name = 'Account / Contact name is required';
+    const effectiveAccountName = (data.account_name || '').trim() || (data.detail || '').trim();
+    if (!effectiveAccountName) {
+      errors.account_name = 'Account / Contact name or Detail description is required';
     }
     
     // Validate Detail
-    if (!data.detail || !data.detail.trim()) {
-      errors.detail = 'Detail description is required';
+    const effectiveDetail = (data.detail || '').trim() || (data.account_name || '').trim();
+    if (!effectiveDetail) {
+      errors.detail = 'Detail description or Account / Contact name is required';
     }
     
     // Validate Amounts: at least one of cash_amount or usd_amount must be > 0

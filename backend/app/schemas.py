@@ -56,8 +56,8 @@ class TransactionBase(BaseModel):
     salary_month: Optional[DateType] = None
     payroll_kind: Optional[Literal["salary", "advance"]] = None
     branch_id: Optional[int] = None
-    account_name: str
-    detail: str
+    account_name: Optional[str] = ""
+    detail: Optional[str] = ""
     transaction_type: Literal["cash_in", "cash_out"]
     cash_in_afn: float = Field(default=0, ge=0)
     cash_out_afn: float = Field(default=0, ge=0)
@@ -65,24 +65,44 @@ class TransactionBase(BaseModel):
     usd_out: float = Field(default=0, ge=0)
     exchange_rate: float = Field(default=0, ge=0)
     converted_afn: float = Field(default=0, ge=0)
-    payment_method: Literal["cash", "bank", "hawala", "other"] = "cash"
-    category: Literal[
-        "salary",
-        "rent",
-        "factory_expense",
-        "home_expense",
-        "bottles_account",
-        "office_expense",
-        "other",
-    ] = "other"
+    payment_method: str = "cash"
+    category: str = "other"
     note: str = ""
+
+    @field_validator("payment_method", mode="before")
+    @classmethod
+    def normalize_payment_method(cls, v):
+        if not v or not isinstance(v, str):
+            return "cash"
+        val = v.strip().lower()
+        if val in ["cash", "bank", "hawala", "other"]:
+            return val
+        return "cash"
+
+    @field_validator("salary_month", mode="before")
+    @classmethod
+    def normalize_salary_month(cls, v):
+        if not v or v == "" or str(v).strip() == "":
+            return None
+        return v
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def normalize_category(cls, v):
+        if not v or not isinstance(v, str):
+            return "other"
+        val = v.strip().lower().replace(" ", "_").replace("-", "_")
+        valid_cats = ["salary", "rent", "factory_expense", "home_expense", "bottles_account", "office_expense", "other"]
+        if val in valid_cats:
+            return val
+        return "other"
 
     @field_validator("account_name", "detail", "note", mode="before")
     @classmethod
     def sanitize_transaction_fields(cls, v):
         if isinstance(v, str):
             return sanitize_xss(v)
-        return v
+        return v or ""
 
 
 class TransactionCreate(TransactionBase):
@@ -105,19 +125,34 @@ class TransactionUpdate(BaseModel):
     usd_out: Optional[float] = Field(default=None, ge=0)
     exchange_rate: Optional[float] = Field(default=None, ge=0)
     converted_afn: Optional[float] = Field(default=None, ge=0)
-    payment_method: Optional[Literal["cash", "bank", "hawala", "other"]] = None
-    category: Optional[
-        Literal[
-            "salary",
-            "rent",
-            "factory_expense",
-            "home_expense",
-            "bottles_account",
-            "office_expense",
-            "other",
-        ]
-    ] = None
+    payment_method: Optional[str] = None
+    category: Optional[str] = None
     note: Optional[str] = None
+
+    @field_validator("payment_method", mode="before")
+    @classmethod
+    def normalize_payment_method_update(cls, v):
+        if v is None:
+            return None
+        if not isinstance(v, str):
+            return "cash"
+        val = v.strip().lower()
+        if val in ["cash", "bank", "hawala", "other"]:
+            return val
+        return "cash"
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def normalize_category_update(cls, v):
+        if v is None:
+            return None
+        if not isinstance(v, str):
+            return "other"
+        val = v.strip().lower().replace(" ", "_").replace("-", "_")
+        valid_cats = ["salary", "rent", "factory_expense", "home_expense", "bottles_account", "office_expense", "other"]
+        if val in valid_cats:
+            return val
+        return "other"
 
     @field_validator("account_name", "detail", "note", mode="before")
     @classmethod

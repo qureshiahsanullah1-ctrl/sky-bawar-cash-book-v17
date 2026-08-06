@@ -8,12 +8,12 @@ import string
 import random
 
 import bcrypt
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..database import SessionLocal
+from ..database import SessionLocal, get_tenant_session
 from ..auth_dependencies import (
     create_access_token,
     require_authenticated_request,
@@ -29,8 +29,8 @@ TEMPORARY_DEFAULT_PASSWORD = "Admin@123"
 LEGACY_DEFAULT_PASSWORDS = (OLD_DEFAULT_PASSWORD, TEMPORARY_DEFAULT_PASSWORD)
 
 
-def get_db():
-    db = SessionLocal()
+def get_db(request: Request = None):
+    db = get_tenant_session(request)
     try:
         flag_legacy_default_admin(db)
         yield db
@@ -85,51 +85,57 @@ def audit(
     user_id: int | None = None,
     detail: str = "",
 ) -> None:
-    db.add(
-        models.AuditLog(
-            action=action,
-            status=status,
-            username=username,
-            user_id=user_id,
-            detail=detail,
+    try:
+        db.add(
+            models.AuditLog(
+                action=action,
+                status=status,
+                username=username,
+                user_id=user_id,
+                detail=detail,
+            )
         )
-    )
+    except Exception:
+        pass
 
 
 def flag_legacy_default_admin(db: Session) -> None:
-    admin = (
-        db.query(models.User)
-        .filter(func.lower(models.User.username) == "admin")
-        .first()
-    )
-    if not admin:
-        return
-    if verify_password(OLD_DEFAULT_PASSWORD, admin.password_hash):
-        admin.password_hash = hash_password(TEMPORARY_DEFAULT_PASSWORD)
-        admin.must_change_password = True
-        audit(
-            db,
-            "force_password_change",
-            "success",
-            "admin",
-            admin.id,
-            "Old default administrator password migrated",
+    try:
+        admin = (
+            db.query(models.User)
+            .filter(func.lower(models.User.username) == "admin")
+            .first()
         )
-        db.commit()
-        return
-    if not admin.must_change_password and verify_password(
-        TEMPORARY_DEFAULT_PASSWORD, admin.password_hash
-    ):
-        admin.must_change_password = True
-        audit(
-            db,
-            "force_password_change",
-            "success",
-            "admin",
-            admin.id,
-            "Temporary administrator password detected",
-        )
-        db.commit()
+        if not admin:
+            return
+        if verify_password(OLD_DEFAULT_PASSWORD, admin.password_hash):
+            admin.password_hash = hash_password(TEMPORARY_DEFAULT_PASSWORD)
+            admin.must_change_password = True
+            audit(
+                db,
+                "force_password_change",
+                "success",
+                "admin",
+                admin.id,
+                "Old default administrator password migrated",
+            )
+            db.commit()
+            return
+        if not admin.must_change_password and verify_password(
+            TEMPORARY_DEFAULT_PASSWORD, admin.password_hash
+        ):
+            admin.must_change_password = True
+            audit(
+                db,
+                "force_password_change",
+                "success",
+                "admin",
+                admin.id,
+                "Temporary administrator password detected",
+            )
+            db.commit()
+    except Exception:
+        db.rollback()
 
 
 def current_user(db: Session, token: str | None) -> models.User | None:
@@ -157,16 +163,26 @@ def generated_password(length: int = 12) -> str:
 
 @router.get("/status")
 def auth_status(db: Session = Depends(get_db)):
-    users = db.query(models.User).order_by(models.User.full_name.asc()).all()
-    active_users = [user for user in users if user.is_active]
-    return {
-        "status": "online",
-        "enabled": True,
-        "mode": "multi-user",
-        "setup_required": len(active_users) == 0,
-        "lock_after_attempts": LOCK_AFTER_ATTEMPTS,
-        "users": [public_user(user).model_dump() for user in active_users],
-    }
+    try:
+        users = db.query(models.User).order_by(models.User.full_name.asc()).all()
+        active_users = [user for user in users if user.is_active]
+        return {
+            "status": "online",
+            "enabled": True,
+            "mode": "multi-user",
+            "setup_required": len(active_users) == 0,
+            "lock_after_attempts": LOCK_AFTER_ATTEMPTS,
+            "users": [public_user(user).model_dump() for user in active_users],
+        }
+    except Exception:
+        return {
+            "status": "online",
+            "enabled": True,
+            "mode": "multi-user",
+            "setup_required": False,
+            "lock_after_attempts": LOCK_AFTER_ATTEMPTS,
+            "users": [],
+        }
 
 
 @router.post("/setup", response_model=schemas.LoginResponse, status_code=201)
@@ -208,7 +224,10 @@ def setup_owner(payload: schemas.SetupRequest, db: Session = Depends(get_db)):
         expires_delta=timedelta(days=1),
     )
     audit(db, "setup_admin", "success", user.username, user.id, "Owner setup completed")
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
     return {
         "token": access_token,
         "expires_at": now + timedelta(days=1),
@@ -219,23 +238,33 @@ def setup_owner(payload: schemas.SetupRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.LoginResponse)
 def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+    username_clean = payload.username.strip()
     user = (
         db.query(models.User)
-        .filter(func.lower(models.User.username) == payload.username.lower())
+        .filter(func.lower(models.User.username) == username_clean.lower())
         .first()
     )
     now = datetime.utcnow()
     if not user:
-        audit(db, "login", "failed", payload.username, detail="Unknown username")
-        db.commit()
+        audit(db, "login", "failed", username_clean, detail="Unknown username")
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
         raise HTTPException(status_code=401, detail="Invalid username or password")
     if not user.is_active:
         audit(db, "login", "failed", user.username, user.id, "Inactive account")
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
         raise HTTPException(status_code=403, detail="This account is inactive")
     if user.locked_until and user.locked_until > now:
         audit(db, "login", "locked", user.username, user.id, "Locked account")
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
         raise HTTPException(
             status_code=423, detail="Account locked after too many failed attempts"
         )
@@ -251,7 +280,10 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
             user.id,
             f"Failed attempts: {user.failed_attempts}",
         )
-        db.commit()
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
     user.failed_attempts = 0
@@ -268,8 +300,11 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
         expires_delta=expires_delta,
     )
     audit(db, "login", "success", user.username, user.id)
-    db.commit()
-    db.refresh(user)
+    try:
+        db.commit()
+        db.refresh(user)
+    except Exception:
+        db.rollback()
     return {
         "token": access_token,
         "expires_at": now + expires_delta,

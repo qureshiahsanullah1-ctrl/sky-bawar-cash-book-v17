@@ -33,14 +33,17 @@ export default defineConfig({
   build: {
     target: 'esnext',
     cssCodeSplit: true,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('lucide-react')) return 'vendor-icons';
-            if (id.includes('react')) return 'vendor-react';
-            return 'vendor';
+            if (id.includes('framer-motion')) return 'vendor-motion';
+            if (id.includes('recharts')) return 'vendor-charts';
+            if (id.includes('react-router') || id.includes('react-dom') || id.includes('react')) return 'vendor-react';
+            if (id.includes('i18next')) return 'vendor-i18n';
+            return 'vendor-utils';
           }
         }
       }

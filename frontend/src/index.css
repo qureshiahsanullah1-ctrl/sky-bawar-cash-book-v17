@@ -1969,12 +1969,22 @@ tbody tr:hover {
   left: 50%;
   bottom: 28px;
   transform: translateX(-50%);
-  color: white;
-  z-index: 5;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
 }
 
 .login-loading.error {
-  color: #ffd1d8;
+  color: #fecdd3;
+  background: rgba(153, 27, 27, 0.9);
+  border-color: rgba(244, 63, 94, 0.4);
 }
 
 .login-success .login-panel {
@@ -6795,4 +6805,204 @@ body:not(.light) .sidebar-collapse-toggle {
   color: #f59e0b !important;
 }
 
+/* Smart Account Autocomplete Search Dropdown Styling */
+.smart-party-picker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
 
+.smart-party-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.smart-party-picker > input {
+  width: 100%;
+  padding-left: 44px !important;
+}
+
+.smart-party-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 90;
+  display: grid;
+  gap: 8px;
+  max-height: min(420px, 62vh);
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.20);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+
+body:not(.light) .smart-party-dropdown,
+.dark .smart-party-dropdown {
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.94);
+}
+
+.smart-party-group {
+  display: grid;
+  gap: 5px;
+}
+
+.smart-party-group header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  padding: 2px 6px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.smart-party-group button,
+.smart-party-quick-add {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.smart-party-group button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 9px 10px;
+  border-radius: 13px;
+  background: transparent;
+  color: var(--text, #0f172a);
+  text-align: left;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.dark .smart-party-group button {
+  color: #f8fafc;
+}
+
+.smart-party-group button:hover,
+.smart-party-group button.active {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.smart-party-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(37, 99, 235, 0.10);
+  color: #2563eb;
+}
+
+.smart-party-avatar.employee {
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.dark .smart-party-avatar.employee {
+  color: #34d399;
+}
+
+.smart-party-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.smart-party-copy strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text, #0f172a);
+  font-size: 0.94rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .smart-party-copy strong {
+  color: #f8fafc;
+}
+
+.smart-party-copy small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .smart-party-copy small {
+  color: #94a3b8;
+}
+
+.smart-party-copy mark {
+  border-radius: 4px;
+  background: rgba(253, 224, 71, 0.85);
+  color: #0f172a;
+  padding: 0 2px;
+}
+
+.smart-party-type {
+  justify-self: end;
+  max-width: 128px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+body:not(.light) .smart-party-type,
+.dark .smart-party-type {
+  background: rgba(255, 255, 255, 0.10);
+  color: #cbd5e1;
+}
+
+.smart-party-empty {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 18px;
+  color: #64748b;
+  text-align: center;
+}
+
+.smart-party-quick-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  min-height: 44px;
+  margin-top: 2px;
+  padding: 9px 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.06);
+  color: #2563eb;
+  font-weight: 850;
+}

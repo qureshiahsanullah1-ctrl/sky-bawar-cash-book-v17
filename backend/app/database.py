@@ -22,9 +22,17 @@ def normalize_database_url(url: str) -> str:
     return url
 
 
+def _check_is_vercel() -> bool:
+    if os.getenv("VERCEL") in ("1", "true", "True") or os.getenv("VERCEL_ENV") or os.getenv("VERCEL_REGION"):
+        return True
+    if os.name != "nt" and os.path.exists("/tmp"):
+        return True
+    return False
+
+
 def resolve_database_url() -> str:
     raw_url = os.getenv("DATABASE_URL", "").strip()
-    is_vercel = os.getenv("VERCEL") == "1"
+    is_vercel = _check_is_vercel()
     is_production = os.getenv("VERCEL_ENV") == "production"
 
     if not raw_url:
@@ -44,6 +52,20 @@ def resolve_database_url() -> str:
         )
 
     return database_url
+
+
+def get_tenant_db_url(company_id: str) -> str:
+    if not DATABASE_URL.startswith("sqlite"):
+        return DATABASE_URL
+
+    is_vercel = _check_is_vercel()
+    base_dir = "/tmp" if is_vercel else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+    if company_id in ("sky-ariana", "cashbook_sky_prod", "sky"):
+        db_file = os.path.join(base_dir, "cashbook_skyariana.db").replace("\\", "/")
+    else:
+        db_file = os.path.join(base_dir, "cashbook.db").replace("\\", "/")
+    return f"sqlite:///{db_file}"
 
 
 DATABASE_URL = resolve_database_url()
@@ -321,52 +343,50 @@ def get_tenant_db_url(company_id: str) -> str:
     if not DATABASE_URL.startswith("sqlite"):
         return DATABASE_URL
 
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    is_vercel = _check_is_vercel()
+    base_dir = "/tmp" if is_vercel else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
     if company_id in ("sky-ariana", "cashbook_sky_prod", "sky"):
-        db_file = os.path.join(root_dir, "cashbook_skyariana.db").replace("\\", "/")
+        db_file = os.path.join(base_dir, "cashbook_skyariana.db").replace("\\", "/")
     else:
-        db_file = os.path.join(root_dir, "cashbook.db").replace("\\", "/")
+        db_file = os.path.join(base_dir, "cashbook.db").replace("\\", "/")
     return f"sqlite:///{db_file}"
 
 
 def get_tenant_session(request=None, company_id=None):
-    if not company_id:
-        if request and hasattr(request, "headers"):
-            company_id = request.headers.get("X-Company-Id", "bawar-star")
-        else:
-            company_id = "bawar-star"
+    try:
+        if not company_id:
+            if request and hasattr(request, "headers"):
+                company_id = request.headers.get("X-Company-Id", "bawar-star")
+            else:
+                company_id = "bawar-star"
 
-    # On PostgreSQL, all companies share the same database and connection URL.
-    # We always return SessionLocal() to prevent opening duplicate TCP connection pools.
-    if (
-        not IS_SQLITE
-        or company_id in ("bawar-star", "cashbook_bawar_prod", "bawar", "all")
-        or not company_id
-    ):
-        return SessionLocal()
+        if (
+            not IS_SQLITE
+            or company_id in ("bawar-star", "cashbook_bawar_prod", "bawar", "all")
+            or not company_id
+        ):
+            return SessionLocal()
 
-    if company_id not in engines:
-        with _engine_lock:
-            if company_id not in engines:
-                db_url = get_tenant_db_url(company_id)
-                tenant_engine_options = {"pool_pre_ping": True, "pool_recycle": 240}
-                if db_url.startswith("sqlite"):
-                    tenant_engine_options["connect_args"] = {"check_same_thread": False}
-                elif db_url.startswith("postgresql+pg8000"):
-                    tenant_engine_options["connect_args"] = {
-                        "ssl_context": ssl.create_default_context(),
-                        "timeout": 30,
-                    }
+        if company_id not in engines:
+            with _engine_lock:
+                if company_id not in engines:
+                    db_url = get_tenant_db_url(company_id)
+                    tenant_engine_options = {"pool_pre_ping": True, "pool_recycle": 240}
+                    if db_url.startswith("sqlite"):
+                        tenant_engine_options["connect_args"] = {"check_same_thread": False}
+                    elif db_url.startswith("postgresql+pg8000"):
+                        tenant_engine_options["connect_args"] = {
+                            "ssl_context": ssl.create_default_context(),
+                            "timeout": 30,
+                        }
 
-                tenant_engine = create_engine(db_url, **tenant_engine_options)
-                engines[company_id] = tenant_engine
-
-                if db_url not in _initialized_db_urls:
-                    _initialized_db_urls.add(db_url)
+                    tenant_engine = create_engine(db_url, **tenant_engine_options)
                     Base.metadata.create_all(bind=tenant_engine)
                     ensure_sqlite_schema(bind_engine=tenant_engine)
                     ensure_user_schema(bind_engine=tenant_engine)
                     ensure_payroll_schema(bind_engine=tenant_engine)
+                    ensure_company_schema(bind_engine=tenant_engine)
 
                     from . import models
 
@@ -389,14 +409,24 @@ def get_tenant_session(request=None, company_id=None):
                     finally:
                         db_temp.close()
 
-    target_engine = engines[company_id]
-    TenantSessionLocal = sessionmaker(
-        autocommit=False, autoflush=False, bind=target_engine
-    )
-    return TenantSessionLocal()
+                    engines[company_id] = tenant_engine
+                    _initialized_db_urls.add(db_url)
+
+        target_engine = engines.get(company_id, engine)
+        TenantSessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=target_engine
+        )
+        return TenantSessionLocal()
+    except Exception as err:
+        import logging
+        logging.getLogger("cashbook").error(f"Tenant session fallback to default SessionLocal: {err}")
+        return SessionLocal()
 
 
-def get_db(request=None):
+from fastapi import Request
+
+
+def get_db(request: Request = None):
     db = get_tenant_session(request)
     try:
         yield db

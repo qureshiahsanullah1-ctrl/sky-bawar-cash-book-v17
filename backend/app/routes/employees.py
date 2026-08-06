@@ -8,7 +8,7 @@ from ..auth_dependencies import (
     require_administrator_request,
     require_authenticated_request,
 )
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(
     prefix="/api/employees",
@@ -16,16 +16,6 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.get("", response_model=list[schemas.EmployeeRead])
 def read_employees(db: Session = Depends(get_db)):
     result = []
     for employee in payroll.list_employees(db):

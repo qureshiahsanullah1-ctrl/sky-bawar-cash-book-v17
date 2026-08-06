@@ -16,12 +16,9 @@ function getDefaultSidebarState() {
     if (width >= 1280) {
       return stored === 'true';
     }
-    if (width >= 768) {
-      return true;
-    }
-    return false;
+    return true; // Always default collapsed on tablet & mobile (<1280px)
   } catch {
-    return false;
+    return true;
   }
 }
 

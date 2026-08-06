@@ -13,18 +13,10 @@ from sqlalchemy.orm import Session
 from .. import crud, models
 from ..auth_dependencies import require_administrator_request
 from ..csv_import import CsvImportError
-from ..database import SessionLocal
+from ..database import get_db
 from ..schemas import CsvImportRequest
 
 router = APIRouter(prefix="/api/backup", tags=["backup"])
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.get("/export", dependencies=[Depends(require_administrator_request)])

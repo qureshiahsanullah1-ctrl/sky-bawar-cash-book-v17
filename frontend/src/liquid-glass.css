@@ -2271,8 +2271,15 @@ body.dark .app-sidebar, :root.dark .app-sidebar, html.dark .app-sidebar, [data-t
 }
 
 @media (max-width: 768px) {
-  .app-shell {
-    grid-template-columns: minmax(0, 1fr) !important;
+  .app-shell,
+  .app-shell.sidebar-collapsed,
+  .app-shell.sidebar-expanded {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 100% !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
   }
   .app-sidebar {
     position: fixed !important;

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
-from fastapi import Depends, Header, HTTPException, Query, status
+from fastapi import Depends, Header, HTTPException, Query, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -18,8 +18,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
-def get_auth_db():
-    db = SessionLocal()
+from .database import get_tenant_session
+
+
+def get_auth_db(request: Request = None):
+    db = get_tenant_session(request)
     try:
         yield db
     finally:

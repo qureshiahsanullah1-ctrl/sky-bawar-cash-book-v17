@@ -1,4 +1,4 @@
-import { AlertTriangle, Banknote, BriefcaseBusiness, UserRound } from 'lucide-react';
+import { AlertTriangle, Banknote, BriefcaseBusiness, CheckCircle2, Loader2, UserRound } from 'lucide-react';
 import { memo, useState } from 'react';
 import DateField from './DateField';
 import QuickAddEmployeeModal from './QuickAddEmployeeModal';
@@ -229,7 +229,7 @@ function TransactionForm({
 
         <div className="form-group flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Detail</label>
-          <input type="text" value={form.detail} onChange={(e) => update('detail', e.target.value)} placeholder="Entry description..." required dir="auto" />
+          <input type="text" value={form.detail} onChange={(e) => update('detail', e.target.value)} placeholder="Entry description..." required={!form.account_name?.trim()} dir="auto" />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -282,19 +282,27 @@ function TransactionForm({
         </div>
 
         <div className="flex gap-3 mt-2">
-          <button className="ghost-btn flex-1 py-2.5" type="button" onClick={onClear} disabled={saving}>{t('Clear')}</button>
+          <button className="ghost-btn flex-1 py-2.5 transition-all active:scale-95" type="button" onClick={onClear} disabled={saving}>{t('Clear')}</button>
           <button 
-            className={`primary-btn ${type === 'cash_out' ? 'danger' : ''} flex-1 py-2.5`} 
+            className={`primary-btn ${type === 'cash_out' ? 'danger' : ''} flex-1 py-2.5 flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md`} 
             type="submit" 
             disabled={saving}
           >
-            {saving ? 'Saving...' : type === 'cash_out' ? 'Save Cash Out' : 'Save Cash In'}
+            {saving ? (
+              <>
+                <Loader2 size={16} className="animate-spin shrink-0" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <span>{type === 'cash_out' ? 'Save Cash Out' : 'Save Cash In'}</span>
+            )}
           </button>
         </div>
         
         {message && (
-          <div className={`form-message text-center text-xs mt-2 py-2 px-3 rounded-lg ${message.includes('Saved') ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10' : 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'}`} aria-live="polite">
-            {message}
+          <div className={`form-message text-center text-xs mt-2 py-2.5 px-3.5 rounded-xl flex items-center justify-center gap-2 font-medium transition-all shadow-xs ${message.includes('Saved') || message.includes('success') ? 'text-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80' : 'text-rose-700 bg-rose-50/90 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80'}`} aria-live="polite">
+            {message.includes('Saved') || message.includes('success') ? <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" /> : <AlertTriangle size={16} className="shrink-0 text-rose-600 dark:text-rose-400" />}
+            <span>{message}</span>
           </div>
         )}
       </form>

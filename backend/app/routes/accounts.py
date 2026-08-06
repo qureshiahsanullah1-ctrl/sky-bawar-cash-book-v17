@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from .. import crud, schemas
 from ..auth_dependencies import require_authenticated_request
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(
     prefix="/api/accounts",
@@ -11,16 +11,6 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.get("", response_model=list[schemas.AccountRead])
 def read_accounts(db: Session = Depends(get_db)):
     return crud.list_accounts(db)
 

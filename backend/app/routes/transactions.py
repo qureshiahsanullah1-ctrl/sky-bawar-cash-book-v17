@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
 from ..auth_dependencies import get_current_tenant, require_authenticated_request
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(
     prefix="/api/transactions",
@@ -18,16 +18,6 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.get("", response_model=list[schemas.TransactionRead])
 def read_transactions(
     group_id: int | None = Query(default=None),
     branch_id: int | None = Query(default=None),
@@ -284,6 +274,11 @@ def create_transaction(
         return crud.create_transaction(db, payload)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"Transaction recording error: {str(error)}"
+        ) from error
 
 
 @router.put("/{transaction_id}", response_model=schemas.TransactionRead)
@@ -310,6 +305,11 @@ def update_transaction(
         return crud.update_transaction(db, tx, payload)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"Transaction update error: {str(error)}"
+        ) from error
 
 
 @router.delete("/{transaction_id}")
@@ -325,8 +325,14 @@ def delete_transaction(
     tx = crud.get_transaction(db, transaction_id, user=user)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    crud.delete_transaction(db, tx)
-    return {"ok": True}
+    try:
+        crud.delete_transaction(db, tx)
+        return {"ok": True}
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"Transaction deletion error: {str(error)}"
+        ) from error
 
 
 @router.get("/filter")
@@ -394,3 +400,8 @@ def create_dual_currency_tx(
         }
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        db.rollback()
+        raise HTTPException(
+            status_code=400, detail=f"Dual-currency transaction error: {str(error)}"
+        ) from error

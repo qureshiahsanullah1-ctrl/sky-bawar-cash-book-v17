@@ -64,9 +64,8 @@ logger = logging.getLogger("cashbook")
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=FRONTEND_ORIGINS,
-    allow_origin_regex=FRONTEND_ORIGIN_REGEX or r".*",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -130,9 +129,10 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         "message": str(exc),
     }
     logger.exception("Unhandled Exception: %s", json.dumps(log_data))
+    err_detail = str(exc).strip() or f"{exc.__class__.__name__} occurred"
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"detail": "Internal server error", "request_id": request_id},
+        content={"detail": f"Server error ({exc.__class__.__name__}): {err_detail}", "request_id": request_id},
     )
 
 
