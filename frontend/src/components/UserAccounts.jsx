@@ -1,10 +1,17 @@
 /* eslint-disable */
 import { useMemo, useRef, useState } from 'react';
-import { KeyRound, ShieldAlert, ShieldCheck, UserCog, UserPlus, Users, Edit3, Trash2, Copy, Check } from 'lucide-react';
+import { KeyRound, ShieldAlert, ShieldCheck, UserCog, UserPlus, Users, Edit3, Trash2, Copy, Check, Search, Shield, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import DataTable from './DataTable';
 
 const emptyUser = { id: null, full_name: '', username: '', password: '', confirm_password: '', role: 'Cashier', avatar_path: '', is_active: true };
 const PASSWORD_MESSAGE = 'Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.';
+
+const ROLE_PERMISSIONS = {
+  Administrator: { title: 'Full System Access', color: 'amber', desc: 'Can manage all transactions, system settings, user access, data backups, and reports.' },
+  Manager: { title: 'Management & Reports', color: 'violet', desc: 'Can view/edit transactions, access customer ledgers, generate reports, and export data.' },
+  Cashier: { title: 'Daily Operations', color: 'blue', desc: 'Can create and edit daily cash/USD entries and view basic customer accounts.' },
+  Viewer: { title: 'Read-Only Access', color: 'slate', desc: 'Can inspect dashboard metrics and reports without permission to add or modify data.' }
+};
 
 function avatarFromFile(file, callback) {
   if (!file) return callback('');
@@ -44,6 +51,9 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
   const [successMessage, setSuccessMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [loadingAction, setLoadingAction] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState('All');
+  const [showRoleInfo, setShowRoleInfo] = useState(false);
   const fileInputRef = useRef(null);
   const canAdmin = currentUser?.role === 'Administrator';
 
@@ -188,6 +198,37 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
     setFieldErrors((current) => ({ ...current, customPassword: '' }));
   }
 
+  const toggleUserStatus = async (user) => {
+    if (!canAdmin || currentUser?.id === user.id) return;
+    setLoadingAction(`toggle-${user.id}`);
+    try {
+      await onUpdate(user.id, {
+        fullName: user.full_name,
+        username: user.username,
+        role: user.role,
+        status: user.is_active ? 'Inactive' : 'Active',
+        avatar: user.avatar_path || '',
+      });
+      setSuccessMessage(`User @${user.username} set to ${user.is_active ? 'Inactive' : 'Active'}.`);
+      await onReload?.();
+    } catch (err) {
+      setMessage(friendlyError(err, 'Failed to update user status.'));
+    } finally {
+      setLoadingAction('');
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    return (users || []).filter((user) => {
+      const matchRole = selectedRoleFilter === 'All' || user.role === selectedRoleFilter;
+      const matchSearch = !searchTerm || (
+        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      return matchRole && matchSearch;
+    });
+  }, [users, selectedRoleFilter, searchTerm]);
+
   const columns = useMemo(() => [
     { 
       key: 'user', 
@@ -207,11 +248,14 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
     { 
       key: 'role', 
       label: 'Role', 
-      render: (row) => (
-        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${row.role === 'Administrator' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30'}`}>
-          {row.role}
-        </span>
-      ),
+      render: (row) => {
+        const conf = ROLE_PERMISSIONS[row.role] || { color: 'blue' };
+        return (
+          <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-${conf.color}-100 text-${conf.color}-700 dark:bg-${conf.color}-500/20 dark:text-${conf.color}-400 border border-${conf.color}-200 dark:border-${conf.color}-500/30`}>
+            {row.role}
+          </span>
+        );
+      },
       className: 'w-32'
     },
     { 
@@ -219,7 +263,7 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
       label: 'Status', 
       render: (row) => (
         <div className="flex items-center gap-1.5">
-          <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+          <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
           <span className={`text-xs font-semibold ${row.is_active ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
             {row.is_active ? 'Active' : 'Inactive'}
           </span>
@@ -231,14 +275,17 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
     { 
       key: 'actions', 
       label: 'Actions', 
-      className: 'w-48 text-right',
+      className: 'w-52 text-right',
       render: (row) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5">
           <button type="button" className="p-1.5 text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors disabled:opacity-50" onClick={() => edit(row)} disabled={!canAdmin || !!loadingAction} title="Edit User">
             <Edit3 size={16} />
           </button>
           <button type="button" className="p-1.5 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg transition-colors disabled:opacity-50" onClick={() => resetPassword(row.id, true)} disabled={!canAdmin || !!loadingAction} title="Generate Password">
             <KeyRound size={16} />
+          </button>
+          <button type="button" className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${row.is_active ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`} onClick={() => toggleUserStatus(row)} disabled={!canAdmin || currentUser?.id === row.id || !!loadingAction} title={row.is_active ? "Deactivate User" : "Activate User"}>
+            {row.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
           </button>
           <button type="button" className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50" onClick={() => onDelete(row)} disabled={!canAdmin || currentUser?.id === row.id || !!loadingAction} title="Delete User">
             <Trash2 size={16} />
@@ -442,29 +489,95 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
         </div>
 
         {/* Users Table */}
-        <div className="flex-1 min-w-0">
-          <DataTable
-            columns={columns}
-            data={users}
-            keyField="id"
-            headerContent={
+        <div className="flex-1 min-w-0 flex flex-col gap-3">
+          
+          {/* Role Permissions Information Banner */}
+          {showRoleInfo && (
+            <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 text-xs flex flex-col gap-2.5 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-xl">
-                    <UserCog size={20} className="text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">System Users & Roles</h3>
-                    <p className="text-xs text-zinc-500">{users.length} authorized user accounts & security roles</p>
-                  </div>
-                </div>
-                <button type="button" onClick={onReload} className="ghost-btn text-xs py-1.5 px-3">
-                  Refresh List
+                <span className="font-extrabold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 text-[11px]">
+                  <Shield size={14} /> System Role Privileges & Permissions Guide
+                </span>
+                <button type="button" onClick={() => setShowRoleInfo(false)} className="text-indigo-400 hover:text-indigo-600 font-bold text-[10px]">
+                  Close
                 </button>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {Object.entries(ROLE_PERMISSIONS).map(([roleName, meta]) => (
+                  <div key={roleName} className="p-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-indigo-100 dark:border-indigo-900/50 flex flex-col gap-0.5">
+                    <div className="flex items-center justify-between">
+                      <strong className="font-bold text-zinc-900 dark:text-zinc-100">{roleName}</strong>
+                      <span className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400">{meta.title}</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{meta.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <DataTable
+            columns={columns}
+            data={filteredUsers}
+            keyField="id"
+            headerContent={
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-xl">
+                      <UserCog size={20} className="text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white">System Users & Security Roles</h3>
+                      <p className="text-xs text-zinc-500">{filteredUsers.length} of {users.length} authorized accounts</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowRoleInfo(!showRoleInfo)}
+                      className={`text-xs py-1.5 px-3 rounded-xl font-bold flex items-center gap-1.5 border transition-all ${showRoleInfo ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20 hover:bg-indigo-100'}`}
+                    >
+                      <Info size={14} />
+                      <span>{showRoleInfo ? 'Hide Role Guide' : 'Role Guide'}</span>
+                    </button>
+                    <button type="button" onClick={onReload} className="ghost-btn text-xs py-1.5 px-3">
+                      Refresh List
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter and Search controls */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+                    {['All', 'Administrator', 'Manager', 'Cashier', 'Viewer'].map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setSelectedRoleFilter(role)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 ${selectedRoleFilter === role ? 'bg-indigo-600 text-white shadow-xs' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative flex items-center min-w-[200px]">
+                    <Search size={14} className="absolute left-2.5 text-zinc-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search users by name..."
+                      className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             }
-            emptyTitle="No users found"
-            emptyDescription="Add the first user account to see it listed here."
+            emptyTitle="No system users found"
+            emptyDescription={searchTerm ? "No users match your search criteria." : "Add the first user account to see it listed here."}
           />
         </div>
 
