@@ -243,13 +243,43 @@ function TransactionForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div className="form-group flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">AFN Amount</label>
-            <input type="number" value={form.cash_amount} onChange={(e) => update('cash_amount', e.target.value)} placeholder="0.00" step="0.01" min="0" />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">AFN Amount</label>
+              <span className="text-[10px] font-bold text-amber-500">؋ AFN</span>
+            </div>
+            <input type="number" value={form.cash_amount} onChange={(e) => update('cash_amount', e.target.value)} placeholder="0.00" step="0.01" min="0" className="font-mono font-bold" />
+            <div className="flex items-center gap-1 mt-0.5 overflow-x-auto pb-1 scrollbar-none">
+              {[100, 500, 1000, 5000].map((amt) => (
+                <button
+                  key={`afn-${amt}`}
+                  type="button"
+                  onClick={() => update('cash_amount', String((Number(form.cash_amount || 0) + amt)))}
+                  className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 transition-all shrink-0"
+                >
+                  +{amt >= 1000 ? `${amt / 1000}k` : amt}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="form-group flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">USD Amount</label>
-            <input type="number" value={form.usd_amount} onChange={(e) => update('usd_amount', e.target.value)} placeholder="0.00" step="0.01" min="0" />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">USD Amount</label>
+              <span className="text-[10px] font-bold text-emerald-500">$ USD</span>
+            </div>
+            <input type="number" value={form.usd_amount} onChange={(e) => update('usd_amount', e.target.value)} placeholder="0.00" step="0.01" min="0" className="font-mono font-bold" />
+            <div className="flex items-center gap-1 mt-0.5 overflow-x-auto pb-1 scrollbar-none">
+              {[10, 50, 100, 500].map((amt) => (
+                <button
+                  key={`usd-${amt}`}
+                  type="button"
+                  onClick={() => update('usd_amount', String((Number(form.usd_amount || 0) + amt)))}
+                  className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 transition-all shrink-0"
+                >
+                  +${amt}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
