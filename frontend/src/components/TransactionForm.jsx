@@ -118,6 +118,15 @@ function TransactionForm({
 
   const isEditing = Boolean(form.editingId);
 
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!saving) {
+        onSubmit(e);
+      }
+    }
+  };
+
   return (
     <div className={`glass-card form-card ${type === 'cash_in' ? 'cash-in-card' : 'cash-out-card'}`}>
       <div className="card-header flex items-center justify-between pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
@@ -129,7 +138,7 @@ function TransactionForm({
         )}
       </div>
       
-      <form className="entry-form flex flex-col gap-4" onSubmit={onSubmit}>
+      <form className="entry-form flex flex-col gap-4" onSubmit={onSubmit} onKeyDown={handleKeyDown}>
         <div className="form-group flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Date</label>
           <DateField value={form.date} onChange={(e) => update('date', e.target.value)} displayFormat={dateDisplayFormat} required />
