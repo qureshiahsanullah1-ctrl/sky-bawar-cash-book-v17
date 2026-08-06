@@ -454,8 +454,8 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
                     <UserCog size={20} className="text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Active Accounts</h3>
-                    <p className="text-xs text-zinc-500">{users.length} registered users</p>
+                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">System Users & Roles</h3>
+                    <p className="text-xs text-zinc-500">{users.length} authorized user accounts & security roles</p>
                   </div>
                 </div>
                 <button type="button" onClick={onReload} className="ghost-btn text-xs py-1.5 px-3">
