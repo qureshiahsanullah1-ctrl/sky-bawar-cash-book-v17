@@ -339,9 +339,17 @@ function TransactionForm({
         </div>
         
         {message && (
-          <div className={`form-message text-center text-xs mt-2 py-2.5 px-3.5 rounded-xl flex items-center justify-center gap-2 font-medium transition-all shadow-xs ${message.includes('Saved') || message.includes('success') ? 'text-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80' : 'text-rose-700 bg-rose-50/90 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80'}`} aria-live="polite">
+          <div className={`form-message text-center text-xs mt-2 py-2.5 px-3.5 rounded-xl flex flex-wrap items-center justify-center gap-2 font-medium transition-all shadow-xs ${message.includes('Saved') || message.includes('success') ? 'text-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80' : 'text-rose-700 bg-rose-50/90 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80'}`} aria-live="polite">
             {message.includes('Saved') || message.includes('success') ? <CheckCircle2 size={16} className="shrink-0 text-emerald-600 dark:text-emerald-400" /> : <AlertTriangle size={16} className="shrink-0 text-rose-600 dark:text-rose-400" />}
             <span>{message}</span>
+            {(!message.includes('Saved') && !message.includes('success')) && (
+              <button
+                type="submit"
+                className="ml-2 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+              >
+                ⚡ Retry Now
+              </button>
+            )}
           </div>
         )}
       </form>

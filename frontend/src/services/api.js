@@ -147,21 +147,21 @@ async function request(path, options = {}, retries = 1) {
     });
   } catch (error) {
     clearTimeout(timeoutId);
-    // If currentBase is a custom URL and fails, reset to default production Vercel URL
-    if (currentBase && currentBase !== 'https://cash-book-v11.vercel.app') {
+    const prodFallback = 'https://cash-book-v11.vercel.app';
+    if (currentBase !== prodFallback && retries > 0) {
       try {
-        localStorage.setItem('cashbook_api_url', 'https://cash-book-v11.vercel.app');
+        localStorage.setItem('cashbook_api_url', prodFallback);
       } catch {}
-      return request(path, options, retries);
+      return request(path, options, retries - 1);
     }
     if (retries > 0 && error.name !== 'AbortError') {
       await new Promise(r => setTimeout(r, 600));
       return request(path, options, retries - 1);
     }
     if (error.name === 'AbortError') {
-      throw new Error('Backend connection timed out.');
+      throw new Error('Backend connection timed out. Please retry.');
     }
-    throw new Error(`Failed to fetch from backend. Ensure the server is running.`);
+    throw new Error(`Failed to fetch from backend. Ensure the server is running or click retry.`);
   } finally {
     clearTimeout(timeoutId);
   }
