@@ -770,13 +770,14 @@ def create_transaction(
             db.refresh(account)
         except Exception:
             db.rollback()
-            account = get_account_by_name(db, target_name) or db.query(models.Account).first()
+            account = get_account_by_name(db, target_name)
             if not account:
+                unique_fallback_name = f"{target_name[:240]} ({uuid.uuid4().hex[:4]})"
                 account = models.Account(
-                    name="General Account",
+                    name=unique_fallback_name,
                     opening_balance_afn=0,
                     opening_balance_usd=0,
-                    company_id="bawar-star"
+                    company_id=(getattr(payload, "company_id", None) or "bawar-star")
                 )
                 db.add(account)
                 try:

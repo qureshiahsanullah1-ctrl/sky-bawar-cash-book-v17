@@ -209,16 +209,20 @@ async function request(path, options = {}, retries = 2) {
       }
     }
     const text = await response.text();
-    let message = `Server error (${response.status}): `;
+    let message = '';
     try {
       const payload = JSON.parse(text);
-      message += formatApiErrorDetail(payload.detail ?? payload.message) || response.statusText;
-    } catch {
-      // If response is HTML or can't be parsed, use status code
-      if (text.includes('<!doctype') || text.includes('<html')) {
-        message += response.statusText || 'HTML Error Page';
+      const detailStr = formatApiErrorDetail(payload.detail ?? payload.message);
+      if (detailStr) {
+        message = detailStr.startsWith('Server error') ? detailStr : `Server error (${response.status}): ${detailStr}`;
       } else {
-        message += text.substring(0, 150) || response.statusText;
+        message = `Server error (${response.status}): ${response.statusText}`;
+      }
+    } catch {
+      if (text.includes('<!doctype') || text.includes('<html')) {
+        message = `Server error (${response.status}): HTML Error Page`;
+      } else {
+        message = `Server error (${response.status}): ${text.substring(0, 150) || response.statusText}`;
       }
     }
     throw new Error(message);
