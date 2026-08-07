@@ -89,6 +89,23 @@ export default function Accounts({
     };
   }, [accounts]);
 
+  const getAvatarGradient = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'customer':
+        return 'from-blue-600 to-cyan-500 text-white shadow-blue-500/20';
+      case 'supplier':
+        return 'from-purple-600 to-indigo-500 text-white shadow-purple-500/20';
+      case 'worker':
+        return 'from-emerald-600 to-teal-500 text-white shadow-emerald-500/20';
+      case 'factory':
+        return 'from-amber-500 to-orange-600 text-white shadow-amber-500/20';
+      case 'expense':
+        return 'from-rose-500 to-pink-600 text-white shadow-rose-500/20';
+      default:
+        return 'from-slate-600 to-zinc-700 text-white shadow-slate-500/20';
+    }
+  };
+
   const getTypeBadgeClass = (type) => {
     switch (type?.toLowerCase()) {
       case 'customer':
@@ -106,6 +123,29 @@ export default function Accounts({
     }
   };
 
+  const exportAccountsCSV = () => {
+    if (!filteredAccounts.length) return;
+    const headers = ["ID", "Name", "Type", "Phone", "Address", "Opening AFN", "Opening USD", "Note"];
+    const rows = filteredAccounts.map(a => [
+      a.id,
+      `"${(a.name || '').replace(/"/g, '""')}"`,
+      a.account_type || '',
+      `"${a.phone || ''}"`,
+      `"${(a.address || '').replace(/"/g, '""')}"`,
+      a.opening_balance_afn || 0,
+      a.opening_balance_usd || 0,
+      `"${(a.note || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `account_directory_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const columns = useMemo(() => [
     { 
       key: 'name', 
@@ -116,11 +156,11 @@ export default function Accounts({
         const cleanAddress = unescapeText(row.address);
         return (
           <div className="flex items-center gap-3 py-1">
-            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+            <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${getAvatarGradient(row.account_type)} font-black text-xs flex items-center justify-center shrink-0 shadow-xs border border-white/20`}>
               {cleanName.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <strong className="text-xs font-extrabold text-slate-900 dark:text-white truncate block">{cleanName}</strong>
+              <strong className="text-xs font-extrabold text-slate-900 dark:text-white truncate block leading-snug">{cleanName}</strong>
               {cleanAddress && <span className="text-[11px] text-slate-400 truncate block mt-0.5">{cleanAddress}</span>}
             </div>
           </div>
@@ -142,7 +182,7 @@ export default function Accounts({
     { 
       key: 'phone', 
       label: t('Phone'), 
-      render: (row) => <span className="text-xs font-mono font-medium text-slate-600 dark:text-slate-300">{row.phone || '-'}</span>, 
+      render: (row) => <span className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300">{row.phone || '-'}</span>, 
       className: 'col-phone' 
     },
     { 
@@ -175,10 +215,11 @@ export default function Accounts({
         <div className="flex items-center justify-end gap-1.5">
           <NavLink 
             to={`/ledger?account=${row.id}`} 
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-amber-500 hover:text-white dark:bg-slate-800 dark:hover:bg-amber-500 text-slate-600 dark:text-slate-300 transition-all shadow-xs" 
+            className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white dark:hover:text-white text-xs font-bold transition-all flex items-center gap-1 shadow-xs border border-amber-500/20" 
             title={t('View Ledger')}
           >
-            <ScrollText size={15} />
+            <ScrollText size={13} />
+            <span>{t('Ledger')}</span>
           </NavLink>
           <button 
             type="button" 
@@ -214,6 +255,16 @@ export default function Accounts({
       </div>
 
       <div className="directory-controls flex items-center gap-2">
+        <button
+          type="button"
+          onClick={exportAccountsCSV}
+          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+          title="Export CSV"
+        >
+          <Download size={14} />
+          <span>Export CSV</span>
+        </button>
+
         <div className="search-field relative flex items-center">
           <Search size={15} className="absolute left-3 text-slate-400 pointer-events-none" />
           <input 
