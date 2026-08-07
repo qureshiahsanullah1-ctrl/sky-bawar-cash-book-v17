@@ -88,13 +88,13 @@ export function setAuthToken(token) {
 }
 
 const apiResponseCache = new Map();
-const CACHE_TTL_MS = 15000; // 15s TTL
+const CACHE_TTL_MS = 60000; // 60s memory TTL for instant 0ms navigation
 
 export function clearApiCache() {
   apiResponseCache.clear();
 }
 
-async function request(path, options = {}, retries = 1) {
+async function request(path, options = {}, retries = 2) {
   let response;
   const method = (options.method || 'GET').toUpperCase();
   const isFormData = options.body instanceof FormData;
@@ -107,7 +107,8 @@ async function request(path, options = {}, retries = 1) {
     }
   })();
 
-  const cacheKey = `${method}:${path}:${authToken}:${activeTenantId}`;
+  const cacheKey = `${method}:${path}:${activeTenantId}`;
+  const storageKey = `cb_swr_${cacheKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
   // If POST/PUT/DELETE/PATCH, invalidate cache
   if (method !== 'GET') {
@@ -115,12 +116,26 @@ async function request(path, options = {}, retries = 1) {
   } else if (!options.skipCache) {
     const cached = apiResponseCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
-      // Revalidate in background asynchronously
+      // Revalidate asynchronously in background
       setTimeout(() => {
         request(path, { ...options, skipCache: true }).catch(() => {});
-      }, 50);
+      }, 100);
       return cached.data;
     }
+    // Try localStorage cache for instant initial load
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.data) {
+          apiResponseCache.set(cacheKey, { data: parsed.data, timestamp: Date.now() });
+          setTimeout(() => {
+            request(path, { ...options, skipCache: true }).catch(() => {});
+          }, 100);
+          return parsed.data;
+        }
+      }
+    } catch {}
   }
 
   // Clean options so custom keys like skipCache are never passed to native fetch
@@ -147,6 +162,16 @@ async function request(path, options = {}, retries = 1) {
     });
   } catch (error) {
     clearTimeout(timeoutId);
+    // If GET request fails and we have cached data, return cached data gracefully
+    if (method === 'GET') {
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.data) return parsed.data;
+        }
+      } catch {}
+    }
     const prodFallback = 'https://cash-book-v11.vercel.app';
     if (currentBase !== prodFallback && retries > 0) {
       try {
@@ -206,6 +231,9 @@ async function request(path, options = {}, retries = 1) {
     const parsedData = JSON.parse(responseText);
     if (method === 'GET') {
       apiResponseCache.set(cacheKey, { timestamp: Date.now(), data: parsedData });
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ timestamp: Date.now(), data: parsedData }));
+      } catch {}
     }
     return parsedData;
   } catch (error) {
