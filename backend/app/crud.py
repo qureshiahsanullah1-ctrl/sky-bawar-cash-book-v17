@@ -680,25 +680,40 @@ def _afn_to_usd(amount_afn: float, rate: float) -> float:
     )
 
 
-def _next_transaction_no(db: Session, transaction_date: date) -> str:
-    if isinstance(transaction_date, str):
+def _next_transaction_no(db: Session, transaction_date: date | str | None) -> str:
+    parsed_date = date.today()
+    if isinstance(transaction_date, date):
+        parsed_date = transaction_date
+    elif transaction_date:
         try:
-            transaction_date = datetime.strptime(transaction_date.replace("/", "-"), "%Y-%m-%d").date()
+            s = str(transaction_date).split("T")[0].replace("/", "-")
+            parts = [int(p) for p in s.split("-") if p.isdigit()]
+            if len(parts) == 3:
+                if parts[0] > 1900:
+                    parsed_date = date(parts[0], parts[1], parts[2])
+                elif parts[2] > 1900:
+                    parsed_date = date(parts[2], parts[0], parts[1])
         except Exception:
-            transaction_date = date.today()
-    prefix = transaction_date.strftime("TX-%Y%m%d")
-    existing = (
-        db.query(models.Transaction.transaction_no)
-        .filter(models.Transaction.transaction_no.like(f"{prefix}-%"))
-        .all()
-    )
-    sequences = []
-    for (number,) in existing:
-        try:
-            sequences.append(int(str(number).rsplit("-", 1)[-1]))
-        except (TypeError, ValueError):
-            continue
-    return f"{prefix}-{(max(sequences, default=0) + 1):04d}"
+            parsed_date = date.today()
+
+    prefix = parsed_date.strftime("TX-%Y%m%d")
+    try:
+        existing = (
+            db.query(models.Transaction.transaction_no)
+            .filter(models.Transaction.transaction_no.like(f"{prefix}-%"))
+            .all()
+        )
+        sequences = []
+        for (number,) in existing:
+            try:
+                sequences.append(int(str(number).rsplit("-", 1)[-1]))
+            except (TypeError, ValueError):
+                continue
+        seq = max(sequences, default=0) + 1
+    except Exception:
+        seq = int(datetime.now().timestamp() * 1000) % 10000
+
+    return f"{prefix}-{seq:04d}"
 
 
 def _validate_transaction(payload: schemas.TransactionBase) -> None:
