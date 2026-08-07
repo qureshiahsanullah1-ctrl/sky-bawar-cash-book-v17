@@ -9,9 +9,7 @@ import SearchModal from './components/SearchModal';
 import CashBook from './pages/CashBook';
 import LoginScreen from './pages/LoginScreen';
 import SecuritySetup from './pages/SecuritySetup';
-import LiquidMobileDashboard from './components/mobile/LiquidMobileDashboard';
 import Dashboard from './pages/Dashboard';
-import MultiAccountDashboard from './components/MultiAccountDashboard';
 import { api, setAuthToken } from './services/api';
 import { isLegacyUpdateDateError, withoutTransactionDate } from './services/transactionCompatibility';
 import { currency, csvCell, dateLabel, jalaliDateLabel, todayInputValue } from './utils/format';
@@ -23,6 +21,8 @@ import { transactionSchema } from './utils/validation';
 import { useCompany } from './context/CompanyContext';
 import WorkspaceLoader from './components/WorkspaceLoader';
 
+const LiquidMobileDashboard = lazy(() => import('./components/mobile/LiquidMobileDashboard'));
+const MultiAccountDashboard = lazy(() => import('./components/MultiAccountDashboard'));
 const AccountLedger = lazy(() => import('./pages/AccountLedger'));
 const TenantModuleRouter = lazy(() => import('./components/layout/TenantModuleRouter'));
 const BawarStarLedger = lazy(() => import('./pages/BawarStarLedger'));
@@ -1735,7 +1735,11 @@ export default function App() {
   if (!currentUser) {
     return (
       <Routes>
-        <Route path="/mobile-liquid" element={<LiquidMobileDashboard />} />
+        <Route path="/mobile-liquid" element={
+          <Suspense fallback={<WorkspaceLoader />}>
+            <LiquidMobileDashboard />
+          </Suspense>
+        } />
         <Route path="*" element={
           <>
             <LoginScreen

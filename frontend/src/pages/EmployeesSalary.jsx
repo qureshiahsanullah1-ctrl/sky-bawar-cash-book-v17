@@ -142,9 +142,13 @@ export default function EmployeesSalary({
     () => transactions.filter((transaction) => transaction.category === 'salary' && transaction.transaction_type === 'cash_out'),
     [transactions]
   );
-  const monthlySalaryPaid = report?.summary?.total_paid_this_month ?? salaryTransactions
-    .filter((transaction) => String(transaction.salary_month || transaction.date || '').startsWith(`${filters.year}-${String(filters.month).padStart(2, '0')}`))
-    .reduce((total, transaction) => total + Number(transaction.cash_out_afn || 0), 0);
+  const monthlySalaryPaid = useMemo(() => {
+    if (report?.summary?.total_paid_this_month != null) return report.summary.total_paid_this_month;
+    const monthPrefix = `${filters.year}-${String(filters.month).padStart(2, '0')}`;
+    return salaryTransactions
+      .filter((transaction) => String(transaction.salary_month || transaction.date || '').startsWith(monthPrefix))
+      .reduce((total, transaction) => total + Number(transaction.cash_out_afn || 0), 0);
+  }, [report?.summary?.total_paid_this_month, salaryTransactions, filters.year, filters.month]);
   const departments = useMemo(() => [...new Set(employees.map((employee) => employee.department).filter(Boolean))].sort(), [employees]);
   const existingPositions = useMemo(() => [...new Set(employees.map((employee) => employee.position).filter(Boolean))].sort(), [employees]);
 
@@ -169,7 +173,10 @@ export default function EmployeesSalary({
     const uniqueCustom = customList.filter((c) => !defaultVals.has(c.value.toLowerCase()));
     return [...uniqueCustom, ...DEFAULT_DEPARTMENTS];
   }, [departments]);
-  const pending = report?.summary?.total_remaining_salary ?? employees.reduce((total, employee) => total + Math.max(employeeSalarySnapshot(employee, transactions)?.remaining_salary || 0, 0), 0);
+  const pending = useMemo(() => {
+    if (report?.summary?.total_remaining_salary != null) return report.summary.total_remaining_salary;
+    return employees.reduce((total, employee) => total + Math.max(employeeSalarySnapshot(employee, transactions)?.remaining_salary || 0, 0), 0);
+  }, [report?.summary?.total_remaining_salary, employees, transactions]);
 
   useEffect(() => {
     loadSalaryReport(filters.month, filters.year);
@@ -1744,7 +1751,10 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('all');
-  const rowByEmployee = new Map((reportRows || []).map((row) => [Number(row.employee_id), row]));
+  const rowByEmployee = useMemo(
+    () => new Map((reportRows || []).map((row) => [Number(row.employee_id), row])),
+    [reportRows]
+  );
 
   const filteredEmployees = useMemo(() => {
     if (selectedCompanyFilter === 'all') return employees;
@@ -1754,8 +1764,10 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
     });
   }, [employees, selectedCompanyFilter]);
 
-  const bawarCount = employees.filter((e) => (e.company_id || 'all') === 'bawar-star' || (e.company_id || 'all') === 'all').length;
-  const skyCount = employees.filter((e) => (e.company_id || 'all') === 'sky-ariana' || (e.company_id || 'all') === 'all').length;
+  const { bawarCount, skyCount } = useMemo(() => ({
+    bawarCount: employees.filter((e) => (e.company_id || 'all') === 'bawar-star' || (e.company_id || 'all') === 'all').length,
+    skyCount: employees.filter((e) => (e.company_id || 'all') === 'sky-ariana' || (e.company_id || 'all') === 'all').length
+  }), [employees]);
 
   return (
     <article className={`glass-card salary-panel ${expanded ? 'salary-panel-wide' : ''}`}>
