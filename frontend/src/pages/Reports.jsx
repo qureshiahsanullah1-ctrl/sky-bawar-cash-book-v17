@@ -716,8 +716,8 @@ export default function Reports({
         </div>
       </div>
 
-      {/* 4. Main Report Table with Screen-Height Sticky Scroll */}
-      <div className="w-full bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md rounded-2xl border border-slate-200/90 dark:border-slate-800/80 overflow-hidden shadow-md">
+      {/* 4. Main Report Table (Visible on Tablet & Desktop) */}
+      <div className="w-full bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md rounded-2xl border border-slate-200/90 dark:border-slate-800/80 overflow-hidden shadow-md hidden md:block">
         <div className={`w-full max-h-[68vh] min-h-[360px] overflow-y-auto ${fitToScreen ? 'overflow-x-hidden' : 'overflow-x-auto'}`}>
           <table className={fitToScreen ? "w-full table-fixed text-left border-collapse" : "w-full min-w-[1050px] text-left border-collapse"}>
             <thead className="sticky top-0 z-20 bg-slate-100/95 dark:bg-[#1e293b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/80 shadow-xs">
@@ -833,6 +833,108 @@ export default function Reports({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Dedicated High-Quality Mobile Transactions Card List (Visible on Mobile) */}
+      <div className="block md:hidden w-full flex flex-col gap-3">
+        {filteredRows.length === 0 ? (
+          <div className="p-8 text-center bg-white/90 dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-xs">
+            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">No transactions found matching report criteria.</p>
+          </div>
+        ) : (
+          filteredRows.map((tx, idx) => {
+            const cleanAccountName = unescapeText(tx.account_name);
+            const cleanDetail = unescapeText(tx.detail);
+            const cleanCategory = unescapeText(tx.category);
+            const isCashIn = tx.transaction_type === 'cash_in' || Number(tx.cash_in_afn || 0) > 0 || Number(tx.usd_in || 0) > 0;
+
+            return (
+              <div key={tx.id || idx} className="p-4 rounded-2xl bg-white/95 dark:bg-[#0f172a]/95 border border-slate-200/90 dark:border-slate-800/90 shadow-sm flex flex-col gap-3">
+                {/* Mobile Header: Index, Date, Type Badge */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                      <DateDisplay value={tx.date} format={dateDisplayFormat} />
+                    </span>
+                    {tx.transaction_no && (
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate">
+                        {tx.transaction_no}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide shrink-0 ${
+                    isCashIn 
+                      ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                      : 'bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700'
+                  }`}>
+                    {isCashIn ? '📥 Cash In' : '📤 Cash Out'}
+                  </span>
+                </div>
+
+                {/* Account & Detail */}
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-white leading-tight">
+                    {cleanAccountName}
+                  </h4>
+                  {cleanDetail && (
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium leading-relaxed">
+                      {cleanDetail}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md text-[9.5px] font-extrabold uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                      🏷️ {cleanCategory ? cleanCategory.replace('_', ' ') : 'General'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md text-[9.5px] font-extrabold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                      💳 {tx.payment_method || 'cash'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Financial Summary Grid */}
+                <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800">
+                  <div>
+                    <span className="text-[9.5px] font-extrabold uppercase text-slate-400 block mb-0.5">Amount</span>
+                    {Number(tx.cash_in_afn || 0) > 0 && (
+                      <span className="font-mono font-black text-xs text-emerald-600 dark:text-emerald-400 block">
+                        +{currency(tx.cash_in_afn, 'AFN')}
+                      </span>
+                    )}
+                    {Number(tx.cash_out_afn || 0) > 0 && (
+                      <span className="font-mono font-black text-xs text-rose-600 dark:text-rose-400 block">
+                        -{currency(tx.cash_out_afn, 'AFN')}
+                      </span>
+                    )}
+                    {Number(tx.usd_in || 0) > 0 && (
+                      <span className="font-mono font-black text-xs text-indigo-600 dark:text-indigo-400 block">
+                        +${tx.usd_in} USD
+                      </span>
+                    )}
+                    {Number(tx.usd_out || 0) > 0 && (
+                      <span className="font-mono font-black text-xs text-rose-600 dark:text-rose-400 block">
+                        -${tx.usd_out} USD
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9.5px] font-extrabold uppercase text-slate-400 block mb-0.5">Running Balance</span>
+                    <span className={`font-mono font-black text-xs block ${tx.running_afn_balance >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'}`}>
+                      {currency(tx.running_afn_balance, 'AFN')}
+                    </span>
+                    {tx.has_usd && (
+                      <span className={`font-mono text-[10px] font-bold block ${tx.running_usd_balance >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-500'}`}>
+                        {currency(tx.running_usd_balance, 'USD')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
