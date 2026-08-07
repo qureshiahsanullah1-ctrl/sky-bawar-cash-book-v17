@@ -393,21 +393,19 @@ export default function Accounts({
         {/* Category Filter Pills & Summary Metrics */}
         <div className="flex flex-wrap items-center gap-2">
           {[
-            { id: 'all', label: t('All Accounts'), count: accountCounts.total, color: 'slate' },
-            { id: 'customer', label: t('Customers'), count: accountCounts.customers, color: 'blue' },
-            { id: 'supplier', label: t('Suppliers'), count: accountCounts.suppliers, color: 'purple' },
-            { id: 'worker', label: t('Workers'), count: accountCounts.workers, color: 'emerald' },
-            { id: 'factory', label: t('Factories'), count: accountCounts.factories, color: 'amber' },
-            { id: 'expense', label: t('Expenses'), count: accountCounts.expenses, color: 'rose' }
-          ].map(({ id, label, count, color }) => (
+            { id: 'all', label: t('All Accounts'), count: accountCounts.total, activeClass: 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm', inactiveClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200' },
+            { id: 'customer', label: t('Customers'), count: accountCounts.customers, activeClass: 'bg-blue-600 text-white border-blue-600 shadow-sm', inactiveClass: 'bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-100' },
+            { id: 'supplier', label: t('Suppliers'), count: accountCounts.suppliers, activeClass: 'bg-purple-600 text-white border-purple-600 shadow-sm', inactiveClass: 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100' },
+            { id: 'worker', label: t('Workers'), count: accountCounts.workers, activeClass: 'bg-emerald-600 text-white border-emerald-600 shadow-sm', inactiveClass: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/80 hover:bg-emerald-100' },
+            { id: 'factory', label: t('Factories'), count: accountCounts.factories, activeClass: 'bg-amber-500 text-white border-amber-500 shadow-sm', inactiveClass: 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/80 hover:bg-amber-100' },
+            { id: 'expense', label: t('Expenses'), count: accountCounts.expenses, activeClass: 'bg-rose-600 text-white border-rose-600 shadow-sm', inactiveClass: 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/80 hover:bg-rose-100' }
+          ].map(({ id, label, count, activeClass, inactiveClass }) => (
             <button
               key={id}
               type="button"
               onClick={() => setSelectedTypeFilter(id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer ${
-                selectedTypeFilter === id
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm'
-                  : `bg-${color}-50 dark:bg-${color}-950/40 text-${color}-800 dark:text-${color}-300 border-${color}-200/80 dark:border-${color}-800/80 hover:bg-${color}-100`
+                selectedTypeFilter === id ? activeClass : inactiveClass
               }`}
             >
               <span>{label}</span>
