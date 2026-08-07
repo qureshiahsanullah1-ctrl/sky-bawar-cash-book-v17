@@ -105,6 +105,18 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+_sessionmakers = {engine: SessionLocal}
+
+
+def get_sessionmaker(target_engine):
+    if target_engine not in _sessionmakers:
+        with _engine_lock:
+            if target_engine not in _sessionmakers:
+                _sessionmakers[target_engine] = sessionmaker(
+                    autocommit=False, autoflush=False, bind=target_engine
+                )
+    return _sessionmakers[target_engine]
+
 
 def ensure_sqlite_schema(bind_engine=None):
     """Add columns introduced after the first local database version.
@@ -404,9 +416,7 @@ def get_tenant_session(request=None, company_id=None):
 
                     from . import models
 
-                    TenantSession = sessionmaker(
-                        autocommit=False, autoflush=False, bind=tenant_engine
-                    )
+                    TenantSession = get_sessionmaker(tenant_engine)
                     db_temp = TenantSession()
                     try:
                         if not db_temp.query(models.Setting).first():
@@ -427,10 +437,7 @@ def get_tenant_session(request=None, company_id=None):
                     _initialized_db_urls.add(db_url)
 
         target_engine = engines.get(company_id, engine)
-        TenantSessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=target_engine
-        )
-        return TenantSessionLocal()
+        return get_sessionmaker(target_engine)()
     except Exception as err:
         import logging
         logging.getLogger("cashbook").error(f"Tenant session fallback to default SessionLocal: {err}")

@@ -41,17 +41,33 @@ def _month_end(value: date) -> date:
     return date(value.year, value.month, monthrange(value.year, value.month)[1])
 
 
-def effective_salary(db: Session, employee: models.Employee, target_date: date) -> dict:
-    history = (
-        db.query(models.SalaryHistory)
-        .filter(
-            models.SalaryHistory.employee_id == employee.id,
+def effective_salary(
+    db: Session,
+    employee: models.Employee,
+    target_date: date,
+    history_cache: dict[int, list] | None = None,
+) -> dict:
+    """Return the salary effective on target_date.
+
+    Perf: when called inside a loop over many employees/months (e.g. payroll
+    reports), pass a prefetched `history_cache` (employee_id -> sorted list of
+    SalaryHistory rows, see `_prefetch_salary_histories`) to avoid one
+    SalaryHistory query per call. Falls back to a direct query when no cache
+    is supplied, so existing single-employee call sites are unaffected.
+    """
+    if history_cache is not None:
+        history = history_cache.get(employee.id, [])
+    else:
+        history = (
+            db.query(models.SalaryHistory)
+            .filter(
+                models.SalaryHistory.employee_id == employee.id,
+            )
+            .order_by(
+                models.SalaryHistory.effective_date.asc(), models.SalaryHistory.id.asc()
+            )
+            .all()
         )
-        .order_by(
-            models.SalaryHistory.effective_date.asc(), models.SalaryHistory.id.asc()
-        )
-        .all()
-    )
     if not history:
         return {
             "salary": _money(employee.monthly_salary),
@@ -68,6 +84,26 @@ def effective_salary(db: Session, employee: models.Employee, target_date: date) 
     return {"salary": _money(first.old_salary), "currency": first.old_currency or "AFN"}
 
 
+def _prefetch_salary_histories(db: Session) -> dict[int, list]:
+    """Fetch ALL SalaryHistory rows once, grouped by employee_id, pre-sorted.
+
+    Used to avoid the N+1 pattern where `effective_salary` (and the
+    per-month loop in `_earned_salary_through`) would otherwise issue one
+    SalaryHistory query per employee per month.
+    """
+    rows = (
+        db.query(models.SalaryHistory)
+        .order_by(
+            models.SalaryHistory.effective_date.asc(), models.SalaryHistory.id.asc()
+        )
+        .all()
+    )
+    cache: dict[int, list] = {}
+    for row in rows:
+        cache.setdefault(row.employee_id, []).append(row)
+    return cache
+
+
 def _employee_salary_start_month(employee: models.Employee, target_month: date) -> date:
     if not employee.joining_date:
         return target_month
@@ -75,13 +111,16 @@ def _employee_salary_start_month(employee: models.Employee, target_month: date) 
 
 
 def _earned_salary_for_month(
-    db: Session, employee: models.Employee, target_month: date
+    db: Session,
+    employee: models.Employee,
+    target_month: date,
+    history_cache: dict[int, list] | None = None,
 ) -> float:
     month_start = _month_start(target_month)
     month_end = _month_end(target_month)
 
     if not employee.joining_date:
-        active = effective_salary(db, employee, month_end)
+        active = effective_salary(db, employee, month_end, history_cache=history_cache)
         return _money(active["salary"])
 
     joining_date = employee.joining_date
@@ -92,7 +131,7 @@ def _earned_salary_for_month(
     if end_date and month_start > end_date:
         return 0.0
 
-    active = effective_salary(db, employee, month_end)
+    active = effective_salary(db, employee, month_end, history_cache=history_cache)
     salary = active["salary"]
     days_in_month = monthrange(target_month.year, target_month.month)[1]
 
@@ -112,7 +151,10 @@ def _earned_salary_for_month(
 
 
 def _earned_salary_through(
-    db: Session, employee: models.Employee, through_month: date
+    db: Session,
+    employee: models.Employee,
+    through_month: date,
+    history_cache: dict[int, list] | None = None,
 ) -> float:
     if not employee.joining_date:
         return 0.0
@@ -120,7 +162,9 @@ def _earned_salary_through(
     current = _month_start(employee.joining_date)
     target = _month_start(through_month)
     while current <= target:
-        total += _earned_salary_for_month(db, employee, current)
+        total += _earned_salary_for_month(
+            db, employee, current, history_cache=history_cache
+        )
         current = _next_month(current)
     return _money(total)
 
@@ -396,9 +440,12 @@ def _salary_rows_for_month(
             + transaction.cash_out_afn
         )
 
+    history_cache = _prefetch_salary_histories(db)
     rows = []
     for employee in employees:
-        active_salary = effective_salary(db, employee, salary_month_end)
+        active_salary = effective_salary(
+            db, employee, salary_month_end, history_cache=history_cache
+        )
         totals = by_employee.get(employee.id, {"paid": 0.0, "last": None})
         paid = _money(totals["paid"])
         monthly_salary = active_salary["salary"]
@@ -407,7 +454,12 @@ def _salary_rows_for_month(
         )
         previous_paid = _money(paid_through_employee.get(employee.id, 0.0) - paid)
         previous_carry = (
-            _money(_earned_salary_through(db, employee, previous_month) - previous_paid)
+            _money(
+                _earned_salary_through(
+                    db, employee, previous_month, history_cache=history_cache
+                )
+                - previous_paid
+            )
             if previous_month >= _employee_salary_start_month(employee, previous_month)
             else 0.0
         )

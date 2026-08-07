@@ -11,6 +11,27 @@ from ..database import get_db
 
 router = APIRouter(prefix="/api/v1/cashbook", tags=["Enterprise Ledgers"])
 
+# Perf: `companies` table creation used to run its CREATE TABLE IF NOT EXISTS
+# DDL on every single /record-payment request. Guard it per-bind (mirrors the
+# `_checked_schema_engines` pattern in database.py) so it only executes once
+# per database connection/engine for the life of the process.
+_companies_table_ready: set[Any] = set()
+
+
+def _ensure_companies_table(db: Session) -> None:
+    bind_key = db.get_bind()
+    if bind_key in _companies_table_ready:
+        return
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS companies (
+            company_id VARCHAR(50) PRIMARY KEY,
+            name VARCHAR(255),
+            tax_id VARCHAR(50),
+            account_type VARCHAR(50)
+        )
+    """))
+    _companies_table_ready.add(bind_key)
+
 
 class PaymentCollectionInput(BaseModel):
     company_id: str = Field(..., example="CUST-BAWAR-01")
@@ -49,15 +70,8 @@ def record_incoming_customer_payment(
         base_balance = 111300.00
 
     try:
-        # 1. Ensure companies table exists
-        db.execute(text("""
-            CREATE TABLE IF NOT EXISTS companies (
-                company_id VARCHAR(50) PRIMARY KEY,
-                name VARCHAR(255),
-                tax_id VARCHAR(50),
-                account_type VARCHAR(50)
-            )
-        """))
+        # 1. Ensure companies table exists (only issues DDL once per engine)
+        _ensure_companies_table(db)
 
         result = db.execute(
             text("SELECT name FROM companies WHERE company_id = :cid"),

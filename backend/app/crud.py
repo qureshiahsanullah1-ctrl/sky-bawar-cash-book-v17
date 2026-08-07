@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, timedelta
-from sqlalchemy import func, or_
+from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -680,6 +680,50 @@ def _afn_to_usd(amount_afn: float, rate: float) -> float:
     )
 
 
+class _TransactionNoSequencer:
+    """In-memory transaction-number generator for bulk imports.
+
+    Avoids the N+1 pattern of `_next_transaction_no` issuing one
+    `LIKE 'TX-YYYYMMDD-%'` query per imported row: it loads every existing
+    transaction_no ONCE, computes the max sequence per day-prefix, then
+    hands out incrementing numbers from memory for the rest of the import.
+    """
+
+    def __init__(self, db: Session):
+        self._max_seq: dict[str, int] = {}
+        for (number,) in db.query(models.Transaction.transaction_no).all():
+            if not number:
+                continue
+            try:
+                prefix, seq_str = str(number).rsplit("-", 1)
+                seq = int(seq_str)
+            except (ValueError, TypeError):
+                continue
+            if seq > self._max_seq.get(prefix, 0):
+                self._max_seq[prefix] = seq
+
+    def next(self, transaction_date: date | str | None) -> str:
+        parsed_date = date.today()
+        if isinstance(transaction_date, date):
+            parsed_date = transaction_date
+        elif transaction_date:
+            try:
+                s = str(transaction_date).split("T")[0].replace("/", "-")
+                parts = [int(p) for p in s.split("-") if p.isdigit()]
+                if len(parts) == 3:
+                    if parts[0] > 1900:
+                        parsed_date = date(parts[0], parts[1], parts[2])
+                    elif parts[2] > 1900:
+                        parsed_date = date(parts[2], parts[0], parts[1])
+            except Exception:
+                parsed_date = date.today()
+
+        prefix = parsed_date.strftime("TX-%Y%m%d")
+        seq = self._max_seq.get(prefix, 0) + 1
+        self._max_seq[prefix] = seq
+        return f"{prefix}-{seq:04d}"
+
+
 def _next_transaction_no(db: Session, transaction_date: date | str | None) -> str:
     parsed_date = date.today()
     if isinstance(transaction_date, date):
@@ -886,6 +930,7 @@ def import_cashbook_csv(
         account.name.strip().lower(): account
         for account in db.query(models.Account).all()
     }
+    tx_no_sequencer = _TransactionNoSequencer(db)
 
     try:
         for payload in rows:
@@ -933,7 +978,7 @@ def import_cashbook_csv(
                 created_accounts += 1
 
             transaction = models.Transaction(
-                transaction_no=_next_transaction_no(db, payload.date),
+                transaction_no=tx_no_sequencer.next(payload.date),
                 date=payload.date,
                 account_id=account.id,
                 account_name=account.name,
@@ -1012,6 +1057,7 @@ def import_master_excel(db: Session, file_bytes: bytes, filename: str) -> dict:
                 float(row[7] or 0),
             )
         )
+    tx_no_sequencer = _TransactionNoSequencer(db)
 
     try:
         for sheet_name in wb.sheetnames:
@@ -1179,7 +1225,7 @@ def import_master_excel(db: Session, file_bytes: bytes, filename: str) -> dict:
                     created_accounts += 1
 
                 tx = models.Transaction(
-                    transaction_no=_next_transaction_no(db, tx_date),
+                    transaction_no=tx_no_sequencer.next(tx_date),
                     date=tx_date,
                     account_id=account.id,
                     account_name=account.name,
@@ -1418,6 +1464,7 @@ def filtered_transactions(
     type: str | None = None,
     search: str | None = None,
     account: str | None = None,
+    account_id: int | None = None,
     category: str | None = None,
     payment_method: str | None = None,
     group_id: int | None = None,
@@ -1426,6 +1473,8 @@ def filtered_transactions(
     limit: int | None = None,
 ) -> list[models.Transaction]:
     query = db.query(models.Transaction)
+    if account_id is not None:
+        query = query.filter(models.Transaction.account_id == account_id)
     if user and user.role not in ["Administrator", "Super Admin"]:
         if user.assigned_branch_id is not None:
             query = query.filter(
@@ -1996,34 +2045,69 @@ def dashboard_summary(db: Session, branch_id: int | None = None) -> dict:
     today = date.today()
     month_start = today.replace(day=1)
     next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    thirty_days_ago = today - timedelta(days=30)
 
     base_q = db.query(models.Transaction)
     if branch_id:
         base_q = base_q.filter(models.Transaction.branch_id == branch_id)
 
-    today_q = base_q.filter(models.Transaction.date == today)
-    month_q = base_q.filter(
-        models.Transaction.date >= month_start, models.Transaction.date < next_month
+    # Perf: instead of ~10 separate SUM queries (one per metric per period),
+    # compute every AFN/USD in/out/today/month figure in a SINGLE query using
+    # conditional (CASE-based) aggregation.
+    is_today = models.Transaction.date == today
+    is_month = (models.Transaction.date >= month_start) & (
+        models.Transaction.date < next_month
     )
 
-    def get_sum(q, col):
-        return _amount(q.with_entities(func.sum(col)).scalar())
+    def sum_when(condition, column):
+        return func.sum(case((condition, column), else_=0))
 
-    afn_in_today = get_sum(today_q, models.Transaction.cash_in_afn)
-    afn_out_today = get_sum(today_q, models.Transaction.cash_out_afn)
-    afn_in_month = get_sum(month_q, models.Transaction.cash_in_afn)
-    afn_out_month = get_sum(month_q, models.Transaction.cash_out_afn)
-    afn_balance = get_sum(base_q, models.Transaction.cash_in_afn) - get_sum(
-        base_q, models.Transaction.cash_out_afn
-    )
+    totals_row = base_q.with_entities(
+        sum_when(is_today, models.Transaction.cash_in_afn),
+        sum_when(is_today, models.Transaction.cash_out_afn),
+        sum_when(is_month, models.Transaction.cash_in_afn),
+        sum_when(is_month, models.Transaction.cash_out_afn),
+        func.sum(models.Transaction.cash_in_afn),
+        func.sum(models.Transaction.cash_out_afn),
+        sum_when(is_today, models.Transaction.usd_in),
+        sum_when(is_today, models.Transaction.usd_out),
+        sum_when(is_month, models.Transaction.usd_in),
+        sum_when(is_month, models.Transaction.usd_out),
+        func.sum(models.Transaction.usd_in),
+        func.sum(models.Transaction.usd_out),
+        func.sum(case((is_today, 1), else_=0)),
+        func.sum(case((is_month, 1), else_=0)),
+    ).first()
 
-    usd_in_today = get_sum(today_q, models.Transaction.usd_in)
-    usd_out_today = get_sum(today_q, models.Transaction.usd_out)
-    usd_in_month = get_sum(month_q, models.Transaction.usd_in)
-    usd_out_month = get_sum(month_q, models.Transaction.usd_out)
-    usd_balance = get_sum(base_q, models.Transaction.usd_in) - get_sum(
-        base_q, models.Transaction.usd_out
-    )
+    totals = tuple(totals_row) if totals_row is not None else (None,) * 14
+    (
+        afn_in_today,
+        afn_out_today,
+        afn_in_month,
+        afn_out_month,
+        afn_in_all,
+        afn_out_all,
+        usd_in_today,
+        usd_out_today,
+        usd_in_month,
+        usd_out_month,
+        usd_in_all,
+        usd_out_all,
+        entries_today,
+        entries_month,
+    ) = totals
+
+    afn_in_today = _amount(afn_in_today)
+    afn_out_today = _amount(afn_out_today)
+    afn_in_month = _amount(afn_in_month)
+    afn_out_month = _amount(afn_out_month)
+    afn_balance = _amount(afn_in_all) - _amount(afn_out_all)
+
+    usd_in_today = _amount(usd_in_today)
+    usd_out_today = _amount(usd_out_today)
+    usd_in_month = _amount(usd_in_month)
+    usd_out_month = _amount(usd_out_month)
+    usd_balance = _amount(usd_in_all) - _amount(usd_out_all)
 
     toman_balance = 0.0
     toman_in_today = 0.0
@@ -2031,38 +2115,47 @@ def dashboard_summary(db: Session, branch_id: int | None = None) -> dict:
     toman_in_month = 0.0
     toman_out_month = 0.0
 
-    entries_today = today_q.count()
-    entries_month = month_q.count()
+    entries_today = int(entries_today or 0)
+    entries_month = int(entries_month or 0)
 
     active_accounts = db.query(models.Account).count()
-    # Handle both boolean and integer is_active representation
+    # Pre-existing bug fixed while touching this function for perf: Employee
+    # has no `is_active` column (it uses a string `status` field), so this
+    # filter always raised AttributeError before any route could even reach
+    # it. Filter on status == "active" instead.
     active_employees = (
         db.query(models.Employee)
-        .filter(or_(models.Employee.is_active == True, models.Employee.is_active == 1))
+        .filter(models.Employee.status == "active")
         .count()
     )
 
     recent_transactions = base_q.order_by(models.Transaction.id.desc()).limit(10).all()
 
-    thirty_days_ago = today - timedelta(days=30)
-    cf_rows = base_q.filter(models.Transaction.date >= thirty_days_ago).all()
-    cf_map = {}
-    for r in cf_rows:
-        d = r.date.isoformat()
-        if d not in cf_map:
-            cf_map[d] = {
-                "date": d,
-                "in_afn": 0,
-                "out_afn": 0,
-                "in_usd": 0,
-                "out_usd": 0,
-            }
-        cf_map[d]["in_afn"] += _amount(r.cash_in_afn)
-        cf_map[d]["out_afn"] += _amount(r.cash_out_afn)
-        cf_map[d]["in_usd"] += _amount(r.usd_in)
-        cf_map[d]["out_usd"] += _amount(r.usd_out)
-
-    cash_flow = sorted(list(cf_map.values()), key=lambda x: x["date"])
+    # Perf: aggregate the 30-day cash-flow breakdown in SQL with GROUP BY
+    # instead of loading every row from the last 30 days into Python and
+    # summing them by hand.
+    cf_query = (
+        base_q.filter(models.Transaction.date >= thirty_days_ago)
+        .with_entities(
+            models.Transaction.date,
+            func.sum(models.Transaction.cash_in_afn),
+            func.sum(models.Transaction.cash_out_afn),
+            func.sum(models.Transaction.usd_in),
+            func.sum(models.Transaction.usd_out),
+        )
+        .group_by(models.Transaction.date)
+        .order_by(models.Transaction.date.asc())
+    )
+    cash_flow = [
+        {
+            "date": row[0].isoformat() if hasattr(row[0], "isoformat") else str(row[0]),
+            "in_afn": _amount(row[1]),
+            "out_afn": _amount(row[2]),
+            "in_usd": _amount(row[3]),
+            "out_usd": _amount(row[4]),
+        }
+        for row in cf_query.all()
+    ]
 
     return {
         "period": {"start": month_start.isoformat(), "end": today.isoformat()},

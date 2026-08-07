@@ -167,5 +167,7 @@ def export_ledger_csv(account_id: int, db: Session = Depends(get_db)):
     account = crud.get_account(db, account_id)
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    rows = [row for row in crud.list_transactions(db) if row.account_id == account_id]
+    # Filter at the SQL level instead of loading every transaction across
+    # every account into memory and filtering in Python.
+    rows = crud.filtered_transactions(db, account_id=account_id)
     return csv_response(rows, f"ledger-{account_id}.csv")

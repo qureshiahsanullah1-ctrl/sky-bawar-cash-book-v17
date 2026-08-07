@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -125,6 +126,10 @@ class EmployeeSalaryAdjustment(Base):
 
 class Transaction(Base):
     __tablename__ = "transactions"
+    __table_args__ = (
+        Index("ix_transactions_company_id_date", "company_id", "date"),
+        Index("ix_transactions_account_id_date", "account_id", "date"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     company_id = Column(String(100), default="bawar-star", nullable=False, index=True)
@@ -162,6 +167,9 @@ class Transaction(Base):
 
 class SalaryPayment(Base):
     __tablename__ = "salary_payments"
+    __table_args__ = (
+        Index("ix_salary_payments_employee_id_year_month", "employee_id", "year", "month"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     employee_id = Column(
