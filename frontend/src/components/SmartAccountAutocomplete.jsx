@@ -47,11 +47,12 @@ function SmartAccountAutocomplete({
   }
 
   return (
-    <div className="smart-party-picker">
-      <Search className="smart-party-search-icon" size={19} aria-hidden="true" />
+    <div className="smart-party-picker relative w-full">
+      <Search className="smart-party-search-icon absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 z-10 pointer-events-none" size={18} aria-hidden="true" />
       <input
         type="text"
         value={value}
+        style={{ paddingLeft: '44px' }}
         onChange={(event) => {
           onChange(event.target.value);
           setOpen(true);
