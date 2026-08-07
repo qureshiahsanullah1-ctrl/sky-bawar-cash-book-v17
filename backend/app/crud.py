@@ -791,13 +791,32 @@ def create_transaction(
 
     detail_text = _normalize_text(payload.detail) or _normalize_text(payload.account_name) or ("Cash In" if payload.transaction_type == "cash_in" else "Cash Out")
 
+    tx_date = payload.date
+    if not isinstance(tx_date, date):
+        try:
+            s_d = str(tx_date).split("T")[0].replace("/", "-")
+            tx_date = datetime.strptime(s_d, "%Y-%m-%d").date()
+        except Exception:
+            tx_date = date.today()
+
+    parsed_salary_month = None
+    if employee:
+        m_d = payload.salary_month or tx_date
+        if not isinstance(m_d, date):
+            try:
+                s_m = str(m_d).split("T")[0].replace("/", "-")
+                m_d = datetime.strptime(s_m, "%Y-%m-%d").date()
+            except Exception:
+                m_d = tx_date
+        parsed_salary_month = m_d.replace(day=1)
+
     last_error = None
     for attempt in range(5):
         try:
-            tx_no = _next_transaction_no(db, payload.date)
+            tx_no = _next_transaction_no(db, tx_date)
             transaction = models.Transaction(
                 transaction_no=tx_no,
-                date=payload.date,
+                date=tx_date,
                 account_id=account.id,
                 employee_id=employee.id if employee else None,
                 company_id=(
@@ -805,9 +824,7 @@ def create_transaction(
                     if employee
                     else (getattr(payload, "company_id", None) or "bawar-star")
                 ),
-                salary_month=(
-                    (payload.salary_month or payload.date).replace(day=1) if employee else None
-                ),
+                salary_month=parsed_salary_month,
                 payroll_kind=(payload.payroll_kind or "salary") if employee else None,
                 account_name=account.name,
                 detail=detail_text,
