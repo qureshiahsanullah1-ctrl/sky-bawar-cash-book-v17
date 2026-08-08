@@ -847,6 +847,8 @@ def create_transaction(
                 category="salary" if employee else payload.category,
                 note=_normalize_text(payload.note),
                 branch_id=payload.branch_id,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
             )
             db.add(transaction)
             db.commit()

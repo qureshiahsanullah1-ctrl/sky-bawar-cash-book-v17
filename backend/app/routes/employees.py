@@ -16,6 +16,8 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
+@router.get("", response_model=list[schemas.EmployeeRead])
+@router.get("/", response_model=list[schemas.EmployeeRead], include_in_schema=False)
 def read_employees(db: Session = Depends(get_db)):
     result = []
     for employee in payroll.list_employees(db):

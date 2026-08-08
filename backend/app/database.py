@@ -61,7 +61,8 @@ def get_tenant_db_url(company_id: str) -> str:
     is_vercel = _check_is_vercel()
     base_dir = "/tmp" if is_vercel else os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-    if company_id in ("sky-ariana", "cashbook_sky_prod", "sky"):
+    cid = (company_id or "").lower()
+    if "sky" in cid or "ariana" in cid:
         db_file = os.path.join(base_dir, "cashbook_skyariana.db").replace("\\", "/")
     else:
         db_file = os.path.join(base_dir, "cashbook.db").replace("\\", "/")
@@ -409,6 +410,23 @@ def get_tenant_session(request=None, company_id=None):
                     )
                     db_temp = TenantSession()
                     try:
+                        if not db_temp.query(models.User).first():
+                            master_db = SessionLocal()
+                            try:
+                                master_users = master_db.query(models.User).all()
+                                for u in master_users:
+                                    db_temp.add(models.User(
+                                        username=u.username,
+                                        password_hash=u.password_hash,
+                                        full_name=u.full_name,
+                                        role=u.role,
+                                        is_active=u.is_active,
+                                        must_change_password=u.must_change_password,
+                                    ))
+                                db_temp.commit()
+                            finally:
+                                master_db.close()
+
                         if not db_temp.query(models.Setting).first():
                             db_temp.add(
                                 models.Setting(

@@ -2,6 +2,14 @@ import { formatApiErrorDetail } from './errorFormatting.js';
 
 // We default to relative paths when hosted on Vercel, but use https://cash-book-v11.vercel.app for mobile APKs and all other hosts.
 export const getDynamicApiBaseUrl = () => {
+  const isLocalHost = typeof window !== 'undefined' && (
+    !window.location.hostname ||
+    ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(window.location.hostname.toLowerCase()) ||
+    window.location.hostname.startsWith('192.168.') ||
+    window.location.hostname.startsWith('10.') ||
+    window.location.hostname.startsWith('172.')
+  );
+
   if (typeof localStorage !== 'undefined' && typeof localStorage.getItem === 'function') {
     const customUrl = localStorage.getItem('cashbook_api_url');
     if (customUrl) {
@@ -10,8 +18,11 @@ export const getDynamicApiBaseUrl = () => {
         trimmed = 'https://' + trimmed;
       }
       if (trimmed.includes('cashbook-v11.vercel.app')) {
+        if (isLocalHost) {
+          try { localStorage.removeItem('cashbook_api_url'); } catch {}
+          return '';
+        }
         trimmed = 'https://cash-book-v11.vercel.app';
-        try { localStorage.setItem('cashbook_api_url', trimmed); } catch {}
       }
       return trimmed;
     }
@@ -20,12 +31,12 @@ export const getDynamicApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL.replace(/\/+$/, '');
   }
   if (typeof window !== 'undefined') {
-    const host = window.location.hostname || '';
-    if (host.endsWith('vercel.app')) {
+    const host = (window.location.hostname || '').toLowerCase();
+    if (host.endsWith('vercel.app') || isLocalHost) {
       return import.meta.env?.PROD ? '' : '';
     }
   }
-  return 'https://cash-book-v11.vercel.app';
+  return '';
 };
 export const API_BASE = getDynamicApiBaseUrl();
 export const getApiBaseUrl = getDynamicApiBaseUrl;
@@ -172,13 +183,13 @@ async function request(path, options = {}, retries = 2) {
         }
       } catch {}
     }
-    const prodFallback = 'https://cash-book-v11.vercel.app';
-    if (currentBase !== prodFallback && retries > 0) {
-      try {
-        localStorage.setItem('cashbook_api_url', prodFallback);
-      } catch {}
-      return request(path, options, retries - 1);
-    }
+    const isLocal = typeof window !== 'undefined' && (
+      !window.location.hostname ||
+      ['localhost', '127.0.0.1', '0.0.0.0', '::1'].includes(window.location.hostname.toLowerCase()) ||
+      window.location.hostname.startsWith('192.168.') ||
+      window.location.hostname.startsWith('10.') ||
+      window.location.hostname.startsWith('172.')
+    );
     if (retries > 0 && error.name !== 'AbortError') {
       await new Promise(r => setTimeout(r, 600));
       return request(path, options, retries - 1);
@@ -327,7 +338,7 @@ export const api = {
   importMasterExcel: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return request('/api/import-master-excel', {
+    return request('/api/backup/import-master-excel', {
       method: 'POST',
       body: formData
     });

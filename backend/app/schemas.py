@@ -56,6 +56,7 @@ class TransactionBase(BaseModel):
     salary_month: Optional[DateType] = None
     payroll_kind: Optional[Literal["salary", "advance"]] = None
     branch_id: Optional[int] = None
+    company_id: Optional[str] = None
     account_name: Optional[str] = ""
     detail: Optional[str] = ""
     transaction_type: Literal["cash_in", "cash_out"]
@@ -320,8 +321,15 @@ class AccountRead(AccountBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    @field_validator("created_at", "updated_at", mode="before")
+    @classmethod
+    def normalize_datetimes(cls, v):
+        if not v:
+            return datetime.now(timezone.utc)
+        return v
 
 
 class EmployeeCreate(BaseModel):
@@ -630,8 +638,15 @@ class TransactionRead(TransactionBase):
     id: int
     company_id: Optional[str] = None
     transaction_no: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    @field_validator("created_at", "updated_at", mode="before")
+    @classmethod
+    def normalize_datetimes(cls, v):
+        if not v:
+            return datetime.now(timezone.utc)
+        return v
 
 
 class SettingRead(SettingBase):

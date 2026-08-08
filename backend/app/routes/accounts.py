@@ -11,6 +11,8 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
+@router.get("", response_model=list[schemas.AccountRead])
+@router.get("/", response_model=list[schemas.AccountRead], include_in_schema=False)
 def read_accounts(db: Session = Depends(get_db)):
     return crud.list_accounts(db)
 

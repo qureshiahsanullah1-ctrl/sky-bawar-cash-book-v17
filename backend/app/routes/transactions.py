@@ -18,6 +18,8 @@ router = APIRouter(
     dependencies=[Depends(require_authenticated_request)],
 )
 
+@router.get("", response_model=list[schemas.TransactionRead])
+@router.get("/", response_model=list[schemas.TransactionRead], include_in_schema=False)
 def read_transactions(
     group_id: int | None = Query(default=None),
     branch_id: int | None = Query(default=None),
