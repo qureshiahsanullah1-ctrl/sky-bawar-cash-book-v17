@@ -84,38 +84,38 @@ export default function MultiAccountDashboard() {
 
   return (
     <div 
-      className="multi-account-dashboard -m-5 md:-m-6 h-[calc(100vh-64px)] w-[calc(100%+40px)] md:w-[calc(100%+48px)] flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans no-print"
+      className="multi-account-dashboard -m-5 md:-m-6 h-[calc(100vh-64px)] w-[calc(100%+40px)] md:w-[calc(100%+48px)] flex flex-col bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans no-print"
     >
-      {/* TOP CORPORATE HEADER BAR (MATCHING SCREENSHOT AESTHETIC) */}
-      <div className="bg-slate-900 border-b border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400">
-            <FileSpreadsheet size={20} />
+      {/* TOP CORPORATE HEADER BAR (HIGH-DENSITY COMPACT) */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400">
+            <FileSpreadsheet size={16} />
           </div>
           <div>
-            <h1 className="text-base font-black text-white tracking-tight uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-2">
               <span>BOL Account Ledger</span>
             </h1>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-none">
               Manage company accounts, track ledger rows, and review BOL financial summaries.
             </p>
           </div>
         </div>
 
         {/* Quick Add Company Inline Bar */}
-        <form onSubmit={handleAddClientSubmit} className="flex items-center gap-2">
+        <form onSubmit={handleAddClientSubmit} className="flex items-center gap-1.5">
           <input
             type="text"
             placeholder="Add company name..."
             value={newClientForm.clientName}
             onChange={(e) => setNewClientForm(prev => ({ ...prev, clientName: e.target.value }))}
-            className="px-3 py-1.5 text-xs rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 w-48 sm:w-64"
+            className="px-2.5 py-1 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 w-40 sm:w-56 transition-all"
           />
           <button
             type="submit"
-            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
+            className="flex items-center gap-1 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-2xs transition-all active:scale-[0.98]"
           >
-            <Plus size={14} />
+            <Plus size={13} />
             <span>Add Company</span>
           </button>
         </form>
@@ -125,26 +125,26 @@ export default function MultiAccountDashboard() {
       <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         
         {/* 1. LEFT SIDEBAR: CLIENT ACCOUNTS LIST */}
-        <aside className="w-full md:w-64 xl:w-72 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
+        <aside className="w-full md:w-56 xl:w-64 bg-white/90 dark:bg-slate-900/90 border-r border-slate-200/80 dark:border-slate-800 flex flex-col shrink-0">
           
           {/* Sidebar Search Bar */}
-          <div className="p-2.5 border-b border-slate-800 bg-slate-900/80">
+          <div className="p-2 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/80">
             <div className="relative">
-              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search company..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all"
               />
             </div>
           </div>
 
         {/* Scrollable Account Cards List */}
-        <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1.5">
+        <div className="flex-1 overflow-y-auto p-1.5 flex flex-col gap-1.5">
           {filteredAccounts.length === 0 ? (
-            <div className="p-6 text-center text-slate-400 text-xs">
+            <div className="p-4 text-center text-slate-400 text-xs">
               No matching client ledgers found.
             </div>
           ) : (
@@ -168,38 +168,38 @@ export default function MultiAccountDashboard() {
                   key={account.id}
                   type="button"
                   onClick={() => setActiveAccountId(account.id)}
-                  className={`w-full text-left p-3.5 rounded-2xl transition-all duration-200 border flex flex-col gap-2 relative group ${
+                  className={`w-full text-left p-2.5 rounded-xl transition-all duration-150 border flex flex-col gap-1 relative group ${
                     isActive
-                      ? 'bg-slate-900 text-white dark:bg-slate-800 border-slate-900 dark:border-slate-700 shadow-md ring-1 ring-blue-500/30'
-                      : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 hover:shadow-sm'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-600 shadow-sm ring-1 ring-blue-500/20'
+                      : 'bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border-slate-200/90 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/40 dark:hover:bg-slate-800 hover:shadow-2xs'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-1.5">
                     <div className="min-w-0 flex-1">
-                      <strong className={`text-sm font-bold block truncate tracking-tight ${isActive ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
+                      <strong className={`text-xs font-bold block truncate tracking-tight ${isActive ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                         {account.clientName}
                       </strong>
-                      <span className={`text-xs font-semibold block dir-rtl mt-0.5 ${isActive ? 'text-amber-300' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <span className={`text-[11px] font-semibold block dir-rtl mt-0.5 ${isActive ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400'}`}>
                         ({account.clientNameDari})
                       </span>
                     </div>
-                    <ChevronRight size={16} className={`shrink-0 transition-transform ${isActive ? 'text-blue-400 translate-x-0.5' : 'text-slate-400 opacity-0 group-hover:opacity-100'}`} />
+                    <ChevronRight size={14} className={`shrink-0 transition-transform ${isActive ? 'text-white translate-x-0.5' : 'text-slate-400 opacity-0 group-hover:opacity-100'}`} />
                   </div>
 
                   {/* Subtitle / Location */}
-                  <div className={`text-[11px] truncate font-medium ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <div className={`text-[10px] truncate font-medium ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
                     {account.location || account.contactInfo}
                   </div>
 
                   {/* Badges Summary */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/30 dark:border-slate-700/40 text-[11px]">
-                    <span className={`font-mono font-semibold ${isActive ? 'text-slate-300' : 'text-slate-500'}`}>
-                      {txCount} Activity Rows • {containers} Cnt
+                  <div className={`flex items-center justify-between pt-1 border-t text-[10px] ${isActive ? 'border-white/20' : 'border-slate-100 dark:border-slate-700/40'}`}>
+                    <span className={`font-mono font-semibold ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                      {txCount} Rows • {containers} Cnt
                     </span>
-                    <strong className={`font-mono tabular-nums font-black text-xs ${
+                    <strong className={`font-mono tabular-nums font-black text-[11px] ${
                       netBalance <= 0 
-                        ? (isActive ? 'text-emerald-400' : 'text-emerald-600 dark:text-emerald-400') 
-                        : (isActive ? 'text-rose-300' : 'text-rose-600 dark:text-rose-400')
+                        ? (isActive ? 'text-emerald-200' : 'text-emerald-600 dark:text-emerald-400') 
+                        : (isActive ? 'text-rose-200' : 'text-rose-600 dark:text-rose-400')
                     }`}>
                       {formatUSD(netBalance)}
                     </strong>
@@ -212,7 +212,7 @@ export default function MultiAccountDashboard() {
       </aside>
 
       {/* 2. RIGHT MAIN PANEL: ISOLATED CLIENT LEDGER VIEW */}
-      <main className="flex-1 overflow-hidden flex flex-col min-w-0">
+      <main className="flex-1 overflow-hidden flex flex-col min-w-0 bg-slate-100/50 dark:bg-slate-950">
         {activeAccountData ? (
           <SkyArianaExportLedger account={activeAccountData} />
         ) : (

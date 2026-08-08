@@ -50,11 +50,11 @@ export default function SimpleCashChart({ transactions }) {
   }
 
   return (
-    <div className="w-full h-80 mt-4 p-4 rounded-2xl bg-slate-100/60 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md shadow-inner transition-all">
-      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+    <div className="w-full h-56 p-2.5 rounded-xl bg-slate-100/60 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md shadow-inner transition-all">
+      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2">
         <span>Monthly Cash Flow Trends (AFN)</span>
       </h4>
-      <ResponsiveContainer width="100%" height="88%">
+      <ResponsiveContainer width="100%" height="86%">
         <AreaChart
           data={chartData}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

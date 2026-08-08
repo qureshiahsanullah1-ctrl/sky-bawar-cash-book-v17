@@ -342,25 +342,25 @@ export default function SkyArianaExportLedger({ account }) {
       </div>
 
       {/* 1. COMPACT INTEGRATED HEADER & METRICS BAR (SCREEN VIEW) */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl px-4 py-2.5 shadow-sm border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0 no-print">
+      <div className="bg-white dark:bg-slate-900 rounded-xl px-3 py-1.5 shadow-2xs border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0 no-print">
         
         {/* Left: Branding & Account Title */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
           <img 
             src={logoPath} 
             alt={ACCOUNT_DATA.companyName}
-            className="w-10 h-10 object-contain rounded-xl bg-slate-900 p-0.5 border border-blue-500/30 shrink-0"
+            className="w-8 h-8 object-contain rounded-lg bg-slate-900 p-0.5 border border-blue-500/30 shrink-0"
           />
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-black tracking-tight truncate text-slate-900 dark:text-slate-100">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xs sm:text-sm font-black tracking-tight truncate text-slate-900 dark:text-slate-100">
                 {ACCOUNT_DATA.accountName}
               </h1>
-              <span className="text-xs font-bold text-amber-500 dir-rtl hidden sm:inline">
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 dir-rtl hidden sm:inline">
                 ({ACCOUNT_DATA.accountNameDari})
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 leading-none">
               <span className="font-semibold text-blue-600 dark:text-blue-400">SKY ARIANA LOGISTICS</span>
               <span>•</span>
               <span className="truncate">Kandahar, AF | Lic: {ACCOUNT_DATA.licenseNo}</span>
@@ -369,50 +369,50 @@ export default function SkyArianaExportLedger({ account }) {
         </div>
 
         {/* Right: Streamlined KPI Summary Badges */}
-        <div className="flex items-center gap-2 text-xs shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-1.5 text-xs shrink-0 overflow-x-auto">
           {/* Credit Billed */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60">
-            <ArrowUpCircle size={14} className="text-amber-600 dark:text-amber-400" />
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 shadow-2xs">
+            <ArrowUpCircle size={13} className="text-amber-600 dark:text-amber-400" />
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Invoices</span>
-              <strong className="text-xs font-mono font-bold text-amber-700 dark:text-amber-300">
+              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">Invoices</span>
+              <strong className="text-[11px] font-mono font-bold text-amber-800 dark:text-amber-300">
                 {formatUSD(totals.totalCredit)}
               </strong>
             </div>
           </div>
 
           {/* Debit Received */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60">
-            <ArrowDownCircle size={14} className="text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
+            <ArrowDownCircle size={13} className="text-emerald-600 dark:text-emerald-400" />
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Payments</span>
-              <strong className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300">
+              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">Payments</span>
+              <strong className="text-[11px] font-mono font-bold text-emerald-800 dark:text-emerald-300">
                 {formatUSD(totals.totalDebit)}
               </strong>
             </div>
           </div>
 
           {/* Net Balance */}
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border ${
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border shadow-2xs ${
             totals.netBalance <= 0 
-              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 text-emerald-700' 
-              : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 text-rose-700'
+              ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200/80 text-emerald-800 dark:text-emerald-300' 
+              : 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-200/80 text-rose-800 dark:text-rose-300'
           }`}>
-            <DollarSign size={14} />
+            <DollarSign size={13} />
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Balance</span>
-              <strong className="text-xs font-mono font-black">
+              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">Balance</span>
+              <strong className="text-[11px] font-mono font-black">
                 {formatUSD(totals.netBalance)}
               </strong>
             </div>
           </div>
 
           {/* Containers & Surrendered B/Ls */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300">
-            <Container size={14} />
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-blue-800 dark:text-blue-300 shadow-2xs">
+            <Container size={13} />
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Fleet</span>
-              <strong className="text-xs font-mono font-bold">
+              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">Fleet</span>
+              <strong className="text-[11px] font-mono font-bold">
                 {totals.totalContainers} Units ({totals.surrenderedCount} Surrendered)
               </strong>
             </div>
@@ -422,27 +422,27 @@ export default function SkyArianaExportLedger({ account }) {
       </div>
 
       {/* 2. COMPACT SEARCH & FILTER CONTROLS TOOLBAR */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl px-3 py-2 shadow-xs border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0 no-print">
+      <div className="bg-white dark:bg-slate-900 rounded-xl px-2.5 py-1.5 shadow-2xs border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1.5 shrink-0 no-print">
         
         {/* Search */}
-        <div className="relative w-full sm:w-64">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="relative w-full sm:w-56">
+          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search B/L, Container, Shipper..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+            className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
           />
         </div>
 
         {/* Filter Pills & Actions */}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto justify-end">
           <div className="bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg flex items-center text-xs">
             <button
               type="button"
-              className={`px-2.5 py-1 rounded-md font-semibold text-[11px] transition-all ${
-                filterType === 'all' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
+              className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${
+                filterType === 'all' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-2xs' : 'text-slate-500'
               }`}
               onClick={() => setFilterType('all')}
             >
@@ -450,8 +450,8 @@ export default function SkyArianaExportLedger({ account }) {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-1 rounded-md font-semibold text-[11px] transition-all ${
-                filterType === 'invoice' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs' : 'text-slate-500'
+              className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${
+                filterType === 'invoice' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-2xs' : 'text-slate-500'
               }`}
               onClick={() => setFilterType('invoice')}
             >
@@ -459,8 +459,8 @@ export default function SkyArianaExportLedger({ account }) {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-1 rounded-md font-semibold text-[11px] transition-all ${
-                filterType === 'payment' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs' : 'text-slate-500'
+              className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${
+                filterType === 'payment' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-2xs' : 'text-slate-500'
               }`}
               onClick={() => setFilterType('payment')}
             >
@@ -468,12 +468,12 @@ export default function SkyArianaExportLedger({ account }) {
             </button>
             <button
               type="button"
-              className={`px-2.5 py-1 rounded-md font-semibold text-[11px] transition-all flex items-center gap-1 ${
-                filterType === 'surrendered' ? 'bg-emerald-600 text-white shadow-xs' : 'text-emerald-600 dark:text-emerald-400'
+              className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all flex items-center gap-1 ${
+                filterType === 'surrendered' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-emerald-600 dark:text-emerald-400'
               }`}
               onClick={() => setFilterType('surrendered')}
             >
-              <ShieldCheck size={12} />
+              <ShieldCheck size={11} />
               <span>Surrendered B/L</span>
             </button>
           </div>
@@ -481,56 +481,56 @@ export default function SkyArianaExportLedger({ account }) {
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={13} />
             <span>New Record</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportCSV}
-            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
+            className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
             title="Export CSV"
           >
-            <Download size={14} />
+            <Download size={13} />
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
-            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
+            className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300"
             title="Print Statement"
           >
-            <Printer size={14} />
+            <Printer size={13} />
           </button>
         </div>
 
       </div>
 
       {/* 3. ONE-SCREEN FIT EXPORT TABLE WITH STICKY HEADER */}
-      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-auto relative print:border-none print:shadow-none print:overflow-visible print:w-full print:block print:p-0 print:m-0">
-        <table className="w-full text-left text-xs border-collapse min-w-[1050px] print:w-full print:border-collapse print:text-xs print:m-0">
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-auto relative print:border-none print:shadow-none print:overflow-visible print:w-full print:block print:p-0 print:m-0">
+        <table className="w-full text-left text-xs border-collapse min-w-[1000px] print:w-full print:border-collapse print:text-xs print:m-0">
           <thead className="print:table-header-group">
-            <tr className="sticky top-0 z-20 bg-slate-900 dark:bg-slate-950 text-slate-200 uppercase font-bold tracking-wider text-[10px] border-b border-slate-800 print:bg-white print:text-slate-500 print:border-b-2 print:border-slate-800">
-              <th className="py-2.5 px-2 text-center w-12">S.N</th>
-              <th className="py-2.5 px-2 w-24">DATE (تاریخ)</th>
-              <th className="py-2.5 px-2.5 min-w-[120px]">SHIPPER (ارسال کننده)</th>
-              <th className="py-2.5 px-2.5 min-w-[120px]">CONSIGNEE (گیرنده)</th>
-              <th className="py-2.5 px-2.5 min-w-[180px]">COMMODITY & INVOICE</th>
-              <th className="py-2.5 px-2.5 min-w-[180px]">B/L & CONTAINER NO.</th>
-              <th className="py-2.5 px-2 text-center w-14">QTY</th>
-              <th className="py-2.5 px-2.5 text-right text-amber-400 print:text-slate-900 w-28">CREDIT ($)</th>
-              <th className="py-2.5 px-2.5 text-right text-emerald-400 print:text-rose-600 w-28">DEBIT ($)</th>
-              <th className="py-2.5 px-2.5 text-right print:text-slate-900 w-32">BALANCE ($)</th>
-              <th className="py-2.5 px-2 text-center w-20 no-print">ACTIONS</th>
+            <tr className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-850 text-slate-700 dark:text-slate-200 uppercase font-bold tracking-wider text-[9.5px] border-b border-slate-200 dark:border-slate-700 backdrop-blur-md print:bg-white print:text-slate-500 print:border-b-2 print:border-slate-800">
+              <th className="py-1.5 px-2 text-center w-10">S.N</th>
+              <th className="py-1.5 px-2 w-20">DATE (تاریخ)</th>
+              <th className="py-1.5 px-2 min-w-[110px]">SHIPPER (ارسال کننده)</th>
+              <th className="py-1.5 px-2 min-w-[110px]">CONSIGNEE (گیرنده)</th>
+              <th className="py-1.5 px-2 min-w-[160px]">COMMODITY & INVOICE</th>
+              <th className="py-1.5 px-2 min-w-[160px]">B/L & CONTAINER NO.</th>
+              <th className="py-1.5 px-1.5 text-center w-12">QTY</th>
+              <th className="py-1.5 px-2 text-right text-amber-700 dark:text-amber-400 print:text-slate-900 w-24">CREDIT ($)</th>
+              <th className="py-1.5 px-2 text-right text-emerald-700 dark:text-emerald-400 print:text-rose-600 w-24">DEBIT ($)</th>
+              <th className="py-1.5 px-2 text-right text-slate-800 dark:text-slate-200 print:text-slate-900 w-28">BALANCE ($)</th>
+              <th className="py-1.5 px-1.5 text-center w-16 no-print">ACTIONS</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium text-[11px] print:table-row-group">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium text-[10.5px] print:table-row-group">
             {filteredTransactions.length === 0 ? (
               <tr>
-                <td colSpan={11} className="py-12 text-center text-slate-400 text-xs">
+                <td colSpan={11} className="py-8 text-center text-slate-400 text-xs">
                   No matching export records found.
                 </td>
               </tr>
@@ -540,99 +540,99 @@ export default function SkyArianaExportLedger({ account }) {
                 return (
                   <tr 
                     key={tx.id} 
-                    className={`hover:bg-slate-50/90 dark:hover:bg-slate-800/50 transition-colors print:break-inside-avoid print:page-break-inside-avoid ${
-                      isPayment ? 'bg-emerald-50/20 dark:bg-emerald-950/10' : ''
+                    className={`hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors print:break-inside-avoid print:page-break-inside-avoid ${
+                      isPayment ? 'bg-emerald-50/30 dark:bg-emerald-950/15' : ''
                     }`}
                   >
                     {/* S.N */}
-                    <td className="py-2 px-1 text-center text-slate-400 font-bold font-mono">
+                    <td className="py-1.5 px-2 text-center text-slate-400 font-bold font-mono">
                       {tx.sn}
                     </td>
 
                     {/* Date */}
-                    <td className="py-2 px-1.5 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap text-[10.5px]">
+                    <td className="py-1.5 px-2 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap text-[10px]">
                       {tx.date}
                     </td>
 
                     {/* Shipper */}
-                    <td className="py-2 px-1.5 font-semibold text-slate-900 dark:text-slate-100 truncate" title={tx.shipper}>
+                    <td className="py-1.5 px-2 font-semibold text-slate-900 dark:text-slate-100 truncate" title={tx.shipper}>
                       {tx.shipper || 'N/A'}
                     </td>
 
                     {/* Consignee */}
-                    <td className="py-2 px-1.5 text-slate-700 dark:text-slate-300 truncate" title={tx.consignee}>
+                    <td className="py-1.5 px-2 text-slate-700 dark:text-slate-300 truncate" title={tx.consignee}>
                       {tx.consignee || 'N/A'}
                     </td>
 
                     {/* Commodity & Invoice */}
-                    <td className="py-2 px-1.5">
+                    <td className="py-1.5 px-2">
                       <div className="font-bold text-slate-900 dark:text-slate-100 truncate" title={tx.commodityInvoice}>
                         {tx.commodityInvoice}
                       </div>
                       {tx.notes && (
-                        <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-sans truncate dir-rtl" title={tx.notes}>
+                        <div className="text-[9.5px] text-emerald-600 dark:text-emerald-400 font-sans truncate dir-rtl" title={tx.notes}>
                           {tx.notes}
                         </div>
                       )}
                     </td>
 
                     {/* B/L & Container + SURRENDERED BADGE */}
-                    <td className="py-2 px-1.5">
-                      <div className="font-mono text-slate-700 dark:text-slate-300 text-[11px] truncate" title={tx.blContainer}>
+                    <td className="py-1.5 px-2">
+                      <div className="font-mono text-slate-700 dark:text-slate-300 text-[10.5px] truncate" title={tx.blContainer}>
                         {tx.blContainer || '-'}
                       </div>
                       {tx.isSurrenderedBL && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-600 text-white mt-0.5 tracking-wider shadow-xs">
-                          <ShieldCheck size={11} />
+                        <div className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-800/80 mt-0.5 tracking-wider">
+                          <ShieldCheck size={10} />
                           <span>SURRENDERED B/L</span>
                         </div>
                       )}
                     </td>
 
                     {/* Qty */}
-                    <td className="py-2 px-1 text-center font-bold">
+                    <td className="py-1.5 px-1.5 text-center font-bold">
                       {tx.quantity > 0 ? (
-                        <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 font-mono text-[10px] tabular-nums">
+                        <span className="px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 font-mono text-[9.5px] tabular-nums">
                           {tx.quantity}
                         </span>
                       ) : '-'}
                     </td>
 
                     {/* Credit (USD) */}
-                    <td className="py-2 px-1.5 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                    <td className="py-1.5 px-2 text-right font-mono tabular-nums font-semibold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                       {tx.creditUSD > 0 ? formatUSD(tx.creditUSD) : '-'}
                     </td>
 
                     {/* Debit (USD) */}
-                    <td className="py-2 px-1.5 text-right font-mono tabular-nums font-semibold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                    <td className="py-1.5 px-2 text-right font-mono tabular-nums font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                       {tx.debitUSD > 0 ? formatUSD(tx.debitUSD) : '-'}
                     </td>
 
                     {/* Running Balance (USD) */}
-                    <td className={`py-2 px-1.5 text-right font-mono tabular-nums font-black text-xs whitespace-nowrap ${
+                    <td className={`py-1.5 px-2 text-right font-mono tabular-nums font-black text-[11px] whitespace-nowrap ${
                       tx.balanceUSD <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-100'
                     }`}>
                       {formatUSD(tx.balanceUSD)}
                     </td>
 
                     {/* Actions Column (Edit / Delete) */}
-                    <td className="py-2 px-1 text-center whitespace-nowrap no-print">
-                      <div className="flex items-center justify-center gap-1">
+                    <td className="py-1.5 px-1.5 text-center whitespace-nowrap no-print">
+                      <div className="flex items-center justify-center gap-0.5">
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(tx)}
-                          className="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
+                          className="p-0.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
                           title="Edit Record"
                         >
-                          <SquarePen size={14} />
+                          <SquarePen size={13} />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteTransaction(tx.id)}
-                          className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors"
+                          className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors"
                           title="Delete Record"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </td>
@@ -643,26 +643,26 @@ export default function SkyArianaExportLedger({ account }) {
           </tbody>
 
           {/* Sticky Table Footer Summary */}
-          <tfoot className="sticky bottom-0 z-20 bg-slate-900 text-slate-100 font-bold border-t-2 border-slate-700 text-xs">
+          <tfoot className="sticky bottom-0 z-20 bg-slate-100/95 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 font-bold border-t-2 border-slate-300 dark:border-slate-700 text-xs shadow-md backdrop-blur-md">
             <tr>
-              <td colSpan={6} className="py-2 px-1.5 text-right uppercase text-[10px] tracking-wider text-slate-300">
+              <td colSpan={6} className="py-1.5 px-2 text-right uppercase text-[10px] font-black tracking-wider text-slate-700 dark:text-slate-300">
                 Totals ({filteredTransactions.length} items):
               </td>
-              <td className="py-2 px-1 text-center font-mono text-blue-400">
+              <td className="py-1.5 px-1 text-center font-mono text-blue-700 dark:text-blue-400 font-black">
                 {totals.totalContainers}
               </td>
-              <td className="py-2 px-1.5 text-right font-mono text-amber-400">
+              <td className="py-1.5 px-2 text-right font-mono text-amber-700 dark:text-amber-400 font-black">
                 {formatUSD(totals.totalCredit)}
               </td>
-              <td className="py-2 px-1.5 text-right font-mono text-emerald-400">
+              <td className="py-1.5 px-2 text-right font-mono text-emerald-700 dark:text-emerald-400 font-black">
                 {formatUSD(totals.totalDebit)}
               </td>
-              <td className={`py-2 px-1.5 text-right font-mono ${
-                totals.netBalance <= 0 ? 'text-emerald-400' : 'text-rose-400'
+              <td className={`py-1.5 px-2 text-right font-mono font-black ${
+                totals.netBalance <= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
               }`}>
                 {formatUSD(totals.netBalance)}
               </td>
-              <td className="py-2 px-1 text-center no-print">-</td>
+              <td className="py-1.5 px-1 text-center no-print">-</td>
             </tr>
           </tfoot>
 

@@ -38,7 +38,7 @@ export default function SystemDiagnostics({ diagnostics, currentUser, onRefresh 
         <div><span>Database Status</span><StatusPill online={databaseStatus === 'connected'}>{database.database || health.database || (isLoading ? 'checking...' : 'offline')}</StatusPill></div>
         <div><span>API Status</span><StatusPill online={apiStatus === 'ok' || healthStatus === 'healthy'}>{health.api || health.status || (isLoading ? 'checking...' : 'offline')}</StatusPill></div>
         <div><span>Auth Status</span><StatusPill online={authStatus === 'ready'}>{auth.auth || health.auth || (isLoading ? 'checking...' : 'offline')}</StatusPill></div>
-        <div><span>Server Version</span><strong>{health.version || '1.0.0'}</strong></div>
+        <div><span>Server Version</span><strong>{health.version || '2.1.0'}</strong></div>
         <div><span>Port</span><strong>{portLabel}</strong></div>
         <div><span>Current User</span><strong>{user ? `${user.full_name} (${user.role})` : 'Not signed in'}</strong></div>
       </div>

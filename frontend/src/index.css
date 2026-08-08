@@ -6816,13 +6816,16 @@ body:not(.light) .sidebar-collapse-toggle {
   position: absolute;
   left: 14px;
   top: 50%;
-  z-index: 2;
+  z-index: 10;
   transform: translateY(-50%);
   color: #64748b;
   pointer-events: none;
+  width: 18px;
+  height: 18px;
 }
 
-.smart-party-picker > input {
+.smart-party-picker > input,
+.entry-form .smart-party-picker > input {
   width: 100%;
   padding-left: 44px !important;
 }

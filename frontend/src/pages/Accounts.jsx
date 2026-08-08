@@ -155,35 +155,35 @@ export default function Accounts({
         const cleanName = unescapeText(row.name);
         const cleanAddress = unescapeText(row.address);
         return (
-          <div className="flex items-center gap-3 py-1">
-            <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${getAvatarGradient(row.account_type)} font-black text-xs flex items-center justify-center shrink-0 shadow-xs border border-white/20`}>
+          <div className="flex items-center gap-2.5 py-0.5">
+            <div className={`w-7 h-7 rounded-full bg-gradient-to-tr ${getAvatarGradient(row.account_type)} font-black text-[11px] flex items-center justify-center shrink-0 shadow-2xs border border-white/20`}>
               {cleanName.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <strong className="text-xs font-extrabold text-slate-900 dark:text-white truncate block leading-snug">{cleanName}</strong>
-              {cleanAddress && <span className="text-[11px] text-slate-400 truncate block mt-0.5">{cleanAddress}</span>}
+              <strong className="text-xs font-bold text-slate-900 dark:text-white truncate block leading-tight">{cleanName}</strong>
+              {cleanAddress && <span className="text-[10px] text-slate-400 truncate block mt-0.5">{cleanAddress}</span>}
             </div>
           </div>
         );
       },
-      className: 'col-account-info'
+      className: 'min-w-[170px]'
     },
     { 
       key: 'account_type', 
       label: t('Type'), 
       sortable: true,
       render: (row) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase inline-block ${getTypeBadgeClass(row.account_type)}`}>
+        <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tracking-wider uppercase inline-block ${getTypeBadgeClass(row.account_type)}`}>
           {row.account_type}
         </span>
       ),
-      className: 'col-account-type'
+      className: 'min-w-[100px]'
     },
     { 
       key: 'phone', 
       label: t('Phone'), 
       render: (row) => <span className="text-xs font-mono font-semibold text-slate-600 dark:text-slate-300">{row.phone || '-'}</span>, 
-      className: 'col-phone' 
+      className: 'min-w-[120px]' 
     },
     { 
       key: 'opening_balance_afn', 
@@ -194,7 +194,7 @@ export default function Accounts({
           {currency(row.opening_balance_afn || 0)}
         </span>
       ), 
-      className: 'col-amount text-right' 
+      className: 'min-w-[125px] text-right' 
     },
     { 
       key: 'opening_balance_usd', 
@@ -205,37 +205,37 @@ export default function Accounts({
           {currency(row.opening_balance_usd || 0, 'USD')}
         </span>
       ), 
-      className: 'col-amount text-right' 
+      className: 'min-w-[125px] text-right' 
     },
     { 
       key: 'actions', 
       label: t('Actions'), 
-      className: 'col-actions text-right',
+      className: 'min-w-[185px] text-right',
       render: (row) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-1">
           <NavLink 
             to={`/ledger?account=${row.id}`} 
-            className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white dark:hover:text-white text-xs font-bold transition-all flex items-center gap-1 shadow-xs border border-amber-500/20" 
+            className="px-2 py-0.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white dark:hover:text-white text-[11px] font-bold transition-all flex items-center gap-1 shadow-2xs border border-amber-500/20 whitespace-nowrap" 
             title={t('View Ledger')}
           >
-            <ScrollText size={13} />
+            <ScrollText size={12} />
             <span>{t('Ledger')}</span>
           </NavLink>
           <button 
             type="button" 
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white dark:bg-slate-800 dark:hover:bg-blue-600 text-slate-600 dark:text-slate-300 transition-all shadow-xs" 
+            className="p-1 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white dark:bg-slate-800 dark:hover:bg-blue-600 text-slate-600 dark:text-slate-300 transition-all shadow-2xs" 
             onClick={() => onEdit(row)}
             title={t('Edit Account')}
           >
-            <Edit size={15} />
+            <Edit size={13} />
           </button>
           <button 
             type="button" 
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-600 hover:text-white dark:bg-slate-800 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 transition-all shadow-xs" 
+            className="p-1 rounded-lg bg-slate-100 hover:bg-rose-600 hover:text-white dark:bg-slate-800 dark:hover:bg-rose-600 text-rose-600 dark:text-rose-400 transition-all shadow-2xs" 
             onClick={() => onDelete(row)}
             title={t('Delete Account')}
           >
-            <Trash2 size={15} />
+            <Trash2 size={13} />
           </button>
         </div>
       )
@@ -379,59 +379,59 @@ export default function Accounts({
   };
 
   return (
-    <div className="accounts-page space-y-6">
+    <div className="accounts-page flex flex-col gap-3.5 w-full pb-16 sm:pb-6">
       {/* 1. PAGE HEADER */}
-      <header className="accounts-page-header bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="accounts-page-header bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <span className="eyebrow text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">{t('Financial Records')}</span>
-          <h1 className="page-title text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">{t('Accounts Management')}</h1>
-          <p className="page-description text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          <span className="eyebrow text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">{t('Financial Records')}</span>
+          <h1 className="page-title text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">{t('Accounts Management')}</h1>
+          <p className="page-description text-xs text-slate-500 dark:text-slate-400 font-medium">
             {t('Manage customers, suppliers, workers, factory accounts, and expenses.')}
           </p>
         </div>
 
         {/* Category Filter Pills & Summary Metrics */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {[
-            { id: 'all', label: t('All Accounts'), count: accountCounts.total, activeClass: 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm', inactiveClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200' },
-            { id: 'customer', label: t('Customers'), count: accountCounts.customers, activeClass: 'bg-blue-600 text-white border-blue-600 shadow-sm', inactiveClass: 'bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-100' },
-            { id: 'supplier', label: t('Suppliers'), count: accountCounts.suppliers, activeClass: 'bg-purple-600 text-white border-purple-600 shadow-sm', inactiveClass: 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100' },
-            { id: 'worker', label: t('Workers'), count: accountCounts.workers, activeClass: 'bg-emerald-600 text-white border-emerald-600 shadow-sm', inactiveClass: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/80 hover:bg-emerald-100' },
-            { id: 'factory', label: t('Factories'), count: accountCounts.factories, activeClass: 'bg-amber-500 text-white border-amber-500 shadow-sm', inactiveClass: 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/80 hover:bg-amber-100' },
-            { id: 'expense', label: t('Expenses'), count: accountCounts.expenses, activeClass: 'bg-rose-600 text-white border-rose-600 shadow-sm', inactiveClass: 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/80 hover:bg-rose-100' }
+            { id: 'all', label: t('All Accounts'), count: accountCounts.total, activeClass: 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-2xs', inactiveClass: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200' },
+            { id: 'customer', label: t('Customers'), count: accountCounts.customers, activeClass: 'bg-blue-600 text-white border-blue-600 shadow-2xs', inactiveClass: 'bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-100' },
+            { id: 'supplier', label: t('Suppliers'), count: accountCounts.suppliers, activeClass: 'bg-purple-600 text-white border-purple-600 shadow-2xs', inactiveClass: 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/80 hover:bg-purple-100' },
+            { id: 'worker', label: t('Workers'), count: accountCounts.workers, activeClass: 'bg-emerald-600 text-white border-emerald-600 shadow-2xs', inactiveClass: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/80 hover:bg-emerald-100' },
+            { id: 'factory', label: t('Factories'), count: accountCounts.factories, activeClass: 'bg-amber-500 text-white border-amber-500 shadow-2xs', inactiveClass: 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/80 hover:bg-amber-100' },
+            { id: 'expense', label: t('Expenses'), count: accountCounts.expenses, activeClass: 'bg-rose-600 text-white border-rose-600 shadow-2xs', inactiveClass: 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/80 hover:bg-rose-100' }
           ].map(({ id, label, count, activeClass, inactiveClass }) => (
             <button
               key={id}
               type="button"
               onClick={() => setSelectedTypeFilter(id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-all active:scale-95 cursor-pointer ${
                 selectedTypeFilter === id ? activeClass : inactiveClass
               }`}
             >
               <span>{label}</span>
-              <span className={`px-1.5 py-0.2 text-[10px] font-black rounded-full ${selectedTypeFilter === id ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : 'bg-black/10 dark:bg-white/10'}`}>{count}</span>
+              <span className={`px-1.5 py-0.2 text-[9.5px] font-black rounded-full ${selectedTypeFilter === id ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : 'bg-black/10 dark:bg-white/10'}`}>{count}</span>
             </button>
           ))}
         </div>
       </header>
 
       {/* 2. TWO-COLUMN BALANCED LAYOUT */}
-      <div className="accounts-layout grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="accounts-layout grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* LEFT FORM CARD */}
-        <div className="account-form-card lg:col-span-4 xl:col-span-4 bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="account-form-card__header flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="form-title-badge w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold shrink-0">
-              <UserPlus size={20} />
+        <div className="account-form-card lg:col-span-4 xl:col-span-4 bg-white dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3">
+          <div className="account-form-card__header flex items-center gap-2.5 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+            <div className="form-title-badge w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold shrink-0">
+              <UserPlus size={16} />
             </div>
             <div>
-              <h3 className="form-title text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">{form.id ? t('Edit Account') : t('Add New Account')}</h3>
-              <p className="form-subtext text-xs text-slate-500 dark:text-slate-400 font-medium">{t('Fill out account details below.')}</p>
+              <h3 className="form-title text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">{form.id ? t('Edit Account') : t('Add New Account')}</h3>
+              <p className="form-subtext text-[11px] text-slate-500 dark:text-slate-400 font-medium">{t('Fill out account details below.')}</p>
             </div>
           </div>
           
-          <form className="account-form space-y-3.5" onSubmit={onSave}>
+          <form className="account-form space-y-2.5" onSubmit={onSave}>
             <div className="form-field">
-              <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('ACCOUNT NAME *')}</label>
+              <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('ACCOUNT NAME *')}</label>
               <input 
                 autoFocus 
                 type="text" 
@@ -440,16 +440,16 @@ export default function Accounts({
                 placeholder={t('Full name or company')} 
                 required 
                 dir="auto" 
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
+                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
               />
             </div>
             
             <div className="form-field">
-              <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('ACCOUNT TYPE *')}</label>
+              <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('ACCOUNT TYPE *')}</label>
               <select 
                 value={form.account_type || 'customer'} 
                 onChange={(e) => update('account_type', e.target.value)} 
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-bold transition-all"
+                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-bold transition-all"
               >
                 <option value="customer">👤 {t('Customer')}</option>
                 <option value="supplier">🏬 {t('Supplier')}</option>
@@ -458,7 +458,7 @@ export default function Accounts({
                 <option value="expense">💸 {t('Expense')}</option>
                 <option value="other">📁 {t('Other')}</option>
               </select>
-              <div className="flex items-center gap-1.5 mt-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-1 mt-1 overflow-x-auto pb-0.5 scrollbar-none">
                 {[
                   { id: 'customer', label: '👤 Customer' },
                   { id: 'supplier', label: '🏬 Supplier' },
@@ -470,9 +470,9 @@ export default function Accounts({
                     key={id}
                     type="button"
                     onClick={() => update('account_type', id)}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all shrink-0 border ${
+                    className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold transition-all shrink-0 border ${
                       form.account_type === id
-                        ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                        ? 'bg-amber-500 text-white border-amber-500 shadow-2xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
                     }`}
                   >
@@ -482,78 +482,78 @@ export default function Accounts({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="form-field">
-                <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('PHONE')}</label>
+                <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('PHONE')}</label>
                 <input 
                   type="text" 
                   value={form.phone || ''} 
                   onChange={(e) => update('phone', e.target.value)} 
                   placeholder={t('Phone number')} 
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
                 />
               </div>
               <div className="form-field">
-                <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('ADDRESS')}</label>
+                <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('ADDRESS')}</label>
                 <input 
                   type="text" 
                   value={form.address || ''} 
                   onChange={(e) => update('address', e.target.value)} 
                   placeholder={t('Address')} 
                   dir="auto" 
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="form-field">
-                <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('OPENING AFN')}</label>
+                <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('OPENING AFN')}</label>
                 <input 
                   type="number" 
                   value={form.opening_balance_afn ?? ''} 
                   onChange={(e) => update('opening_balance_afn', e.target.value)} 
                   placeholder="0.00" 
                   step="0.01" 
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold transition-all" 
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold transition-all" 
                 />
               </div>
               <div className="form-field">
-                <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('OPENING USD')}</label>
+                <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('OPENING USD')}</label>
                 <input 
                   type="number" 
                   value={form.opening_balance_usd ?? ''} 
                   onChange={(e) => update('opening_balance_usd', e.target.value)} 
                   placeholder="0.00" 
                   step="0.01" 
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold transition-all" 
+                  className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono font-bold transition-all" 
                 />
               </div>
             </div>
 
             <div className="form-field">
-              <label className="field-label text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">{t('NOTES')}</label>
+              <label className="field-label text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 block">{t('NOTES')}</label>
               <input 
                 type="text" 
                 value={form.note || ''} 
                 onChange={(e) => update('note', e.target.value)} 
                 placeholder={t('Optional note')} 
                 dir="auto" 
-                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
+                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium transition-all" 
               />
             </div>
 
-            <div className="account-form-actions flex items-center justify-end gap-2 pt-2">
+            <div className="account-form-actions flex items-center justify-end gap-1.5 pt-1.5">
               {form.id ? (
-                <button type="button" className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" onClick={resetForm}>
+                <button type="button" className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" onClick={resetForm}>
                   {t('Cancel Edit')}
                 </button>
               ) : (
-                <button type="button" className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors" onClick={resetForm}>
+                <button type="button" className="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" onClick={resetForm}>
                   {t('Clear')}
                 </button>
               )}
-              <button className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all" type="submit">
+              <button className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs transition-all active:scale-95" type="submit">
                 {form.id ? t('Save Changes') : t('Create Account')}
               </button>
             </div>
@@ -561,13 +561,14 @@ export default function Accounts({
         </div>
 
         {/* RIGHT DIRECTORY CARD */}
-        <div className="account-directory-card lg:col-span-8 xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="account-directory-card lg:col-span-8 xl:col-span-8 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
           <DataTable
             columns={columns}
             data={filteredAccounts}
             keyField="id"
             headerContent={headerContent}
             renderMobileCard={renderMobileCard}
+            minWidthClass="min-w-[1050px]"
             emptyTitle={t('No accounts found')}
             emptyDescription={t('Create a customer, supplier, worker, or expense account to see it here.')}
           />

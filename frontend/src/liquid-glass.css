@@ -60,6 +60,13 @@ body {
     background: var(--surface-hover) !important;
   }
 
+  .smart-party-picker > input,
+  .entry-form .smart-party-picker > input,
+  .settings-form .smart-party-picker > input,
+  .converter-form .smart-party-picker > input {
+    padding-left: 44px !important;
+  }
+
   /* Buttons */
   .primary-btn { 
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important; 
@@ -2643,29 +2650,29 @@ button, a, select, input {
 }
 
 .actions-title {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
   display: block;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .actions-buttons-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .btn-action {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 16px;
-  border-radius: 12px;
-  font-size: 0.84rem;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.78rem;
   font-weight: 600;
   background: var(--surface-strong);
   border: 1px solid var(--border);
@@ -2696,8 +2703,8 @@ button, a, select, input {
 /* Dashboard Split & Recent Transactions */
 .dashboard-main-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 12px;
 }
 
 @media (max-width: 1100px) {
@@ -2708,7 +2715,7 @@ button, a, select, input {
 
 .recent-transactions-card {
   min-width: 0;
-  padding: 20px;
+  padding: 12px 14px;
   border-radius: var(--radius-card);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2719,12 +2726,12 @@ button, a, select, input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .card-title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--text);
 }
@@ -2741,13 +2748,13 @@ button, a, select, input {
 .view-all-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.84rem;
+  gap: 4px;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--primary);
   text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 10px;
+  padding: 4px 10px;
+  border-radius: 8px;
   background: rgba(37, 99, 235, 0.08);
   transition: all 0.2s;
 }
@@ -2766,12 +2773,12 @@ button, a, select, input {
 .recent-transactions-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
 }
 
 .recent-transactions-table th {
-  padding: 12px 14px;
-  font-size: 0.76rem;
+  padding: 6px 10px;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2784,10 +2791,10 @@ button, a, select, input {
 }
 
 .recent-transactions-table td {
-  padding: 14px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
-  height: 52px;
+  height: 38px;
 }
 
 .account-cell {
@@ -3531,7 +3538,8 @@ button, a, select, input {
 }
 
 .col-actions {
-  width: 8% !important;
+  width: auto !important;
+  min-width: 175px !important;
   text-align: right !important;
 }
 

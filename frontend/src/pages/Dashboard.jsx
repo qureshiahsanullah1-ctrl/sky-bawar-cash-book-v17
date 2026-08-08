@@ -56,16 +56,16 @@ function MetricCard({ title, value, icon: Icon, color, subtext }) {
   const currentStyle = getMetricStyle(color, colorStyles);
 
   return (
-    <div className="glass-card p-3.5 sm:p-5 rounded-2xl flex flex-col gap-1 border border-slate-200/60 dark:border-slate-800">
-      <div className="flex items-center gap-2">
-        <div className={`p-1.5 rounded-lg ${currentStyle.bg} flex items-center justify-center shrink-0`}>
-          <Icon size={15} />
+    <div className="glass-card p-2.5 sm:p-3 rounded-xl flex flex-col gap-0.5 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+      <div className="flex items-center gap-1.5">
+        <div className={`p-1 rounded-md ${currentStyle.bg} flex items-center justify-center shrink-0`}>
+          <Icon size={13} />
         </div>
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{title}</span>
+        <span className="text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">{title}</span>
       </div>
       <div className="mt-0.5">
-        <strong className="text-base sm:text-2xl font-black font-mono tracking-tight text-slate-900 dark:text-white tabular-nums truncate block">{value}</strong>
-        {subtext && <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">{subtext}</p>}
+        <strong className="text-sm sm:text-lg font-black font-mono tracking-tight text-slate-900 dark:text-white tabular-nums truncate block">{value}</strong>
+        {subtext && <p className="text-[9.5px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-medium">{subtext}</p>}
       </div>
     </div>
   );
@@ -211,42 +211,42 @@ export default function Dashboard({
   }, [summary?.monthly_transactions, transactions]);
 
   return (
-    <div className="dashboard-page flex flex-col gap-4 sm:gap-6 w-full pb-28 sm:pb-8">
+    <div className="dashboard-page flex flex-col gap-2.5 sm:gap-3.5 w-full pb-16 sm:pb-6">
       {/* 1. Compact Welcome Banner */}
-      <div className="dashboard-welcome-card glass-card p-3 sm:p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="welcome-avatar-block flex items-center gap-3">
-          <div className="welcome-avatar w-10 h-10 rounded-xl bg-indigo-600 text-white font-black flex items-center justify-center text-xs sm:text-sm shadow-sm shrink-0">
+      <div className="dashboard-welcome-card glass-card p-2.5 sm:p-3 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+        <div className="welcome-avatar-block flex items-center gap-2.5">
+          <div className="welcome-avatar w-8 h-8 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center text-xs shadow-2xs shrink-0">
             {userInitials}
           </div>
           <div className="welcome-info min-w-0">
-            <p className="text-[11px] text-slate-500 font-medium leading-none">{greeting},</p>
-            <h2 className="welcome-greeting text-sm sm:text-lg font-black text-slate-900 dark:text-white truncate">{userName}</h2>
-            <p className="welcome-subtext text-[10px] sm:text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-              <span className="truncate">{displayCompanyName}</span> &bull; <span className="status-badge-inline text-[10px] text-emerald-600 font-bold">{t('dashboard.upToDate', 'Up to date')}</span>
+            <p className="text-[10px] text-slate-500 font-medium leading-none">{greeting},</p>
+            <h2 className="welcome-greeting text-xs sm:text-base font-black text-slate-900 dark:text-white truncate">{userName}</h2>
+            <p className="welcome-subtext text-[10px] text-slate-500 flex items-center gap-1 mt-0.5">
+              <span className="truncate">{displayCompanyName}</span> &bull; <span className="status-badge-inline text-[9.5px] text-emerald-600 font-bold">{t('dashboard.upToDate', 'Up to date')}</span>
             </p>
           </div>
         </div>
 
-        <div className="welcome-stats flex items-center gap-2 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80">
-          <div className="stat-pill px-2.5 py-1 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-xs">
-            <CalendarDays size={13} className="text-indigo-500 shrink-0" />
+        <div className="welcome-stats flex items-center gap-1.5 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80">
+          <div className="stat-pill px-2 py-0.5 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5 text-xs">
+            <CalendarDays size={12} className="text-indigo-500 shrink-0" />
             <div className="flex flex-col">
-              <span className="text-[8px] uppercase font-bold text-slate-400">{t('dashboard.today', 'Today')}</span>
-              <strong className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{todayCount} entries</strong>
+              <span className="text-[7.5px] uppercase font-bold text-slate-400">{t('dashboard.today', 'Today')}</span>
+              <strong className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{todayCount} entries</strong>
             </div>
           </div>
-          <div className="stat-pill px-2.5 py-1 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-xs">
-            <CalendarRange size={13} className="text-indigo-500 shrink-0" />
+          <div className="stat-pill px-2 py-0.5 bg-slate-50 dark:bg-slate-800/60 rounded-md border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-1.5 text-xs">
+            <CalendarRange size={12} className="text-indigo-500 shrink-0" />
             <div className="flex flex-col">
-              <span className="text-[8px] uppercase font-bold text-slate-400">{t('dashboard.thisMonth', 'This Month')}</span>
-              <strong className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{monthCount} entries</strong>
+              <span className="text-[7.5px] uppercase font-bold text-slate-400">{t('dashboard.thisMonth', 'This Month')}</span>
+              <strong className="text-[10px] font-bold text-slate-800 dark:text-slate-200">{monthCount} entries</strong>
             </div>
           </div>
         </div>
       </div>
 
       {/* 2. Primary 4-Card Responsive Metric Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         <MetricCard
           title="Total Cash In (AFN)"
           value={currency(cashInAfn, 'AFN')}

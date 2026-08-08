@@ -26,7 +26,7 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertEqual("ok", payload["api"])
         self.assertEqual("ready", payload["auth"])
         self.assertEqual("ok", payload["status"])
-        self.assertEqual("1.0.0", payload["version"])
+        self.assertEqual("2.1.0", payload["version"])
         self.assertEqual("N/A", payload["port"])
         self.assertIn("timestamp", payload)
         self.assertIsNone(payload["currentUser"])

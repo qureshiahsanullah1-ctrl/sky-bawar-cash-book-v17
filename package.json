@@ -1,6 +1,6 @@
 {
   "name": "bawar-star-system-storage",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "scripts": {
     "postinstall": "npm --prefix frontend install",
     "dev": "concurrently -n backend,frontend -c magenta,cyan \"uv run uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload\" \"npm --prefix frontend run dev\""

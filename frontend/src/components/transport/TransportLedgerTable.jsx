@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Building2, 
   Search, 
@@ -22,6 +23,7 @@ import { useCompany } from '../../context/CompanyContext';
 
 export default function TransportLedgerTable() {
   const { currentCompany } = useCompany();
+  const { t } = useTranslation();
   const [ledgerEntries, setLedgerEntries] = useState([
     {
       id: 'tx-1',
@@ -257,196 +259,239 @@ export default function TransportLedgerTable() {
   };
 
   return (
-    <div className="h-[calc(100vh-68px)] flex flex-col gap-2 p-3 bg-slate-950 text-slate-100 overflow-hidden">
+    <div className="h-[calc(100vh-64px)] flex flex-col gap-2 p-2.5 sm:p-3 bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
       
-      {/* COMPACT TOP HEADER BAR */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-2xl px-4 py-2.5 border border-blue-500/30 shadow-xl flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <img src={currentCompany?.logo || '/sky-ariana-logo.png'} alt="SKY ARIANA" className="w-10 h-10 object-contain rounded-xl bg-slate-900 border border-blue-500/40 p-0.5" />
-          <div>
+      {/* 1. COMPACT LIGHT THEME CORPORATE HEADER BAR */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl px-3.5 py-1.5 border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <img src={currentCompany?.logo || '/sky-ariana-logo.png'} alt="SKY ARIANA" className="w-8 h-8 object-contain rounded-lg bg-slate-900 border border-blue-500/40 p-0.5 shrink-0" />
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase bg-blue-600 px-2 py-0.5 rounded text-white tracking-widest">
-                SKY ARIANA & BALAM BAR BARAN
+              <span className="text-[9.5px] font-black uppercase bg-blue-600 px-1.5 py-0.2 rounded text-white tracking-wider">
+                {t('ledger.companyBrand', 'SKY ARIANA & BALAM BAR BARAN')}
               </span>
-              <span className="text-xs font-bold text-amber-400">حاجی ابراهیم او دانش بهای</span>
+              <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 dir-rtl hidden sm:inline">حاجی ابراهیم او دانش بهای</span>
             </div>
-            <h1 className="text-sm font-black text-white mt-0.5">HAJI IBRAHIM - DANISH AGHA</h1>
+            <h1 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight">HAJI IBRAHIM - DANISH AGHA</h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
-          <div className="px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Credit</span>
-            <strong className="text-xs font-mono text-amber-400">{formatUSD(summary.totalCreditUSD)}</strong>
+        <div className="flex items-center gap-1.5 text-xs shrink-0">
+          <div className="px-2 py-0.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 shadow-2xs">
+            <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">{t('ledger.credit', 'Credit')}</span>
+            <strong className="text-[11px] font-mono font-bold text-amber-800 dark:text-amber-300">{formatUSD(summary.totalCreditUSD)}</strong>
           </div>
-          <div className="px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Debit</span>
-            <strong className="text-xs font-mono text-emerald-400">{formatUSD(summary.totalDebitUSD)}</strong>
+          <div className="px-2 py-0.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 shadow-2xs">
+            <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">{t('ledger.debit', 'Debit')}</span>
+            <strong className="text-[11px] font-mono font-bold text-emerald-800 dark:text-emerald-300">{formatUSD(summary.totalDebitUSD)}</strong>
           </div>
-          <div className="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-700">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Balance</span>
-            <strong className={`text-xs font-mono font-black ${summary.netBalanceUSD <= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+          <div className="px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">{t('ledger.balance', 'Balance')}</span>
+            <strong className={`text-[11px] font-mono font-black ${summary.netBalanceUSD <= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
               {formatUSD(summary.netBalanceUSD)}
             </strong>
           </div>
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-2xs transition-all active:scale-[0.98]"
           >
-            <Plus size={14} />
-            <span>New Entry</span>
+            <Plus size={13} />
+            <span>{t('ledger.newEntry', 'New Entry')}</span>
           </button>
         </div>
       </div>
 
-      {/* SEARCH TOOLBAR */}
-      <div className="bg-slate-900 rounded-xl px-3 py-2 border border-slate-800 flex items-center justify-between gap-3 shrink-0">
-        <div className="relative w-64">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      {/* 2. COMPACT SEARCH TOOLBAR */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl px-2.5 py-1.5 border border-slate-200/80 dark:border-slate-800 shadow-2xs flex items-center justify-between gap-2 shrink-0">
+        <div className="relative w-48 sm:w-56">
+          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search B/L, Container..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 text-slate-100"
+            className="w-full pl-7 pr-2.5 py-1 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-500"
           />
         </div>
 
-        <div className="bg-slate-800 p-0.5 rounded-lg flex items-center text-xs">
+        <div className="bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg flex items-center text-xs">
           <button
             type="button"
-            className={`px-2.5 py-1 rounded-md font-semibold ${filterCategory === 'all' ? 'bg-slate-900 text-blue-400' : 'text-slate-400'}`}
+            className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${filterCategory === 'all' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-2xs' : 'text-slate-500'}`}
             onClick={() => setFilterCategory('all')}
           >
-            All
+            {t('ledger.all', 'All')}
           </button>
           <button
             type="button"
-            className={`px-2.5 py-1 rounded-md font-semibold ${filterCategory === 'FREIGHT_INVOICE' ? 'bg-slate-900 text-amber-400' : 'text-slate-400'}`}
+            className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${filterCategory === 'FREIGHT_INVOICE' ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-2xs' : 'text-slate-500'}`}
             onClick={() => setFilterCategory('FREIGHT_INVOICE')}
           >
-            Invoices
+            {t('ledger.invoices', 'Invoices')}
           </button>
           <button
             type="button"
-            className={`px-2.5 py-1 rounded-md font-semibold ${filterCategory === 'HAWALA_PAYMENT' ? 'bg-slate-900 text-emerald-400' : 'text-slate-400'}`}
+            className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all ${filterCategory === 'HAWALA_PAYMENT' ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-2xs' : 'text-slate-500'}`}
             onClick={() => setFilterCategory('HAWALA_PAYMENT')}
           >
-            Hawala
+            {t('ledger.hawala', 'Hawala')}
           </button>
           <button
             type="button"
-            className={`px-2.5 py-1 rounded-md font-semibold flex items-center gap-1 ${filterCategory === 'SURRENDERED' ? 'bg-emerald-600 text-white' : 'text-emerald-400'}`}
+            className={`px-2 py-0.5 rounded-md font-semibold text-[10.5px] transition-all flex items-center gap-1 ${filterCategory === 'SURRENDERED' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-emerald-600 dark:text-emerald-400'}`}
             onClick={() => setFilterCategory('SURRENDERED')}
           >
-            <ShieldCheck size={12} />
-            <span>Surrendered B/L</span>
+            <ShieldCheck size={11} />
+            <span>{t('ledger.surrenderedBL', 'Surrendered B/L')}</span>
           </button>
         </div>
       </div>
 
-      {/* STICKY LEDGER TABLE */}
-      <div className="flex-1 min-h-0 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-auto relative">
-        <table className="w-full text-left text-xs border-collapse">
+      {/* 3. STICKY LEDGER TABLE (HIGH-DENSITY LIGHT THEME) */}
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-2xs overflow-auto relative">
+        <table className="w-full text-left text-xs border-collapse min-w-[950px]">
           <thead>
-            <tr className="sticky top-0 z-20 bg-slate-950 text-slate-300 uppercase font-bold text-[10px] border-b border-slate-800">
-              <th className="py-2.5 px-2 text-center w-10">S.N</th>
-              <th className="py-2.5 px-2 min-w-[85px]">Date</th>
-              <th className="py-2.5 px-2 min-w-[130px]">Shipper</th>
-              <th className="py-2.5 px-2 min-w-[130px]">Consignee</th>
-              <th className="py-2.5 px-2 min-w-[180px]">Commodity & Invoice</th>
-              <th className="py-2.5 px-2 min-w-[210px]">Container & B/L No.</th>
-              <th className="py-2.5 px-2 text-center w-10">Qty</th>
-              <th className="py-2.5 px-2 text-right text-slate-400 min-w-[85px]">Rate ($)</th>
-              <th className="py-2.5 px-2 text-right text-amber-400 min-w-[90px]">Credit ($)</th>
-              <th className="py-2.5 px-2 text-right text-emerald-400 min-w-[90px]">Debit ($)</th>
-              <th className="py-2.5 px-2 text-right min-w-[95px]">Balance ($)</th>
-              <th className="py-2.5 px-2 text-center w-16">Actions</th>
+            <tr className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-850 text-slate-700 dark:text-slate-200 uppercase font-bold text-[9.5px] tracking-wider border-b border-slate-200 dark:border-slate-700 backdrop-blur-md">
+              <th className="py-1.5 px-2 text-center w-10">S.N</th>
+              <th className="py-1.5 px-2 min-w-[80px]">{t('ledger.date', 'Date')}</th>
+              <th className="py-1.5 px-2 min-w-[120px]">{t('ledger.shipper', 'Shipper')}</th>
+              <th className="py-1.5 px-2 min-w-[120px]">{t('ledger.consignee', 'Consignee')}</th>
+              <th className="py-1.5 px-2 min-w-[160px]">{t('ledger.commodityInvoice', 'Commodity & Invoice')}</th>
+              <th className="py-1.5 px-2 min-w-[190px]">{t('ledger.containerBLNo', 'Container & B/L No.')}</th>
+              <th className="py-1.5 px-1.5 text-center w-10">{t('ledger.qty', 'Qty')}</th>
+              <th className="py-1.5 px-2 text-right text-slate-500 dark:text-slate-400 min-w-[80px]">{t('ledger.rateUSD', 'Rate ($)')}</th>
+              <th className="py-1.5 px-2 text-right text-amber-700 dark:text-amber-400 min-w-[85px]">{t('ledger.creditUSD', 'Credit ($)')}</th>
+              <th className="py-1.5 px-2 text-right text-emerald-700 dark:text-emerald-400 min-w-[85px]">{t('ledger.debitUSD', 'Debit ($)')}</th>
+              <th className="py-1.5 px-2 text-right text-slate-800 dark:text-slate-200 min-w-[90px]">{t('ledger.balanceUSD', 'Balance ($)')}</th>
+              <th className="py-1.5 px-1.5 text-center w-14">{t('ledger.actions', 'Actions')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 font-medium text-[11px]">
-            {filteredData.map((row) => (
-              <tr key={row.id} className="hover:bg-slate-800/60">
-                <td className="py-2 px-2 text-center font-mono text-slate-500">{row.sn}</td>
-                <td className="py-2 px-2 font-semibold">{row.date}</td>
-                <td className="py-2 px-2 truncate max-w-[130px]">{row.shipper}</td>
-                <td className="py-2 px-2 truncate max-w-[130px]">{row.consignee}</td>
-                <td className="py-2 px-2 truncate max-w-[180px]">{row.commodityInvoice}</td>
-                <td className="py-2 px-2 font-mono text-[11px]">
-                  <div>{row.blContainerNo}</div>
-                  {row.isSurrenderedBL && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-600 text-white mt-0.5">
-                      <ShieldCheck size={10} /> SURRENDERED B/L
-                    </span>
-                  )}
-                </td>
-                <td className="py-2 px-2 text-center font-mono">{row.containerQty > 0 ? row.containerQty : '-'}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-400">{row.ratePerContainerUSD > 0 ? formatUSD(row.ratePerContainerUSD) : '-'}</td>
-                <td className="py-2 px-2 text-right font-mono font-bold text-amber-400">{row.creditUSD > 0 ? formatUSD(row.creditUSD) : '-'}</td>
-                <td className="py-2 px-2 text-right font-mono font-bold text-emerald-400">{row.debitUSD > 0 ? formatUSD(row.debitUSD) : '-'}</td>
-                <td className="py-2 px-2 text-right font-mono font-black">{formatUSD(row.runningBalanceUSD)}</td>
-                <td className="py-2 px-2 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <button type="button" onClick={() => handleOpenEdit(row)} className="p-1 text-slate-400 hover:text-blue-400">
-                      <SquarePen size={14} />
-                    </button>
-                    <button type="button" onClick={() => handleDelete(row.id)} className="p-1 text-slate-400 hover:text-rose-400">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium text-[10.5px]">
+            {filteredData.length === 0 ? (
+              <tr>
+                <td colSpan={12} className="py-8 text-center text-slate-400 text-xs">
+                  {t('ledger.noEntriesFound', 'No matching ledger entries found.')}
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredData.map((row) => (
+                <tr 
+                  key={row.id} 
+                  className={`hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors ${
+                    row.type === 'HAWALA_PAYMENT' ? 'bg-emerald-50/30 dark:bg-emerald-950/15' : ''
+                  }`}
+                >
+                  <td className="py-1.5 px-2 text-center font-mono text-slate-400 font-bold">{row.sn}</td>
+                  <td className="py-1.5 px-2 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap text-[10px]">{row.date}</td>
+                  <td className="py-1.5 px-2 font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[120px]" title={row.shipper}>{row.shipper}</td>
+                  <td className="py-1.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={row.consignee}>{row.consignee}</td>
+                  <td className="py-1.5 px-2 font-bold text-slate-900 dark:text-slate-100 truncate max-w-[160px]" title={row.commodityInvoice}>{row.commodityInvoice}</td>
+                  <td className="py-1.5 px-2 font-mono text-[10.5px]">
+                    <div className="text-slate-700 dark:text-slate-300 truncate" title={row.blContainerNo}>{row.blContainerNo}</div>
+                    {row.isSurrenderedBL && (
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-800/80 mt-0.5">
+                        <ShieldCheck size={10} /> {t('ledger.surrenderedBL', 'SURRENDERED B/L')}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-1.5 px-1.5 text-center font-bold">
+                    {row.containerQty > 0 ? (
+                      <span className="px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 font-mono text-[9.5px] tabular-nums">
+                        {row.containerQty}
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td className="py-1.5 px-2 text-right font-mono text-slate-500 dark:text-slate-400 tabular-nums">{row.ratePerContainerUSD > 0 ? formatUSD(row.ratePerContainerUSD) : '-'}</td>
+                  <td className="py-1.5 px-2 text-right font-mono font-bold text-slate-900 dark:text-slate-100 tabular-nums">{row.creditUSD > 0 ? formatUSD(row.creditUSD) : '-'}</td>
+                  <td className="py-1.5 px-2 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">{row.debitUSD > 0 ? formatUSD(row.debitUSD) : '-'}</td>
+                  <td className={`py-1.5 px-2 text-right font-mono font-black tabular-nums text-[11px] ${row.runningBalanceUSD <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-100'}`}>{formatUSD(row.runningBalanceUSD)}</td>
+                  <td className="py-1.5 px-1.5 text-center">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button type="button" onClick={() => handleOpenEdit(row)} className="p-0.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors" title="Edit Entry">
+                        <SquarePen size={13} />
+                      </button>
+                      <button type="button" onClick={() => handleDelete(row.id)} className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors" title="Delete Entry">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
+          {/* Sticky Table Footer Summary */}
+          <tfoot className="sticky bottom-0 z-20 bg-slate-100/95 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 font-bold border-t-2 border-slate-300 dark:border-slate-700 text-xs shadow-md backdrop-blur-md">
+            <tr>
+              <td colSpan={6} className="py-1.5 px-2 text-right uppercase text-[10px] font-black tracking-wider text-slate-700 dark:text-slate-300">
+                {t('ledger.totalsPrefix', 'Totals (')} {filteredData.length} entries):
+              </td>
+              <td className="py-1.5 px-1.5 text-center font-mono text-blue-700 dark:text-blue-400 font-black">
+                {summary.totalContainers}
+              </td>
+              <td className="py-1.5 px-2 text-right font-mono text-slate-500 dark:text-slate-400 font-bold">-</td>
+              <td className="py-1.5 px-2 text-right font-mono text-amber-700 dark:text-amber-400 font-black">
+                {formatUSD(summary.totalCreditUSD)}
+              </td>
+              <td className="py-1.5 px-2 text-right font-mono text-emerald-700 dark:text-emerald-400 font-black">
+                {formatUSD(summary.totalDebitUSD)}
+              </td>
+              <td className={`py-1.5 px-2 text-right font-mono font-black ${
+                summary.netBalanceUSD <= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
+              }`}>
+                {formatUSD(summary.netBalanceUSD)}
+              </td>
+              <td className="py-1.5 px-1 text-center">-</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       {/* MODAL WITH SURRENDERED B/L CHECKBOX */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl w-full max-w-lg p-5">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
-              <h3 className="text-sm font-bold text-white">{editingId ? 'Edit Transport Record' : 'Add Transport Record'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white"><X size={16} /></button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg p-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-3">
+              <h3 className="text-xs sm:text-sm font-bold">{editingId ? t('ledger.editRecord', 'Edit Transport Record') : t('ledger.addRecord', 'Add Transport Record')}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={15} /></button>
             </div>
 
             <form onSubmit={handleSaveEntry} className="space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Type</label>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">{t('ledger.typeLabel', 'Type')}</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" className={`py-1.5 rounded-xl font-bold ${entryType === 'FREIGHT_INVOICE' ? 'bg-amber-500 text-white' : 'bg-slate-800 text-slate-400'}`} onClick={() => setEntryType('FREIGHT_INVOICE')}>
-                    Invoice (Credit)
+                  <button type="button" className={`py-1.5 rounded-lg font-bold transition-all ${entryType === 'FREIGHT_INVOICE' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`} onClick={() => setEntryType('FREIGHT_INVOICE')}>
+                    {t('ledger.invoiceCredit', 'Invoice (Credit)')}
                   </button>
-                  <button type="button" className={`py-1.5 rounded-xl font-bold ${entryType === 'HAWALA_PAYMENT' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'}`} onClick={() => setEntryType('HAWALA_PAYMENT')}>
-                    Hawala (Debit)
+                  <button type="button" className={`py-1.5 rounded-lg font-bold transition-all ${entryType === 'HAWALA_PAYMENT' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`} onClick={() => setEntryType('HAWALA_PAYMENT')}>
+                    {t('ledger.hawalaDebit', 'Hawala (Debit)')}
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block font-semibold mb-1">Date</label>
-                  <input type="text" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full p-2 rounded-xl bg-slate-800 border border-slate-700" />
+                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">{t('ledger.date', 'Date')}</label>
+                  <input type="text" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white" />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">{entryType === 'FREIGHT_INVOICE' ? 'Rate ($)' : 'Amount ($)'}</label>
-                  <input type="number" value={entryType === 'FREIGHT_INVOICE' ? formData.ratePerContainerUSD : formData.debitUSD} onChange={(e) => setFormData({ ...formData, [entryType === 'FREIGHT_INVOICE' ? 'ratePerContainerUSD' : 'debitUSD']: e.target.value })} className="w-full p-2 rounded-xl bg-slate-800 border border-slate-700 font-mono font-bold" />
+                  <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">{entryType === 'FREIGHT_INVOICE' ? t('ledger.rateUSD', 'Rate ($)') : 'Amount ($)'}</label>
+                  <input type="number" value={entryType === 'FREIGHT_INVOICE' ? formData.ratePerContainerUSD : formData.debitUSD} onChange={(e) => setFormData({ ...formData, [entryType === 'FREIGHT_INVOICE' ? 'ratePerContainerUSD' : 'debitUSD']: e.target.value })} className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono font-bold" />
                 </div>
               </div>
 
               {entryType === 'FREIGHT_INVOICE' && (
-                <label className="flex items-center gap-2 p-2 rounded-xl border border-emerald-500/30 bg-emerald-950/20 cursor-pointer">
-                  <input type="checkbox" checked={formData.isSurrenderedBL} onChange={(e) => setFormData({ ...formData, isSurrenderedBL: e.target.checked })} className="rounded text-emerald-600" />
-                  <span className="font-bold text-emerald-300 text-xs flex items-center gap-1">
-                    <ShieldCheck size={14} /> Surrendered B/L (Telex Release / تسلیم شده)
+                <label className="flex items-center gap-2 p-2 rounded-lg border border-emerald-300/80 bg-emerald-50 dark:bg-emerald-950/20 cursor-pointer">
+                  <input type="checkbox" checked={formData.isSurrenderedBL} onChange={(e) => setFormData({ ...formData, isSurrenderedBL: e.target.checked })} className="rounded text-emerald-600 focus:ring-emerald-500" />
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-1">
+                    <ShieldCheck size={14} /> {t('ledger.surrenderedBLDetailed', 'Surrendered B/L (Telex Release / تسلیم شده)')}
                   </span>
                 </label>
               )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-3 py-1.5 text-slate-400">Cancel</button>
-                <button type="submit" className="px-4 py-1.5 bg-blue-600 text-white font-bold rounded-xl">{editingId ? 'Update' : 'Save'}</button>
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-3 py-1.5 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold">{t('ledger.cancel', 'Cancel')}</button>
+                <button type="submit" className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-2xs">{editingId ? t('ledger.update', 'Update') : t('ledger.save', 'Save')}</button>
               </div>
             </form>
           </div>

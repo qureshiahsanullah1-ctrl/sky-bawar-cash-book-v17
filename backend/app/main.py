@@ -208,7 +208,7 @@ def health(
         "api": "ok",
         "auth": "unknown",
         "status": "ok",
-        "version": "1.0.0",
+        "version": "2.1.0",
         "port": request.url.port or "N/A" if request else "N/A",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "currentUser": None,
