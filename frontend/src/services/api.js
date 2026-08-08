@@ -32,8 +32,11 @@ export const getDynamicApiBaseUrl = () => {
   }
   if (typeof window !== 'undefined') {
     const host = (window.location.hostname || '').toLowerCase();
-    if (host.endsWith('vercel.app') || isLocalHost) {
-      return import.meta.env?.PROD ? '' : '';
+    if (isLocalHost) {
+      return '';
+    }
+    if (host.endsWith('vercel.app')) {
+      return import.meta.env?.PROD ? '' : 'https://cash-book-v11.vercel.app';
     }
   }
   return '';
