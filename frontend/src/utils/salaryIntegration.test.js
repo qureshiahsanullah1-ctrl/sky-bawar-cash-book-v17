@@ -12,7 +12,7 @@ test('employee salary data is linked to Cash Out and remaining salary UI', () =>
   assert.match(api, /getEmployees/);
   assert.match(api, /createEmployee/);
   assert.match(app, /employee_id:\s*form\.employee_id/);
-  assert.match(app, /salary_month:\s*form\.salary_month/);
+  assert.match(app, /salary_month:\s*form\.employee_id\s*&&\s*form\.salary_month/);
   assert.match(form, /Monthly Salary/);
   assert.match(form, /Remaining Salary/);
   assert.match(salaryPage, /Add Employee/);
