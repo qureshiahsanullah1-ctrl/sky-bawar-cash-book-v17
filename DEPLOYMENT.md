@@ -58,8 +58,6 @@ The repository contains a pre-configured `vercel.json` file. It allows you to de
 5. Connect your Neon PostgreSQL Database in the Vercel Project Settings (Vercel automatically provisions `DATABASE_URL` environment variables).
 6. Deploy the project. The frontend automatically routes API requests to the same-origin relative path `/api` without requiring CORS adjustments.
 
----
-
 ### Option B: Dedicated Backend (Render / Railway / Fly.io)
 
 If you prefer running a persistent FastAPI server (rather than serverless functions), you can deploy the backend independently using the `backend/Dockerfile`.
@@ -77,8 +75,6 @@ If you prefer running a persistent FastAPI server (rather than serverless functi
    uvicorn app.main:app --host 0.0.0.0 --port 8000
    ```
 
----
-
 ### Option C: Production React Frontend (Vercel / Netlify / CDN)
 
 When deploying the frontend separate from the backend:
@@ -89,7 +85,25 @@ When deploying the frontend separate from the backend:
 
 ---
 
-## 3. End-to-End Handshake Verification
+## 3. Performance deployment checklist
+
+- Run `python3 -m unittest discover -s backend/tests` and
+  `python3 -m pytest backend/tests -q` before deployment.
+- Run `npm test` and `npm run build` from `frontend/`.
+- Keep the Vercel project root at the repository root so the committed build
+  command can install and build the frontend correctly.
+- Preserve content-hashed filenames in `frontend/dist`; Vercel's `/assets/*`
+  rule sets `Cache-Control: public, max-age=31536000, immutable`.
+- Confirm the build emitted `.gz` assets from `vite-plugin-compression`.
+- Monitor API health and runtime logs after deployment, especially for large
+  imports, payroll reports, and dashboard summaries.
+
+See [PERFORMANCE.md](PERFORMANCE.md) for the implementation details and
+performance-sensitive development conventions.
+
+---
+
+## 4. End-to-End Handshake Verification
 
 Ensure database schema migration and network connectivity are operational:
 

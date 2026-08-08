@@ -19,7 +19,15 @@ frontend/       React and Vite application
 backend/        FastAPI application
 api/index.py    Vercel FastAPI entry point
 vercel.json     Vercel frontend, API, and SPA routing configuration
+PERFORMANCE.md  Performance architecture, conventions, and verification
 ```
+
+## Documentation
+
+- [Performance guide](PERFORMANCE.md) — backend, frontend, build, testing, and deployment optimizations
+- [Deployment guide](DEPLOYMENT.md) — local orchestration and production deployment
+- [Backend guide](backend/README_BACKEND.md) — API setup and backend verification
+- [Frontend guide](frontend/README_FRONTEND.md) — frontend setup and build verification
 
 Local databases, environment files, logs, caches, dependencies, and build
 artifacts are excluded from Git.
@@ -59,16 +67,24 @@ Never commit `.env` files or credentials.
 
 ## Test And Build
 
+Backend tests:
+
+```bash
+python3 -m unittest discover -s backend/tests
+python3 -m pytest backend/tests -q
+```
+
+Frontend tests and production build:
+
 ```powershell
 cd frontend
 npm test
 npm run build
 ```
 
-```powershell
-cd backend
-python -m compileall app
-```
+The build emits code-split assets and gzip-compressed copies under
+`frontend/dist`. See [PERFORMANCE.md](PERFORMANCE.md) for the optimization
+architecture and verification notes.
 
 ## Production Deployment
 
@@ -81,6 +97,10 @@ python -m compileall app
    `DATABASE_URL` securely to the API.
 4. Deploy. The frontend uses the same-origin `/api` routes automatically, and
    pushes to `main` deploy automatically.
+
+The deployment configuration also applies immutable one-year caching to
+content-hashed assets. See [DEPLOYMENT.md](DEPLOYMENT.md) for the full
+production and containerized deployment guide.
 
 ## Data Migration
 

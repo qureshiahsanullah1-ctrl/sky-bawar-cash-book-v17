@@ -25,6 +25,15 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses and install build packages
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
       - name: Install Frontend Dependencies
         working-directory: frontend
         run: npm ci || npm install
@@ -36,6 +45,12 @@ jobs:
       - name: Sync Capacitor Android Project
         working-directory: frontend
         run: npx cap sync android
+
+      # Gzip files are for HTTP/CDN delivery. Android packages the original
+      # web assets directly and treats each .gz sibling as a duplicate asset.
+      - name: Remove HTTP-only compressed assets from Android bundle
+        working-directory: frontend/android
+        run: find app/src/main/assets/public -type f -name '*.gz' -delete
 
       - name: Grant execute permission for gradlew
         working-directory: frontend/android
