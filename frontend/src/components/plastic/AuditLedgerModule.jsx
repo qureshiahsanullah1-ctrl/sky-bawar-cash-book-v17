@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Search, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-export default function AuditLedgerModule() {
+export default function AuditLedgerModule({ isLight = false }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [logs] = useState([
     { id: 1, timestamp: '2026-07-25 15:30:12', username: 'Operator_KND', role: 'OPERATOR', ip: '192.168.1.45', action: 'SCRAP_RECOVERY_LOGGED', severity: 'INFO', details: 'Granulated 45.0 kg of scrap into RM-PP-REGRIND ($40.50 salvage)' },
@@ -17,19 +17,21 @@ export default function AuditLedgerModule() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 backdrop-blur-2xl border border-white/10 shadow-2xl">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border shadow-2xs ${
+        isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-white'
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
-            <Shield size={22} />
+          <div className="p-2.5 rounded-lg bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+            <Shield size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-black text-white tracking-tight uppercase flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-black tracking-tight uppercase flex items-center gap-2">
               <span>Security Matrix & Immutable Audit Ledger</span>
             </h2>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className={`text-xs font-medium ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               Tamper-proof, append-only logs of financial overrides, role actions, and IP origins across all branches.
             </p>
           </div>
@@ -37,51 +39,53 @@ export default function AuditLedgerModule() {
 
         {/* Search */}
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search audit log..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-400"
+            className={`pl-8 pr-3 py-1 rounded-lg border text-xs outline-none ${
+              isLight ? 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400' : 'bg-slate-950 border-slate-800 text-white placeholder-slate-500'
+            }`}
           />
         </div>
       </div>
 
       {/* Audit Matrix Table */}
-      <div className="p-5 rounded-2xl bg-slate-900/80 backdrop-blur-2xl border border-white/15 shadow-2xl overflow-x-auto custom-scrollbar">
-        <table className="dark-glass-table w-full text-left text-xs border-collapse font-sans">
+      <div className={`p-4 rounded-xl border shadow-2xs overflow-x-auto custom-scrollbar ${
+        isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/80 border-white/15 text-white'
+      }`}>
+        <table className="w-full text-left text-xs border-collapse font-sans">
           <thead>
-            <tr>
-              <th className="py-3 px-3.5">Timestamp</th>
-              <th className="py-3 px-3.5">User & Role</th>
-              <th className="py-3 px-3.5">IP Origin</th>
-              <th className="py-3 px-3.5">Action Type</th>
-              <th className="py-3 px-3.5">Severity</th>
-              <th className="py-3 px-3.5">Details</th>
+            <tr className={`border-b ${isLight ? 'bg-slate-100/90 text-slate-700 border-slate-200' : 'bg-slate-800/90 text-slate-200 border-slate-700'}`}>
+              <th className="py-2 px-3">Timestamp</th>
+              <th className="py-2 px-3">User & Role</th>
+              <th className="py-2 px-3">IP Origin</th>
+              <th className="py-2 px-3">Action Type</th>
+              <th className="py-2 px-3">Severity</th>
+              <th className="py-2 px-3">Details</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80 font-medium">
+          <tbody className={`divide-y font-medium text-[11px] ${isLight ? 'divide-slate-200' : 'divide-slate-800/80'}`}>
             {filteredLogs.map((log) => (
-              <tr key={log.id}>
-                <td className="py-3 px-3.5 text-slate-300 font-mono text-xs">{log.timestamp}</td>
-                <td className="py-3 px-3.5 text-white font-bold">{log.username} <span className="text-[10px] text-cyan-400 font-mono font-semibold">({log.role})</span></td>
-                <td className="py-3 px-3.5 font-mono text-slate-400 text-xs">{log.ip}</td>
-                <td className="py-3 px-3.5 font-mono text-amber-400 font-bold">{log.action}</td>
-                <td className="py-3 px-3.5">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+              <tr key={log.id} className={isLight ? 'hover:bg-slate-50' : 'hover:bg-slate-800/40'}>
+                <td className="py-2 px-3 font-mono text-xs">{log.timestamp}</td>
+                <td className="py-2 px-3 font-bold">{log.username} <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono font-semibold">({log.role})</span></td>
+                <td className="py-2 px-3 font-mono text-xs text-slate-500 dark:text-slate-400">{log.ip}</td>
+                <td className="py-2 px-3 font-mono text-amber-600 dark:text-amber-400 font-bold">{log.action}</td>
+                <td className="py-2 px-3">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 text-[9.5px] font-bold">
                     {log.severity}
                   </span>
                 </td>
-                <td className="py-3 px-3.5 text-slate-200 font-medium max-w-xs truncate">{log.details}</td>
+                <td className="py-2 px-3 text-slate-600 dark:text-slate-300">{log.details}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-
     </div>
   );
 }
-

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ShoppingCart, AlertOctagon, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useToast } from '../ToastProvider';
 
-export default function PredictiveProcurementModule() {
+export default function PredictiveProcurementModule({ isLight = false }) {
   const { showToast } = useToast();
   const [materials, setMaterials] = useState([
     { code: 'RM-PP-VIRGIN', name: 'Polypropylene (PP) Virgin Resin', type: 'PP', stock_kg: 18500, daily_burn: 350, days_left: 52.8, rop: 3450, status: 'OK', eoq: 15750 },
@@ -17,19 +17,21 @@ export default function PredictiveProcurementModule() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 backdrop-blur-2xl border border-white/10 shadow-2xl">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border shadow-2xs ${
+        isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-white'
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-            <ShoppingCart size={22} />
+          <div className="p-2.5 rounded-lg bg-amber-500/20 text-amber-500 border border-amber-500/30">
+            <ShoppingCart size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-black text-white tracking-tight uppercase flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-black tracking-tight uppercase flex items-center gap-2">
               <span>Predictive Procurement & Silo Runway Suite</span>
             </h2>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className={`text-xs font-medium ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               Calculate Reorder Points (ROP) and Economic Order Quantity (EOQ) targeting 45 days of supply to prevent stockouts.
             </p>
           </div>
@@ -37,52 +39,54 @@ export default function PredictiveProcurementModule() {
       </div>
 
       {/* Runway Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {materials.map((mat) => (
-          <div key={mat.code} className="p-5 rounded-2xl bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-xl space-y-4">
+          <div key={mat.code} className={`p-4 rounded-xl border shadow-2xs space-y-3 ${
+            isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-white'
+          }`}>
             
             <div className="flex items-start justify-between">
               <div>
-                <strong className="text-sm font-black text-white block">{mat.name}</strong>
-                <span className="text-[10px] font-mono text-cyan-400">{mat.code} • Polymer: {mat.type}</span>
+                <strong className="text-xs sm:text-sm font-black block">{mat.name}</strong>
+                <span className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400">{mat.code} • Polymer: {mat.type}</span>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                mat.status === 'OK' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                mat.status === 'REORDER_NOW' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse' :
-                mat.status === 'CRITICAL_STOCKOUT' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-bounce' :
-                'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+              <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-extrabold uppercase ${
+                mat.status === 'OK' ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' :
+                mat.status === 'REORDER_NOW' ? 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 animate-pulse' :
+                mat.status === 'CRITICAL_STOCKOUT' ? 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-bounce' :
+                'bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/30'
               }`}>
                 {mat.status}
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">Current Stock</span>
-                <strong className="text-sm font-mono font-bold text-white">{mat.stock_kg.toLocaleString()} kg</strong>
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className={`p-2 rounded-lg border ${isLight ? 'bg-slate-100/80 border-slate-200' : 'bg-slate-950/60 border-slate-800'}`}>
+                <span className={`text-[9.5px] block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Current Stock</span>
+                <strong className="text-xs font-mono font-bold">{mat.stock_kg.toLocaleString()} kg</strong>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">Stockout Runway</span>
-                <strong className={`text-sm font-mono font-bold ${mat.days_left < 10 ? 'text-rose-400' : 'text-emerald-400'}`}>{mat.days_left} Days</strong>
+              <div className={`p-2 rounded-lg border ${isLight ? 'bg-slate-100/80 border-slate-200' : 'bg-slate-950/60 border-slate-800'}`}>
+                <span className={`text-[9.5px] block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Stockout Runway</span>
+                <strong className={`text-xs font-mono font-bold ${mat.days_left < 10 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{mat.days_left} Days</strong>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">EOQ Target PO</span>
-                <strong className="text-sm font-mono font-bold text-amber-400">{mat.eoq.toLocaleString()} kg</strong>
+              <div className={`p-2 rounded-lg border ${isLight ? 'bg-slate-100/80 border-slate-200' : 'bg-slate-950/60 border-slate-800'}`}>
+                <span className={`text-[9.5px] block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>EOQ Target PO</span>
+                <strong className="text-xs font-mono font-bold text-amber-600 dark:text-amber-400">{mat.eoq.toLocaleString()} kg</strong>
               </div>
             </div>
 
             {/* Action Trigger */}
-            <div className="pt-2 flex justify-end">
+            <div className="pt-1 flex justify-end">
               <button
                 type="button"
                 onClick={() => handleDispatchPO(mat)}
                 disabled={mat.status === 'PO_DISPATCHED'}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2"
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
               >
                 <span>{mat.status === 'PO_DISPATCHED' ? 'PO Dispatched to Supplier' : `Dispatch PO (${mat.eoq} kg)`}</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={13} />
               </button>
             </div>
 

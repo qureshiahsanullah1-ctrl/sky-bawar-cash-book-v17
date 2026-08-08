@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Calculator, DollarSign, Scale, Zap, TrendingUp, AlertTriangle, CheckCircle2, Save } from 'lucide-react';
+import { Calculator, Scale, Zap, TrendingUp, AlertTriangle, CheckCircle2, Save } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../ToastProvider';
 
-export default function ResinProfitCalculator() {
+export default function ResinProfitCalculator({ isLight = false }) {
   const { showToast } = useToast();
 
   // Raw Material Inputs
@@ -19,49 +19,46 @@ export default function ResinProfitCalculator() {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  // Automated Profit Engine Calculations
-  const results = useMemo(() => {
-    // 1. Calculate True Resin Cost
-    const baseCostPerKg = bagPriceAfn / (bagWeightKg || 1);
-    const baseCostPerGram = baseCostPerKg / 1000;
-    const trueCostPerGram = baseCostPerGram * (1 + (scrapRatePct / 100));
-    const materialCostPerUnit = trueCostPerGram * bottleWeightGrams;
-
-    // 2. Calculate Overhead Cost per Unit
-    const overheadCostPerUnit = hourlyOverheadAfn / (machineOutputPerHour || 1);
-
-    // 3. Totals and Margins
-    const totalCogmPerUnit = materialCostPerUnit + overheadCostPerUnit;
-    const netProfitPerUnit = sellingPriceAfn - totalCogmPerUnit;
+  const calc = useMemo(() => {
+    const rawCostPerKg = bagWeightKg > 0 ? bagPriceAfn / bagWeightKg : 0;
+    const effectiveCostPerKg = rawCostPerKg * (1 + scrapRatePct / 100);
+    const resinCostPerUnit = (bottleWeightGrams / 1000) * effectiveCostPerKg;
+    const overheadCostPerUnit = machineOutputPerHour > 0 ? hourlyOverheadAfn / machineOutputPerHour : 0;
+    const totalCostPerUnit = resinCostPerUnit + overheadCostPerUnit;
+    const netProfitPerUnit = sellingPriceAfn - totalCostPerUnit;
     const profitMarginPct = sellingPriceAfn > 0 ? (netProfitPerUnit / sellingPriceAfn) * 100 : 0;
-    const hourlyProfitAfn = netProfitPerUnit * machineOutputPerHour;
+    const hourlyRevenue = machineOutputPerHour * sellingPriceAfn;
+    const hourlyTotalCost = machineOutputPerHour * totalCostPerUnit;
+    const hourlyNetProfit = hourlyRevenue - hourlyTotalCost;
+    const dailyNetProfit = hourlyNetProfit * 20; // 20-hour operational shift
 
     return {
-      costPerKg: baseCostPerKg.toFixed(2),
-      costPerGram: trueCostPerGram.toFixed(4),
-      materialCost: materialCostPerUnit.toFixed(2),
-      overheadCost: overheadCostPerUnit.toFixed(2),
-      totalCost: totalCogmPerUnit.toFixed(2),
-      netProfit: netProfitPerUnit.toFixed(2),
-      margin: profitMarginPct.toFixed(1),
-      hourlyProfit: Math.round(hourlyProfitAfn).toLocaleString(),
-      isProfitable: netProfitPerUnit > 0,
-      isHealthyMargin: profitMarginPct >= 25
+      rawCostPerKg: rawCostPerKg.toFixed(2),
+      effectiveCostPerKg: effectiveCostPerKg.toFixed(2),
+      resinCostPerUnit: resinCostPerUnit.toFixed(2),
+      overheadCostPerUnit: overheadCostPerUnit.toFixed(2),
+      totalCostPerUnit: totalCostPerUnit.toFixed(2),
+      netProfitPerUnit: netProfitPerUnit.toFixed(2),
+      profitMarginPct: profitMarginPct.toFixed(1),
+      hourlyNetProfit: hourlyNetProfit.toFixed(0),
+      dailyNetProfit: dailyNetProfit.toFixed(0)
     };
   }, [bagPriceAfn, bagWeightKg, scrapRatePct, bottleWeightGrams, sellingPriceAfn, machineOutputPerHour, hourlyOverheadAfn]);
 
   async function handleSaveValuation() {
     setIsSaving(true);
     try {
-      const payload = {
-        material_id: "RM-PP-VIRGIN",
-        branch_id: "PLANT-KND",
-        purchase_price_afn: bagPriceAfn,
+      await api.post('/api/v1/plastic/resin/valuation/save', {
+        bag_price_afn: bagPriceAfn,
         bag_weight_kg: bagWeightKg,
-        standard_scrap_rate: scrapRatePct / 100.0
-      };
-
-      await api.post('/api/v1/valuation/update-resin-cost', payload);
+        scrap_rate_pct: scrapRatePct,
+        unit_weight_grams: bottleWeightGrams,
+        selling_price_afn: sellingPriceAfn,
+        effective_cost_per_kg: parseFloat(calc.effectiveCostPerKg),
+        unit_cogm_afn: parseFloat(calc.totalCostPerUnit),
+        net_profit_per_unit_afn: parseFloat(calc.netProfitPerUnit),
+        margin_pct: parseFloat(calc.profitMarginPct)
+      });
       showToast('Standard Valuation & Unit Profit saved to ledger database!', 'success');
     } catch (error) {
       showToast(error.message || 'Saved valuation locally', 'info');
@@ -71,116 +68,135 @@ export default function ResinProfitCalculator() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       
       {/* Header */}
-      <div className="flex justify-between items-center pb-4 border-b border-white/10 p-5 rounded-2xl bg-slate-900/60 backdrop-blur-2xl">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border shadow-2xs ${
+        isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-white'
+      }`}>
         <div>
-          <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20">Module 09</span>
-          <h1 className="text-xl font-bold text-white mt-2 flex items-center">
-            <Calculator className="w-6 h-6 mr-2 text-cyan-400" /> Automated Resin & Unit Profit Calculator
+          <span className="text-[9.5px] font-mono font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">Module 09</span>
+          <h1 className="text-sm sm:text-base font-black uppercase mt-1 flex items-center gap-2">
+            <Calculator size={18} className="text-cyan-500" /> Automated Resin & Unit Profit Calculator
           </h1>
         </div>
         <div className="text-right">
-          <span className="text-xs text-slate-400 block font-mono">Currency: Afghanis (AFN)</span>
-          <span className="text-xs text-emerald-400 font-bold">Live Pricing Engine Active</span>
+          <span className={`text-[11px] block font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Currency: Afghanis (AFN)</span>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">Live Pricing Engine Active</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         {/* LEFT COLUMN: Controls & Input Parameters (7 Cols) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-7 space-y-4">
           
           {/* Box 1: Raw Resin Purchase Inputs */}
-          <div className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-3xl p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-white mb-2 flex items-center">
+          <div className={`p-4 rounded-xl border shadow-2xs space-y-3 ${
+            isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/15 text-white'
+          }`}>
+            <h3 className="text-base font-bold mb-2 flex items-center">
               <Scale className="w-5 h-5 mr-2 text-cyan-400" /> Step 1: Bulk Resin Bag Cost Normalization
             </h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Bag Price (AFN)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Price (AFN)</label>
                 <input 
                   type="number" 
                   value={bagPriceAfn} 
                   onChange={(e) => setBagPriceAfn(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+                  }`} 
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Bag Weight (kg)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Bag Weight (kg)</label>
                 <input 
                   type="number" 
                   value={bagWeightKg} 
                   onChange={(e) => setBagWeightKg(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+                  }`} 
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Scrap Allowance (%)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Scrap Allowance (%)</label>
                 <input 
                   type="number" 
                   step="0.5"
                   value={scrapRatePct} 
                   onChange={(e) => setScrapRatePct(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-950/90 border-slate-800 text-amber-300'
+                  }`} 
                 />
               </div>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-slate-800 text-xs font-mono">
-              <span className="text-slate-400">Base Price: <strong className="text-cyan-300">AFN {results.costPerKg} / kg</strong></span>
-              <span className="text-slate-400">True Cost with Scrap: <strong className="text-emerald-400">AFN {results.costPerGram} / gram</strong></span>
+            <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-800 text-xs font-mono">
+              <span className={isLight ? 'text-slate-600' : 'text-slate-400'}>Base Price: <strong className="text-cyan-600 dark:text-cyan-300">AFN {calc.rawCostPerKg} / kg</strong></span>
+              <span className={isLight ? 'text-slate-600' : 'text-slate-400'}>True Cost with Scrap: <strong className="text-emerald-600 dark:text-emerald-400">AFN {calc.effectiveCostPerKg} / kg</strong></span>
             </div>
           </div>
 
           {/* Box 2: Bottle & Machine Floor Parameters */}
-          <div className="bg-white/5 backdrop-blur-2xl border border-white/15 rounded-3xl p-6 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-white mb-2 flex items-center">
-              <Zap className="w-5 h-5 mr-2 text-amber-400" /> Step 2: Bottle SKU & Machine Overhead
+          <div className={`p-4 rounded-xl border shadow-2xs space-y-3 ${
+            isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/15 text-white'
+          }`}>
+            <h3 className="text-sm font-bold mb-1 flex items-center">
+              <Zap className="w-4 h-4 mr-2 text-amber-500" /> Step 2: Bottle SKU & Machine Overhead
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Bottle Weight (Grams)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Bottle Weight (Grams)</label>
                 <input 
                   type="number" 
                   step="0.1"
                   value={bottleWeightGrams} 
                   onChange={(e) => setBottleWeightGrams(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+                  }`} 
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Target Selling Price (AFN)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Target Selling Price (AFN)</label>
                 <input 
                   type="number" 
                   step="0.1"
                   value={sellingPriceAfn} 
                   onChange={(e) => setSellingPriceAfn(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-lg focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-slate-950/90 border-slate-800 text-emerald-400'
+                  }`} 
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/10">
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Machine Speed (Bottles/Hour)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Machine Speed (Bottles/Hour)</label>
                 <input 
                   type="number" 
                   value={machineOutputPerHour} 
                   onChange={(e) => setMachineOutputPerHour(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+                  }`} 
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-1">Factory Overhead (AFN/Hour)</label>
+                <label className={`text-[10px] font-bold block mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Factory Overhead (AFN/Hour)</label>
                 <input 
                   type="number" 
                   value={hourlyOverheadAfn} 
                   onChange={(e) => setHourlyOverheadAfn(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-rose-300 font-mono font-bold focus:outline-none focus:border-cyan-400" 
+                  className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold ${
+                    isLight ? 'bg-rose-50 border-rose-300 text-rose-900' : 'bg-slate-950/90 border-slate-800 text-rose-300'
+                  }`} 
                 />
-                <span className="text-[10px] text-slate-500 block mt-0.5">*Includes electricity, water, & operator wages</span>
               </div>
             </div>
           </div>
@@ -188,65 +204,71 @@ export default function ResinProfitCalculator() {
         </div>
 
         {/* RIGHT COLUMN: Live Profit Output HUD (5 Cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 shadow-2xl space-y-6">
+        <div className="lg:col-span-5 space-y-4">
+          <div className={`p-4 rounded-xl border shadow-2xs space-y-4 ${
+            isLight ? 'bg-white border-slate-200 text-slate-900' : 'bg-gradient-to-b from-slate-900 to-indigo-950 border-cyan-500/30 text-white'
+          }`}>
             
-            <div className="border-b border-white/10 pb-4 flex justify-between items-start">
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex justify-between items-start">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Net Profit Margin</span>
-                <h2 className={`text-4xl font-black font-mono mt-1 ${results.isProfitable ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {results.margin}%
+                <span className={`text-xs font-semibold uppercase tracking-wider ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Net Profit Margin</span>
+                <h2 className={`text-3xl font-black font-mono mt-0.5 ${parseFloat(calc.netProfitPerUnit) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {calc.profitMarginPct}%
                 </h2>
               </div>
-              {results.isHealthyMargin ? (
-                <span className="flex items-center text-xs font-bold text-emerald-300 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
+              {parseFloat(calc.profitMarginPct) >= 20 ? (
+                <span className="flex items-center text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/20 px-2.5 py-1 rounded-full border border-emerald-500/30">
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Healthy Margin
                 </span>
               ) : (
-                <span className="flex items-center text-xs font-bold text-amber-300 bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30">
+                <span className="flex items-center text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/30">
                   <AlertTriangle className="w-3.5 h-3.5 mr-1" /> Check Margins
                 </span>
               )}
             </div>
 
             {/* Detailed Unit Breakdown */}
-            <div className="space-y-3.5 text-sm">
-              <div className="flex justify-between text-slate-300">
+            <div className="space-y-2 text-xs font-mono">
+              <div className={`flex justify-between ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                 <span>Selling Price:</span>
-                <span className="font-mono font-bold text-white">AFN {sellingPriceAfn.toFixed(2)}</span>
+                <span className="font-bold">AFN {sellingPriceAfn.toFixed(2)}</span>
               </div>
               
-              <div className="flex justify-between text-slate-400 pl-2 text-xs">
-                <span>- Direct Resin Cost ({bottleWeightGrams}g + scrap):</span>
-                <span className="font-mono text-cyan-300">AFN {results.materialCost}</span>
+              <div className="flex justify-between pl-2 text-xs text-slate-500">
+                <span>- Direct Resin Cost:</span>
+                <span className="font-bold text-cyan-600 dark:text-cyan-300">AFN {calc.resinCostPerUnit}</span>
               </div>
 
-              <div className="flex justify-between text-slate-400 pl-2 text-xs">
-                <span>- Machine & Labor Overhead:</span>
-                <span className="font-mono text-amber-300">AFN {results.overheadCost}</span>
+              <div className="flex justify-between pl-2 text-xs text-slate-500">
+                <span>- Machine Overhead:</span>
+                <span className="font-bold text-amber-600 dark:text-amber-300">AFN {calc.overheadCostPerUnit}</span>
               </div>
 
-              <div className="flex justify-between text-slate-200 pt-2 border-t border-white/10 font-medium">
-                <span>Total Manufacturing Cost (COGM):</span>
-                <span className="font-mono font-bold text-rose-300">AFN {results.totalCost}</span>
+              <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-800 font-bold">
+                <span>Total COGM / Unit:</span>
+                <span className="text-rose-600 dark:text-rose-300">AFN {calc.totalCostPerUnit}</span>
               </div>
             </div>
 
             {/* Bottom Callout: Profit Per Unit & Per Hour */}
-            <div className={`p-5 rounded-2xl border ${results.isProfitable ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-rose-500/10 border-rose-500/30'} space-y-2`}>
+            <div className={`p-3.5 rounded-xl border ${
+              parseFloat(calc.netProfitPerUnit) >= 0
+                ? isLight ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-500/10 border-emerald-500/30'
+                : isLight ? 'bg-rose-50 border-rose-200' : 'bg-rose-500/10 border-rose-500/30'
+            } space-y-1.5`}>
               <div className="flex justify-between items-baseline">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Net Profit / Bottle:</span>
-                <span className={`text-2xl font-black font-mono ${results.isProfitable ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  AFN {results.netProfit}
+                <span className={`text-xs font-bold uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>Net Profit / Bottle:</span>
+                <span className={`text-xl font-black font-mono ${parseFloat(calc.netProfitPerUnit) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  AFN {calc.netProfitPerUnit}
                 </span>
               </div>
 
-              <div className="flex justify-between items-baseline pt-2 border-t border-white/10 text-xs">
-                <span className="text-slate-300 flex items-center">
-                  <TrendingUp className="w-3.5 h-3.5 mr-1 text-emerald-400" /> Factory Floor Output / Hour:
+              <div className="flex justify-between items-baseline pt-1.5 border-t border-slate-200 dark:border-slate-800/60 text-xs">
+                <span className={`flex items-center ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
+                  <TrendingUp className="w-3.5 h-3.5 mr-1 text-emerald-500" /> Hourly Net Profit:
                 </span>
-                <span className="font-mono font-bold text-white text-sm">
-                  AFN {results.hourlyProfit} / hr
+                <span className="font-mono font-bold text-xs">
+                  AFN {calc.hourlyNetProfit} / hr
                 </span>
               </div>
             </div>
@@ -255,9 +277,9 @@ export default function ResinProfitCalculator() {
               type="button"
               onClick={handleSaveValuation}
               disabled={isSaving}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3 rounded-xl text-xs transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2"
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 rounded-lg text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Save size={16} />
+              <Save size={15} />
               <span>{isSaving ? 'Updating Master Ledger...' : 'Save Standard Valuation to Ledger →'}</span>
             </button>
 

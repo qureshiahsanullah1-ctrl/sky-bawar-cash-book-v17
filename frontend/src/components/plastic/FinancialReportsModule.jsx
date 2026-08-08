@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Printer, Download, ArrowUpRight, DollarSign } from 'lucide-react';
 
-export default function FinancialReportsModule() {
+export default function FinancialReportsModule({ isLight = false }) {
   const [activeTab, setActiveTab] = useState('PL');
 
   const report = {
@@ -20,26 +20,28 @@ export default function FinancialReportsModule() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 backdrop-blur-2xl border border-white/10 shadow-2xl no-print">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border shadow-2xs no-print ${
+        isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-900/60 border-white/10 text-white'
+      }`}>
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
-            <FileText size={22} />
+          <div className="p-2.5 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+            <FileText size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-black text-white tracking-tight uppercase flex items-center gap-2">
+            <h2 className="text-sm sm:text-base font-black tracking-tight uppercase flex items-center gap-2">
               <span>GAAP / IFRS Financial Statements & Export Center</span>
             </h2>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className={`text-xs font-medium ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               3-Stage Balance Sheet, Trial Balance, and Tax-Ready P&L Statements isolating factory machinery depreciation.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 no-print">
-          <button type="button" onClick={() => window.print()} className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1.5">
+          <button type="button" onClick={() => window.print()} className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer">
             <Printer size={14} />
             <span>Print Report</span>
           </button>
@@ -47,18 +49,26 @@ export default function FinancialReportsModule() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 no-print">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5 no-print">
         <button
           type="button"
           onClick={() => setActiveTab('PL')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'PL' ? 'bg-purple-600 text-white shadow-lg' : 'bg-slate-900/60 text-slate-400 hover:text-white'}`}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            activeTab === 'PL'
+              ? 'bg-purple-600 text-white shadow-2xs'
+              : isLight ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-900/60 text-slate-400 hover:text-white'
+          }`}
         >
           Income Statement (P&L)
         </button>
         <button
           type="button"
           onClick={() => setActiveTab('BS')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'BS' ? 'bg-purple-600 text-white shadow-lg' : 'bg-slate-900/60 text-slate-400 hover:text-white'}`}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            activeTab === 'BS'
+              ? 'bg-purple-600 text-white shadow-2xs'
+              : isLight ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-900/60 text-slate-400 hover:text-white'
+          }`}
         >
           3-Stage Balance Sheet
         </button>

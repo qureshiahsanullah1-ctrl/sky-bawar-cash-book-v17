@@ -179,41 +179,41 @@ export default function PlasticErpDashboard({ theme }) {
   ];
 
   return (
-    <div className={`w-full max-w-full min-h-[calc(100vh-64px)] flex flex-col font-sans relative p-3 sm:p-5 overflow-x-hidden no-print rounded-2xl border shadow-2xl transition-colors duration-300 ${
+    <div className={`w-full max-w-full min-h-[calc(100vh-64px)] flex flex-col font-sans relative p-2.5 sm:p-4 overflow-x-hidden no-print rounded-xl border shadow-xl transition-colors duration-300 ${
       isLight
-        ? 'bg-gradient-to-br from-slate-100 via-sky-50 to-slate-200 text-slate-900 border-slate-300'
+        ? 'bg-slate-100/90 text-slate-900 border-slate-200'
         : 'bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 border-slate-800/80'
     }`}>
       
       {/* 1. TOP EXECUTIVE BAR & BRANCH / LANGUAGE / THEME SWITCHER */}
-      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl backdrop-blur-2xl border shadow-2xl shrink-0 mb-4 transition-colors ${
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-2.5 p-3 rounded-xl backdrop-blur-2xl border shadow-2xs shrink-0 mb-3 transition-colors ${
         isLight
-          ? 'bg-white/90 border-slate-200 shadow-slate-300/50'
+          ? 'bg-white border-slate-200 shadow-slate-200/50'
           : 'bg-slate-900/80 border-white/15 shadow-black/40'
       }`}>
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-lg shrink-0">
-            <Building2 size={24} />
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-xs shrink-0">
+            <Building2 size={20} />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className={`text-base sm:text-lg font-black tracking-tight uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <h1 className={`text-sm sm:text-base font-black tracking-tight uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
                 {dict.title}
               </h1>
-              <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+              <span className={`px-2 py-0.2 rounded-full border text-[9.5px] font-bold ${
                 isLight ? 'bg-cyan-100 text-cyan-800 border-cyan-300' : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
               }`}>
                 {dict.mfgErpVersion}
               </span>
             </div>
-            <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+            <p className={`text-[11px] font-medium leading-tight ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
               {dict.subtitle}
             </p>
           </div>
         </div>
 
         {/* Branch & Language Selector Controls */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 shrink-0">
           {/* Light / Dark Theme Toggle Button */}
           <button
             type="button"
@@ -222,9 +222,9 @@ export default function PlasticErpDashboard({ theme }) {
               setThemeMode(nextTheme);
               localStorage.setItem('plastic_erp_theme', nextTheme);
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 border ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1 border cursor-pointer ${
               isLight
-                ? 'bg-slate-200 text-slate-800 border-slate-300 hover:bg-slate-300'
+                ? 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
                 : 'bg-slate-950 text-cyan-400 border-slate-800 hover:bg-slate-900'
             }`}
           >
@@ -232,17 +232,17 @@ export default function PlasticErpDashboard({ theme }) {
           </button>
 
           {/* Language Switcher */}
-          <div className={`flex items-center gap-1 p-1 rounded-xl border ${
-            isLight ? 'bg-slate-200/80 border-slate-300' : 'bg-slate-950/90 border-slate-800'
+          <div className={`flex items-center gap-0.5 p-0.5 rounded-lg border ${
+            isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-950/90 border-slate-800'
           }`}>
             {['English', 'Pashto', 'Dari'].map((l) => (
               <button
                 key={l}
                 type="button"
                 onClick={() => { setLang(l); localStorage.setItem('cashbook_language', l); }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                   lang === l
-                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
+                    ? 'bg-cyan-500 text-slate-950 font-black shadow-2xs'
                     : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -252,10 +252,10 @@ export default function PlasticErpDashboard({ theme }) {
           </div>
 
           {/* Branch Selector Switcher */}
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${
-            isLight ? 'bg-slate-200/80 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${
+            isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-slate-950/90 border-slate-800 text-white'
           }`}>
-            <Building2 size={16} className="text-cyan-500" />
+            <Building2 size={14} className="text-cyan-500" />
             <select
               value={selectedBranch}
               onChange={(e) => setSelectedBranch(e.target.value)}
@@ -272,49 +272,48 @@ export default function PlasticErpDashboard({ theme }) {
       </div>
 
       {/* 2. SCROLLABLE TAB MODULE CONTAINER */}
-      <div className="flex-1 min-h-0 overflow-y-auto pb-24 pr-1">
-
+      <div className="flex-1 min-h-0 overflow-y-auto pb-20 pr-1">
 
       {/* 2. TAB VIEW RENDERER */}
       {activeTab === 'HUD' && (
-        <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
           
           {/* Executive P&L Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             
             {/* Revenue */}
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-1.5 relative overflow-hidden group transition-all ${
               isLight
-                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                ? 'bg-white border-slate-200 shadow-slate-200/50 hover:border-cyan-500'
                 : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
             }`}>
-              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              <span className={`text-[9.5px] font-black uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {dict.grossRevenue}
               </span>
-              <strong className="text-2xl font-mono font-black text-emerald-500 dark:text-emerald-400 block">
+              <strong className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400 block">
                 ${kpi.gross_revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </strong>
-              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+              <div className={`text-[10.5px] flex items-center justify-between pt-1.5 border-t ${
                 isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
               }`}>
                 <span>30-Day Batch Sales</span>
-                <span className="text-emerald-500 dark:text-emerald-400 font-bold">+14.2%</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">+14.2%</span>
               </div>
             </div>
 
             {/* COGM */}
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-1.5 relative overflow-hidden group transition-all ${
               isLight
-                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                ? 'bg-white border-slate-200 shadow-slate-200/50 hover:border-cyan-500'
                 : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
             }`}>
-              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              <span className={`text-[9.5px] font-black uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {dict.cogm}
               </span>
-              <strong className="text-2xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
+              <strong className="text-xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
                 ${kpi.cogm.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </strong>
-              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+              <div className={`text-[10.5px] flex items-center justify-between pt-1.5 border-t ${
                 isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
               }`}>
                 <span>{dict.materialPowerLabor}</span>
@@ -323,38 +322,38 @@ export default function PlasticErpDashboard({ theme }) {
             </div>
 
             {/* Gross Profit Margin */}
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-1.5 relative overflow-hidden group transition-all ${
               isLight
-                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                ? 'bg-white border-slate-200 shadow-slate-200/50 hover:border-cyan-500'
                 : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
             }`}>
-              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              <span className={`text-[9.5px] font-black uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {dict.grossProfit}
               </span>
-              <strong className="text-2xl font-mono font-black text-amber-600 dark:text-amber-400 block">
+              <strong className="text-xl font-mono font-black text-amber-600 dark:text-amber-400 block">
                 {kpi.gross_margin}% (${kpi.gross_profit.toLocaleString('en-US', { minimumFractionDigits: 2 })})
               </strong>
-              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+              <div className={`text-[10.5px] flex items-center justify-between pt-1.5 border-t ${
                 isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
               }`}>
                 <span>{dict.targetMargin}</span>
-                <span className="text-emerald-500 dark:text-emerald-400 font-bold">{dict.healthyProfit}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">{dict.healthyProfit}</span>
               </div>
             </div>
 
             {/* Inventory Asset */}
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-2 relative overflow-hidden group transition-all ${
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-1.5 relative overflow-hidden group transition-all ${
               isLight
-                ? 'bg-white/90 border-slate-200 shadow-slate-200/60 hover:border-cyan-500'
+                ? 'bg-white border-slate-200 shadow-slate-200/50 hover:border-cyan-500'
                 : 'bg-slate-900/60 border-white/10 shadow-black/40 hover:border-cyan-500/40'
             }`}>
-              <span className={`text-[10px] font-extrabold uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              <span className={`text-[9.5px] font-black uppercase tracking-wider block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {dict.inventoryVal}
               </span>
-              <strong className="text-2xl font-mono font-black text-purple-600 dark:text-purple-400 block">
+              <strong className="text-xl font-mono font-black text-purple-600 dark:text-purple-400 block">
                 ${kpi.inventory_val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </strong>
-              <div className={`text-[11px] flex items-center justify-between pt-2 border-t ${
+              <div className={`text-[10.5px] flex items-center justify-between pt-1.5 border-t ${
                 isLight ? 'text-slate-600 border-slate-200' : 'text-slate-400 border-slate-800'
               }`}>
                 <span>{dict.resinsWipSkus}</span>
@@ -365,14 +364,14 @@ export default function PlasticErpDashboard({ theme }) {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all ${
-              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-2 transition-all ${
+              isLight ? 'bg-white border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
             }`}>
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+              <h3 className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                 {dict.outputVol}
               </h3>
-              <strong className={`text-3xl font-mono font-black block ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <strong className={`text-2xl font-mono font-black block ${isLight ? 'text-slate-900' : 'text-white'}`}>
                 {kpi.total_units.toLocaleString()} Units
               </strong>
               <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -380,13 +379,13 @@ export default function PlasticErpDashboard({ theme }) {
               </p>
             </div>
 
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all ${
-              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-2 transition-all ${
+              isLight ? 'bg-white border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
             }`}>
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+              <h3 className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                 {dict.granulatorScrap}
               </h3>
-              <strong className="text-3xl font-mono font-black text-emerald-600 dark:text-emerald-400 block">
+              <strong className="text-2xl font-mono font-black text-emerald-600 dark:text-emerald-400 block">
                 {kpi.total_scrap_kg.toLocaleString()} KG
               </strong>
               <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -394,13 +393,13 @@ export default function PlasticErpDashboard({ theme }) {
               </p>
             </div>
 
-            <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-xl space-y-3 transition-all sm:col-span-2 lg:col-span-1 ${
-              isLight ? 'bg-white/90 border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
+            <div className={`p-3.5 rounded-xl border shadow-2xs space-y-2 transition-all sm:col-span-2 lg:col-span-1 ${
+              isLight ? 'bg-white border-slate-200 hover:border-cyan-500' : 'bg-slate-900/60 border-white/10 hover:border-cyan-500/40'
             }`}>
-              <h3 className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+              <h3 className={`text-[11px] font-black uppercase tracking-wider ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
                 {dict.fleetStatus}
               </h3>
-              <strong className="text-3xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
+              <strong className="text-2xl font-mono font-black text-cyan-600 dark:text-cyan-400 block">
                 {kpi.running_machines} / {kpi.total_machines} Running
               </strong>
               <p className={`text-xs font-medium leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -413,24 +412,22 @@ export default function PlasticErpDashboard({ theme }) {
       )}
 
 
-      {activeTab === 'CUSTOMERS' && <CustomerAccountsModule />}
-      {activeTab === 'CALCULATOR' && <ResinProfitCalculator />}
-      {activeTab === 'BOM' && <BomBuilderModule />}
-      {activeTab === 'SCRAP' && <ScrapRecoveryModule />}
-      {activeTab === 'IOT' && <IotTelemetryModule />}
-      {activeTab === 'PROCUREMENT' && <PredictiveProcurementModule />}
-      {activeTab === 'REPORTS' && <FinancialReportsModule />}
-      {activeTab === 'AUDIT' && <AuditLedgerModule />}
+      {activeTab === 'CUSTOMERS' && <CustomerAccountsModule isLight={isLight} />}
+      {activeTab === 'CALCULATOR' && <ResinProfitCalculator isLight={isLight} />}
+      {activeTab === 'BOM' && <BomBuilderModule isLight={isLight} />}
+      {activeTab === 'SCRAP' && <ScrapRecoveryModule isLight={isLight} />}
+      {activeTab === 'IOT' && <IotTelemetryModule isLight={isLight} />}
+      {activeTab === 'PROCUREMENT' && <PredictiveProcurementModule isLight={isLight} />}
+      {activeTab === 'REPORTS' && <FinancialReportsModule isLight={isLight} />}
+      {activeTab === 'AUDIT' && <AuditLedgerModule isLight={isLight} />}
       </div>
 
 
-      {/* 3. macOS FLOATING BOTTOM NAVIGATION DOCK (DIRECTIVE 2 REQUIREMENT) */}
-
-
-      <div className="fixed bottom-16 md:bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-24px)] no-print">
-        <div className={`flex items-center gap-1.5 md:gap-2 p-2 rounded-3xl backdrop-blur-2xl border shadow-2xl overflow-x-auto no-scrollbar max-w-full ${
+      {/* 3. SLEEK FLOATING BOTTOM NAVIGATION DOCK */}
+      <div className="fixed bottom-12 md:bottom-3 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-16px)] no-print pointer-events-auto">
+        <div className={`flex items-center gap-1 md:gap-1.5 p-1.5 rounded-2xl backdrop-blur-2xl border shadow-xl max-w-full overflow-x-auto no-scrollbar scrollbar-none [ms-overflow-style:none] [scrollbar-width:none] ${
           isLight
-            ? 'bg-white/95 border-slate-300 ring-1 ring-slate-200 shadow-slate-400/40'
+            ? 'bg-white/95 border-slate-300 ring-1 ring-slate-200/80 shadow-slate-400/30'
             : 'bg-slate-900/90 border-white/15 ring-1 ring-black/40 shadow-black/50'
         }`}>
           {dockItems.map((item) => {
@@ -441,19 +438,19 @@ export default function PlasticErpDashboard({ theme }) {
                 key={item.id}
                 type="button"
                 onClick={() => setActiveTab(item.id)}
-                className={`relative group flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all duration-300 ${
+                className={`relative group flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-200 shrink-0 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-lg scale-110 -translate-y-1'
+                    ? 'bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white shadow-md scale-105'
                     : isLight
-                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 hover:scale-105'
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:scale-105'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/80 hover:scale-105'
                 }`}
                 title={item.label}
               >
-                <Icon size={20} />
+                <Icon size={17} />
 
                 {/* Tooltip */}
-                <span className={`absolute -top-10 px-2.5 py-1 rounded-lg text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border shadow-xl ${
+                <span className={`absolute -top-9 px-2 py-0.5 rounded-md text-[9.5px] font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border shadow-lg ${
                   isLight ? 'bg-white text-slate-900 border-slate-300' : 'bg-slate-950 text-white border-slate-800'
                 }`}>
                   {item.label}
@@ -461,7 +458,7 @@ export default function PlasticErpDashboard({ theme }) {
 
                 {/* Active Indicator Dot */}
                 {isActive && (
-                  <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-cyan-500/50 shadow-md" />
+                  <span className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-cyan-500/50 shadow-sm" />
                 )}
               </button>
             );
