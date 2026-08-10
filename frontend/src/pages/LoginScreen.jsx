@@ -165,6 +165,9 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
         <div className="login-bg-orb login-bg-orb-3" />
         <div className="login-bg-orb login-bg-orb-4" />
         <div className="login-bg-ray" />
+        <div className="golden-line golden-line-1" />
+        <div className="golden-line golden-line-2" />
+        <div className="golden-line-wave" />
       </div>
       <section className="login-panel">
         <div className="login-intro">
