@@ -159,6 +159,11 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
 
   return (
     <main className={`login-screen ${isSubmitting ? 'login-success' : ''}`}>
+      <div className="login-bg-decorations" aria-hidden="true">
+        <div className="login-bg-orb login-bg-orb-1" />
+        <div className="login-bg-orb login-bg-orb-2" />
+        <div className="login-bg-orb login-bg-orb-3" />
+      </div>
       <section className="login-panel">
         <div className="login-intro">
           <div className="login-time-display" aria-label={`${dateLabel(now)}, ${timeLabel(now)}`}>
