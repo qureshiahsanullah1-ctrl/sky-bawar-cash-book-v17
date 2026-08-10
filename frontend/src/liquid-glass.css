@@ -202,7 +202,13 @@ body {
     min-height: 0 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    padding: 20px 24px 28px !important;
+    padding: 16px 20px 24px !important;
+  }
+
+  @media (min-width: 1024px) {
+    .main-content {
+      zoom: 0.92 !important;
+    }
   }
 
   /* Reset any inner containers trying to force 100vh */
