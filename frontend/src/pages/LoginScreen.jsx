@@ -163,6 +163,8 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
         <div className="login-bg-orb login-bg-orb-1" />
         <div className="login-bg-orb login-bg-orb-2" />
         <div className="login-bg-orb login-bg-orb-3" />
+        <div className="login-bg-orb login-bg-orb-4" />
+        <div className="login-bg-ray" />
       </div>
       <section className="login-panel">
         <div className="login-intro">
