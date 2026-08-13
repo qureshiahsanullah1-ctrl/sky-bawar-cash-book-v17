@@ -1,11 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCashBookRows, currentMonthDateRange, filterCashBookRows, summarizeCashBookRows } from './transactions.js';
+import { buildCashBookRows, currentMonthDateRange, filterCashBookRows, summarizeCashBookRows, roundMoney } from './transactions.js';
 
 const rows = [
   { id: 2, date: '2026-04-22', transaction_type: 'cash_out', cash_out_afn: 40, account_name: 'Factory', detail: 'Rent', note: '', category: 'rent', payment_method: 'cash' },
   { id: 1, date: '2026-04-21', transaction_type: 'cash_in', cash_in_afn: 100, usd_in: 2, account_name: 'Client', detail: 'Invoice', note: 'April', category: 'other', payment_method: 'bank' }
 ];
+
+test('roundMoney eliminates floating point precision accumulation errors', () => {
+  assert.equal(roundMoney(0.1 + 0.2), 0.3);
+  assert.equal(roundMoney(1220353.0000000002), 1220353.00);
+});
 
 test('buildCashBookRows sorts once and calculates stable running balances', () => {
   const result = buildCashBookRows(rows);
@@ -30,8 +35,10 @@ test('summarizeCashBookRows totals the full filtered set, not one page', () => {
   assert.deepEqual(summarizeCashBookRows(buildCashBookRows(rows)), {
     cashIn: 100,
     cashOut: 40,
+    netBalance: 60,
     usdIn: 2,
-    usdOut: 0
+    usdOut: 0,
+    netUsdBalance: 2
   });
 });
 
