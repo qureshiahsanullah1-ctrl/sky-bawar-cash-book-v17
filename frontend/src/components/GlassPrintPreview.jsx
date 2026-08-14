@@ -78,10 +78,14 @@ function DashboardHeader({ report, onClose }) {
   );
 }
 
+import { useCompany } from '../context/CompanyContext';
+
 function BusinessOverview({ report }) {
   const { t } = useTranslation();
+  const { currentCompany } = useCompany();
+  const activeCompName = report.company?.companyName || currentCompany?.name || 'BAWAR STAR PLASTIC INDUSTRY';
   const cards = [
-    { icon: Building2, title: t('print.companyLabel') || 'COMPANY', value: report.company?.companyName || 'BAWAR STAR PLASTIC INDUSTRY' },
+    { icon: Building2, title: t('print.companyLabel') || 'COMPANY', value: activeCompName },
     { icon: Factory, title: t('print.industryLabel') || 'INDUSTRY', value: t('print.industryValue') || 'Plastic Manufacturing' },
     { icon: ShieldCheck, title: t('print.administratorLabel') || 'ADMINISTRATOR', value: report.preparedBy || 'Ahsanullah Qureshi' },
     { icon: CheckCircle2, title: t('print.printStatusLabel') || 'PRINT STATUS', value: t('print.printStatusValue') || 'Ready for A4 output' }

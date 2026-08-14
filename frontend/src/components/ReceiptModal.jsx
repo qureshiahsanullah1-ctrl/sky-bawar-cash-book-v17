@@ -4,29 +4,48 @@ import DateDisplay from './DateDisplay';
 import { useTranslation } from 'react-i18next';
 import { Printer, Scissors } from 'lucide-react';
 
+import { useCompany } from '../context/CompanyContext';
+
 function SingleVoucherCard({ transaction, companyName, companyLogo, dateDisplayFormat, copyLabel, t }) {
+  const { currentCompany } = useCompany();
   const isCashIn = transaction.transaction_type === 'cash_in';
   const afnAmount = isCashIn ? transaction.cash_in_afn : transaction.cash_out_afn;
   const usdAmount = isCashIn ? transaction.usd_in : transaction.usd_out;
+
+  const displayName = companyName || currentCompany?.name || 'BAWAR STAR PLASTIC INDUSTRY';
+  const displayLogo = companyLogo || currentCompany?.logo || '';
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'BS';
+
+  const contactInfo = currentCompany?.id === 'sky-ariana'
+    ? '+93 700 345 630 | INFO@SKYARIANA.COM'
+    : currentCompany?.tagline
+      ? `+93 700 345 630 | ${currentCompany.tagline.toUpperCase()}`
+      : '+93 700 345 630 | INFO@BAWARSTAR.COM';
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-3.5 text-xs">
       {/* Voucher Header */}
       <div className="flex justify-between items-start border-b-2 border-slate-900 dark:border-slate-200 pb-3">
         <div className="flex items-center gap-3">
-          {companyLogo ? (
-            <img src={companyLogo} alt="Logo" className="h-9 max-w-[80px] object-contain rounded" />
+          {displayLogo ? (
+            <img src={displayLogo} alt="Logo" className="h-9 max-w-[80px] object-contain rounded" />
           ) : (
             <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold text-xs">
-              BS
+              {initials}
             </div>
           )}
           <div>
             <h2 className="text-base font-extrabold uppercase text-slate-900 dark:text-white tracking-tight">
-              {companyName || 'BAWAR STAR PLASTIC INDUSTRY'}
+              {displayName}
             </h2>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-              +93 700 345 630 | INFO@BAWARSTAR.COM
+              {contactInfo}
             </p>
           </div>
         </div>

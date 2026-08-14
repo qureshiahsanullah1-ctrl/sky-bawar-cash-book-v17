@@ -1,21 +1,37 @@
 import React from 'react';
+import { useCompany } from '../context/CompanyContext';
 
-export default function CashbookReceiptPrintView({
-  voucherNo = 'TX-20260707-0008',
-  date = '1405/04/16 | Jul 7, 2026',
-  accountName = 'Kandahar Construction Company',
-  companyName = 'BAWAR STAR PLASTIC INDUSTRY',
-  companyLogo = '',
-  category = 'Engineering Services',
-  paymentMethod = 'CASH',
-  reference = 'REF-98402',
-  details = 'Engineering service and logistics disbursement',
-  amountAfn = 19250.00,
-  amountUsd = 299.38,
-  exchangeRate = 64.3,
-  isCashIn = false,
-  notes = ''
-}) {
+export default function CashbookReceiptPrintView(props) {
+  const { currentCompany } = useCompany();
+  const companyName = props.companyName || currentCompany?.name || 'BAWAR STAR PLASTIC INDUSTRY';
+  const companyLogo = props.companyLogo || currentCompany?.logo || '';
+  const voucherNo = props.voucherNo || 'TX-20260707-0008';
+  const date = props.date || '1405/04/16 | Jul 7, 2026';
+  const accountName = props.accountName || 'Kandahar Construction Company';
+  const category = props.category || 'Engineering Services';
+  const paymentMethod = props.paymentMethod || 'CASH';
+  const reference = props.reference || 'REF-98402';
+  const details = props.details || 'Standard cashbook voucher transaction record';
+  const amountAfn = props.amountAfn ?? 19250.00;
+  const amountUsd = props.amountUsd ?? 299.38;
+  const exchangeRate = props.exchangeRate || 64.3;
+  const isCashIn = props.isCashIn || false;
+  const notes = props.notes || '';
+
+  const initials = companyName
+    .split(' ')
+    .filter(Boolean)
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'BS';
+
+  const contactInfo = currentCompany?.id === 'sky-ariana'
+    ? '+93 700 345 630 | INFO@SKYARIANA.COM'
+    : currentCompany?.tagline
+      ? `+93 700 345 630 | ${currentCompany.tagline.toUpperCase()}`
+      : '+93 700 345 630 | INFO@BAWARSTAR.COM';
+
   const SingleReceipt = ({ copyType }) => (
     <div className="w-full bg-white border border-slate-900 rounded-lg p-3.5 shadow-sm flex flex-col justify-between text-slate-800 font-sans max-h-[124mm]">
       {/* Header */}
@@ -25,12 +41,12 @@ export default function CashbookReceiptPrintView({
             <img src={companyLogo} alt="Logo" className="h-8 max-w-[70px] object-contain rounded" />
           ) : (
             <div className="w-7 h-7 rounded bg-slate-900 text-white font-black text-[10px] flex items-center justify-center">
-              BS
+              {initials}
             </div>
           )}
           <div>
             <h1 className="text-xs font-black tracking-tight uppercase text-slate-900">{companyName}</h1>
-            <p className="text-[8.5px] text-slate-500 font-medium">+93 700 345 630 | INFO@BAWARSTAR.COM</p>
+            <p className="text-[8.5px] text-slate-500 font-medium">{contactInfo}</p>
           </div>
         </div>
         <div className="text-right flex flex-col items-end">

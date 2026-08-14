@@ -143,6 +143,13 @@ export default function App() {
   const [exchangeRate, setExchangeRate] = useState('64.30');
   const [printHeader, setPrintHeader] = useState(true);
   const [language, setLanguage] = useState('English');
+
+  const effectiveCompanyName = currentCompany?.name || companyName || 'BAWAR STAR PLASTIC INDUSTRY';
+  const effectiveCompanyLogo = currentCompany?.logo || companyLogo || '';
+  const effectiveCompanyPhone = companyPhone || '+93 700 345 630';
+  const effectiveCompanyEmail = currentCompany?.id === 'sky-ariana'
+    ? 'INFO@SKYARIANA.COM'
+    : companyEmail || 'INFO@BAWARSTAR.COM';
   const t = (key) => {
     const lang = language || 'English';
     const safeLang = ['English', 'Dari', 'Pashto'].includes(lang) ? lang : 'English';
@@ -1345,11 +1352,11 @@ export default function App() {
   printContextRef.current = {
     activeView,
     company: {
-      companyName,
-      companyLogo,
+      companyName: effectiveCompanyName,
+      companyLogo: effectiveCompanyLogo,
       companyAddress,
-      companyPhone,
-      companyEmail,
+      companyPhone: effectiveCompanyPhone,
+      companyEmail: effectiveCompanyEmail,
     },
     preparedBy: currentUser?.full_name || 'System User',
     dateDisplayFormat,
@@ -1448,7 +1455,7 @@ export default function App() {
     .voucher-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 4px; margin-bottom: 6px; }
     .company-brand { display: flex; align-items: center; gap: 8px; }
     .company-logo-img { height: 32px; max-width: 90px; object-fit: contain; border-radius: 4px; }
-    .company-logo-icon { width: 32px; height: 32px; background: #0f172a; color: #38bdf8; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .company-logo-icon { width: 32px; height: 32px; background: #0f172a; color: #38bdf8; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 11px; }
     .company-name { font-size: 13px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em; text-transform: uppercase; }
     .company-contact { font-size: 8px; color: #475467; font-weight: 600; margin-top: 1px; }
     .voucher-meta { text-align: right; }
@@ -1511,15 +1518,25 @@ export default function App() {
         ? jalaliDateLabel(tx.date) 
         : `${jalaliDateLabel(tx.date)} | ${dateLabel(tx.date)}`;
 
-    const logoHtml = companyLogo 
-      ? '<img src="' + escapeHtml(companyLogo) + '" alt="Logo" class="company-logo-img" />'
-      : '<div class="company-logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div>';
+    const compInitials = escapeHtml(
+      effectiveCompanyName
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'BS'
+    );
+
+    const logoHtml = effectiveCompanyLogo 
+      ? '<img src="' + escapeHtml(effectiveCompanyLogo) + '" alt="Logo" class="company-logo-img" />'
+      : '<div class="company-logo-icon font-black text-xs">' + compInitials + '</div>';
 
     const voucherTitle = isCashIn ? 'RECEIPT VOUCHER' : 'PAYMENT VOUCHER';
     const voucherNo = escapeHtml(tx.transaction_no || String(tx.id).slice(0, 8));
-    const safeCompName = escapeHtml(companyName || 'BAWAR STAR PLASTIC INDUSTRY');
-    const safeCompPhone = escapeHtml(companyPhone || '+93 700 345 630');
-    const safeCompEmail = companyEmail ? ' | ' + escapeHtml(companyEmail) : '';
+    const safeCompName = escapeHtml(effectiveCompanyName);
+    const safeCompPhone = escapeHtml(effectiveCompanyPhone);
+    const safeCompEmail = effectiveCompanyEmail ? ' | ' + escapeHtml(effectiveCompanyEmail) : '';
     const safeAccountName = escapeHtml(tx.account_name || 'General Account');
     const safeCategory = escapeHtml(String(tx.category || 'General').replaceAll('_', ' '));
     const safePaymentMethod = escapeHtml(tx.payment_method || 'CASH');
@@ -2084,7 +2101,7 @@ export default function App() {
             </>
           </Suspense>
         </AppShell>
-      <ReceiptModal transaction={receipt} companyName={companyName} dateDisplayFormat={dateDisplayFormat} onClose={() => setReceipt(null)} onPrint={printReceipt} />
+      <ReceiptModal transaction={receipt} companyName={effectiveCompanyName} companyLogo={effectiveCompanyLogo} dateDisplayFormat={dateDisplayFormat} onClose={() => setReceipt(null)} onPrint={printReceipt} />
       {printPreviewOpen && <Suspense fallback={<div className="loading-strip">{t('Loading print studio...')}</div>}><GlassPrintPreview
         open={printPreviewOpen}
         onClose={() => {
