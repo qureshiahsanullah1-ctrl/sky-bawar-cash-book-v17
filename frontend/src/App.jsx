@@ -129,6 +129,7 @@ export default function App() {
     return 'Dashboard';
   };
 
+  const { currentCompany } = useCompany();
   const [theme, setTheme] = useState(() => localStorage.getItem('cashbook-theme') || 'dark');
   const [searchOpen, setSearchOpen] = useState(false);
   const [companyName, setCompanyName] = useState('Cashbook Of All companies');
@@ -284,8 +285,6 @@ export default function App() {
   useEffect(() => {
     initializeAuth();
   }, []);
-
-  const { currentCompany } = useCompany();
 
   useEffect(() => {
     if (currentCompany) {
