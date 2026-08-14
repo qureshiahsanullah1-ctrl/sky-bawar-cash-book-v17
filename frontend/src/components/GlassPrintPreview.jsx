@@ -18,6 +18,7 @@ import {
   FileText
 } from 'lucide-react';
 import PrintDocument from './PrintDocument';
+import { useCompany } from '../context/CompanyContext';
 
 function DashboardHeader({ report, onClose }) {
   const { t } = useTranslation();
@@ -77,8 +78,6 @@ function DashboardHeader({ report, onClose }) {
     </header>
   );
 }
-
-import { useCompany } from '../context/CompanyContext';
 
 function BusinessOverview({ report }) {
   const { t } = useTranslation();
