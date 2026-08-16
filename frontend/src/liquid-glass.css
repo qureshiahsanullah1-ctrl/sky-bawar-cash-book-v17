@@ -3928,6 +3928,7 @@ button, a, select, input {
   grid-template-columns: 1fr 1fr !important;
   align-items: stretch !important;
   overflow: hidden !important;
+  zoom: 0.90 !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 28px !important;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(30, 41, 59, 0.75) 50%, rgba(15, 23, 42, 0.88) 100%) !important;

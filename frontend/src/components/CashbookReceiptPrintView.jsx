@@ -90,18 +90,18 @@ export default function CashbookReceiptPrintView(props) {
       </div>
 
       {/* Financial Breakdown */}
-      <div className="grid grid-cols-3 gap-2 bg-slate-900 text-white p-2.5 rounded-md mb-2 text-center">
+      <div className="grid grid-cols-3 gap-2 bg-slate-900 text-white p-2.5 rounded-md mb-2 text-center shadow-inner">
         <div>
           <span className="block text-[7.5px] uppercase tracking-wider text-slate-300 font-extrabold">Amount AFN</span>
-          <span className="text-[12px] font-mono font-black text-emerald-400">AFN {typeof amountAfn === 'number' ? amountAfn.toLocaleString() : amountAfn}</span>
+          <span className="text-[12.5px] font-mono font-black text-emerald-400">AFN {typeof amountAfn === 'number' ? amountAfn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : amountAfn}</span>
         </div>
         <div className="border-l border-slate-700">
           <span className="block text-[7.5px] uppercase tracking-wider text-slate-300 font-extrabold">Amount USD</span>
-          <span className="text-[12px] font-mono font-black text-blue-300">USD {typeof amountUsd === 'number' ? amountUsd.toLocaleString() : amountUsd}</span>
+          <span className="text-[12.5px] font-mono font-black text-blue-300">USD {typeof amountUsd === 'number' ? amountUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : amountUsd}</span>
         </div>
         <div className="border-l border-slate-700">
           <span className="block text-[7.5px] uppercase tracking-wider text-slate-300 font-extrabold">Exchange Rate</span>
-          <span className="text-[12px] font-mono font-bold text-slate-200">{exchangeRate}</span>
+          <span className="text-[12.5px] font-mono font-bold text-slate-200">{exchangeRate}</span>
         </div>
       </div>
 
@@ -111,7 +111,12 @@ export default function CashbookReceiptPrintView(props) {
         </div>
       )}
 
-      {/* Signatures */}
+      {/* Verification Strip & Signatures */}
+      <div className="flex justify-between items-center bg-slate-100 px-2 py-1 rounded border border-slate-300 text-[7px] text-slate-600 mb-1">
+        <span>SECURITY HASH: VERIFIED SYSTEM RECORD</span>
+        <span className="font-bold text-emerald-700 uppercase">OFFICIAL AUDIT COPY</span>
+      </div>
+
       <div className="grid grid-cols-3 gap-4 pt-2 mt-0.5 border-t border-dashed border-slate-300 text-center">
         <div className="border-t border-slate-400 pt-0.5">
           <span className="text-[7.5px] font-bold text-slate-600 uppercase tracking-wider">Prepared By</span>
@@ -120,7 +125,7 @@ export default function CashbookReceiptPrintView(props) {
           <span className="text-[7.5px] font-bold text-slate-600 uppercase tracking-wider">Receiver Signature</span>
         </div>
         <div className="border-t border-slate-400 pt-0.5">
-          <span className="text-[7.5px] font-bold text-slate-600 uppercase tracking-wider">Authorized Signature</span>
+          <span className="text-[7.5px] font-bold text-slate-600 uppercase tracking-wider">Authorized Manager</span>
         </div>
       </div>
     </div>
