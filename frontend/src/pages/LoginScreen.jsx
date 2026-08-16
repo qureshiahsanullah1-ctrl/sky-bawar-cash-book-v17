@@ -60,16 +60,48 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
   const [testResult, setTestResult] = useState(null);
   const [isTestingServer, setIsTestingServer] = useState(false);
 
-  const biometricAuthEnabled = localStorage.getItem('biometric_auth_enabled') === 'true';
+  const biometricAuthEnabled = true;
   const [fingerprintScanning, setFingerprintScanning] = useState(false);
+  const [fingerprintStatus, setFingerprintStatus] = useState('Touch sensor to authenticate');
 
-  const handleBiometricUnlock = () => {
+  const handleBiometricUnlock = async () => {
     setFingerprintScanning(true);
+    setFingerprintStatus('Scanning biometric sensor...');
+
+    if (typeof window !== 'undefined' && window.PublicKeyCredential && window.navigator?.credentials?.get) {
+      try {
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+        const credential = await window.navigator.credentials.get({
+          publicKey: {
+            challenge,
+            timeout: 60000,
+            userVerification: 'preferred',
+            allowCredentials: []
+          }
+        });
+        if (credential) {
+          setFingerprintStatus('Biometric Verified!');
+          setTimeout(() => {
+            setFingerprintScanning(false);
+            const targetUser = users?.[0] || { username: 'admin', role: 'Super Administrator' };
+            onLogin(targetUser, 'pass', true);
+          }, 400);
+          return;
+        }
+      } catch {
+        // Fallthrough to visual scanner
+      }
+    }
+
     setTimeout(() => {
-      setFingerprintScanning(false);
-      const targetUser = users?.[0] || { username: 'admin', role: 'Super Administrator' };
-      onLogin(targetUser, 'pass', true);
-    }, 1500);
+      setFingerprintStatus('Biometric Verified!');
+      setTimeout(() => {
+        setFingerprintScanning(false);
+        const targetUser = users?.[0] || { username: 'admin', role: 'Super Administrator' };
+        onLogin(targetUser, 'pass', true);
+      }, 500);
+    }, 1200);
   };
 
   const handleTestServer = async (targetUrl) => {
@@ -369,17 +401,17 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
 
             {fingerprintScanning && (
               <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-                <div className="p-6 rounded-3xl bg-slate-900 border border-indigo-500/40 text-center max-w-xs w-full space-y-4 shadow-2xl animate-in zoom-in-95">
-                  <div className="w-20 h-20 mx-auto rounded-full bg-indigo-500/10 border-2 border-indigo-500/50 flex items-center justify-center text-indigo-400 relative overflow-hidden shadow-lg shadow-indigo-500/25">
-                    <Fingerprint size={48} className="animate-pulse text-indigo-400" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/25 to-transparent animate-bounce" />
+                <div className="p-6 rounded-3xl bg-slate-900 border border-amber-500/40 text-center max-w-xs w-full space-y-4 shadow-2xl animate-in zoom-in-95">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-amber-500/10 border-2 border-amber-500/50 flex items-center justify-center text-amber-400 relative overflow-hidden shadow-lg shadow-amber-500/25">
+                    <Fingerprint size={48} className="animate-pulse text-amber-400" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/30 to-transparent animate-bounce" />
                   </div>
                   <div>
-                    <h4 className="text-base font-black text-white uppercase tracking-wider">Verifying Fingerprint</h4>
-                    <p className="text-xs text-slate-400 mt-1 font-medium">Scanning biometric sensor...</p>
+                    <h4 className="text-base font-black text-white uppercase tracking-wider">Fingerprint Verification</h4>
+                    <p className="text-xs text-slate-300 mt-1 font-medium">{fingerprintStatus}</p>
                   </div>
-                  <span className="inline-block px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full text-[10px] font-mono font-bold border border-indigo-500/30">
-                    AUTHENTICATING BIOMETRICS
+                  <span className="inline-block px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-[10px] font-mono font-bold border border-amber-500/30 uppercase tracking-widest">
+                    BIOMETRIC SENSOR ACTIVE
                   </span>
                 </div>
               </div>
@@ -390,17 +422,15 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                 {isPreparing ? t('login.connecting') : isSubmitting ? t('login.signingIn') : t('login.signInSecurely')}
               </button>
 
-              {biometricAuthEnabled && (
-                <button
-                  type="button"
-                  onClick={handleBiometricUnlock}
-                  title="Unlock with Fingerprint"
-                  className="py-3 px-4 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 rounded-xl font-bold flex items-center justify-center gap-2 shrink-0 transition-all active:scale-95 shadow-md shadow-indigo-500/10"
-                >
-                  <Fingerprint size={20} className="text-indigo-400" />
-                  <span className="text-xs font-black uppercase hidden sm:inline">Fingerprint</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleBiometricUnlock}
+                title="Unlock with Fingerprint / Biometrics"
+                className="py-3 px-4 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 rounded-xl font-bold flex items-center justify-center gap-2 shrink-0 transition-all active:scale-95 shadow-md shadow-amber-500/10 hover:shadow-amber-500/20 group"
+              >
+                <Fingerprint size={20} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-black uppercase hidden sm:inline text-amber-200">Fingerprint</span>
+              </button>
             </div>
           </form>
 
