@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
+
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -847,8 +851,8 @@ def create_transaction(
                 category="salary" if employee else payload.category,
                 note=_normalize_text(payload.note),
                 branch_id=payload.branch_id,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=utcnow(),
+                updated_at=utcnow(),
             )
             db.add(transaction)
             db.commit()
@@ -988,7 +992,7 @@ def import_master_excel(db: Session, file_bytes: bytes, filename: str) -> dict:
     sheets_processed = len(wb.sheetnames)
     imported_transactions = 0
     created_accounts = 0
-    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    today_str = utcnow().strftime("%Y-%m-%d")
 
     accounts = {acc.name.strip().lower(): acc for acc in db.query(models.Account).all()}
     existing_sigs = set()
@@ -1545,14 +1549,14 @@ def account_ledger(db: Session, account_id: int) -> dict:
 def backup_payload(db: Session) -> dict:
     db.add(
         models.BackupLog(
-            backup_name=f"cashbook-backup-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
+            backup_name=f"cashbook-backup-{utcnow().strftime('%Y%m%d-%H%M%S')}",
             backup_type="export",
             note="Full JSON backup exported",
         )
     )
     db.commit()
     return {
-        "exported_at": datetime.utcnow(),
+        "exported_at": utcnow(),
         "settings": get_settings(db),
         "accounts": list_accounts(db),
         "employees": db.query(models.Employee)
@@ -1936,14 +1940,14 @@ def import_backup(db: Session, payload: dict, replace_all: bool = False) -> dict
                 created_at=_datetime_value(
                     _first_value(adj_data, "created_at", "createdAt")
                 )
-                or datetime.utcnow(),
+                or utcnow(),
             )
         )
         imported_salary_adjustments += 1
 
     db.add(
         models.BackupLog(
-            backup_name=f"cashbook-restore-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
+            backup_name=f"cashbook-restore-{utcnow().strftime('%Y%m%d-%H%M%S')}",
             backup_type="restore",
             note=f"Imported {imported_accounts} accounts, {imported_employees} employees, and {imported_transactions} transactions",
         )
@@ -1980,7 +1984,7 @@ def clear_all(db: Session) -> dict:
     _ensure_settings(db)
     db.add(
         models.BackupLog(
-            backup_name=f"cashbook-clear-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
+            backup_name=f"cashbook-clear-{utcnow().strftime('%Y%m%d-%H%M%S')}",
             backup_type="clear",
             note=f"Cleared {account_count} accounts, {employee_count} employees, and {transaction_count} transactions",
         )
