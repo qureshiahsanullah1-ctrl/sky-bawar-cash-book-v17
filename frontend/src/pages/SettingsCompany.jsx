@@ -137,6 +137,38 @@ export default function SettingsCompany(props) {
                 <span>{t('Remove Logo')}</span>
               </button>
             )}
+            
+            {/* Quick Preset Company Switcher */}
+            <div className="w-full pt-3 mt-1 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-col gap-1.5 text-left">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 block text-center mb-0.5">Quick Brand Shortcuts</span>
+              <button
+                type="button"
+                className="w-full py-1.5 px-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-lg border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-between transition-all"
+                onClick={() => {
+                  props.setCompanyName('SKY ARIANA LTD');
+                  props.setCompanyEmail('INFO@SKYARIANA.COM');
+                  props.setCompanyPhone('+93 700 345 630');
+                  props.setCompanyAddress('Kabul International Cargo Terminal, Afghanistan');
+                }}
+              >
+                <span>SKY ARIANA LTD</span>
+                <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-extrabold">Apply</span>
+              </button>
+              <button
+                type="button"
+                className="w-full py-1.5 px-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 text-[11px] font-bold rounded-lg border border-amber-200/60 dark:border-amber-800/60 flex items-center justify-between transition-all"
+                onClick={() => {
+                  props.setCompanyName('BAWAR STAR PLASTIC INDUSTRY');
+                  props.setCompanyEmail('INFO@BAWARSTAR.COM');
+                  props.setCompanyPhone('+93 799 123 456');
+                  props.setCompanyAddress('Industrial Park Sector 4, Kabul, Afghanistan');
+                }}
+              >
+                <span>BAWAR STAR PLASTIC</span>
+                <span className="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-extrabold">Apply</span>
+              </button>
+            </div>
+            
             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-0.5">{t('Supports PNG, JPG, or SVG images')}</span>
           </div>
         </div>

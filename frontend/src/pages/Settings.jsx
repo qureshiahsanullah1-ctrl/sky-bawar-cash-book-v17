@@ -219,9 +219,14 @@ export default function Settings(props) {
                 </div>
 
                 <div className="flex flex-col gap-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <Image size={14} className="text-amber-500" />
-                    <span>Login Screen Background Theme</span>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Image size={14} className="text-amber-500" />
+                      <span>Login Screen Background Theme</span>
+                    </span>
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                      Live Preview Enabled
+                    </span>
                   </label>
                   <select 
                     className="w-full px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-950/80 border border-slate-200/90 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 outline-none transition-all" 
@@ -238,6 +243,32 @@ export default function Settings(props) {
                     <option value="onyx_slate">Dark Onyx Metallic (Minimalist Dark Obsidian)</option>
                     <option value="custom_url">Custom Image URL (Enter Image Link below)</option>
                   </select>
+
+                  {/* Live Background Thumbnail Preview */}
+                  <div className="mt-2 p-3 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-950 text-white relative overflow-hidden h-24 flex items-center justify-center shadow-inner">
+                    <div 
+                      className={`absolute inset-0 transition-all duration-500 ${
+                        (props.loginBg || localStorage.getItem('cashbook-login-bg')) === 'emerald_cyber'
+                          ? 'bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-950'
+                          : (props.loginBg || localStorage.getItem('cashbook-login-bg')) === 'sapphire_space'
+                            ? 'bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950'
+                            : (props.loginBg || localStorage.getItem('cashbook-login-bg')) === 'onyx_slate'
+                              ? 'bg-gradient-to-br from-slate-900 via-slate-950 to-black'
+                              : 'bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950'
+                      }`}
+                      style={
+                        (props.loginBg || localStorage.getItem('cashbook-login-bg')) === 'custom_url' && (props.customLoginBgUrl || localStorage.getItem('cashbook-custom-login-bg-url'))
+                          ? { backgroundImage: `url("${props.customLoginBgUrl || localStorage.getItem('cashbook-custom-login-bg-url')}")`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                          : {}
+                      }
+                    />
+                    <div className="relative z-10 p-2.5 rounded-lg bg-slate-900/90 border border-amber-500/40 backdrop-blur-md text-center max-w-[220px]">
+                      <span className="text-[9px] font-bold text-amber-300 uppercase tracking-widest block">BACKGROUND THEME PREVIEW</span>
+                      <span className="text-[11px] font-extrabold text-white truncate block">
+                        {(props.loginBg || localStorage.getItem('cashbook-login-bg') || 'gold_luxury').toUpperCase().replace('_', ' ')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {(props.loginBg === 'custom_url' || localStorage.getItem('cashbook-login-bg') === 'custom_url') && (
