@@ -6,7 +6,7 @@ import BiometricAndUpdateSettings from '../components/BiometricAndUpdateSettings
 import { 
   BadgeCheck, Building2, Factory, Printer, ShieldCheck, Sliders, Users, 
   Activity, FileText, DollarSign, TrendingUp, SunMoon, Languages, Calendar, 
-  Clock, Download, Upload, Trash2, Save, SlidersHorizontal, CheckCircle2 
+  Clock, Download, Upload, Trash2, Save, SlidersHorizontal, CheckCircle2, Image
 } from 'lucide-react';
 
 const METRIC_STYLES = {
@@ -217,6 +217,48 @@ export default function Settings(props) {
                     <option value="Dari">Dari (دری)</option>
                   </select>
                 </div>
+
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Image size={14} className="text-amber-500" />
+                    <span>Login Screen Background Theme</span>
+                  </label>
+                  <select 
+                    className="w-full px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-950/80 border border-slate-200/90 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 outline-none transition-all" 
+                    value={props.loginBg || localStorage.getItem('cashbook-login-bg') || 'gold_luxury'} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      localStorage.setItem('cashbook-login-bg', val);
+                      if (props.setLoginBg) props.setLoginBg(val);
+                    }}
+                  >
+                    <option value="gold_luxury">Golden Luxury Glass (Default - Midnight & Gold Rays)</option>
+                    <option value="emerald_cyber">Royal Emerald Cyber (Deep Emerald Matrix)</option>
+                    <option value="sapphire_space">Cosmic Sapphire Blue (Deep Sapphire Nebula)</option>
+                    <option value="onyx_slate">Dark Onyx Metallic (Minimalist Dark Obsidian)</option>
+                    <option value="custom_url">Custom Image URL (Enter Image Link below)</option>
+                  </select>
+                </div>
+
+                {(props.loginBg === 'custom_url' || localStorage.getItem('cashbook-login-bg') === 'custom_url') && (
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Image size={14} className="text-blue-500" />
+                      <span>Custom Wallpaper Image URL</span>
+                    </label>
+                    <input 
+                      type="url" 
+                      className="w-full px-3.5 py-2.5 bg-slate-50/80 dark:bg-slate-950/80 border border-slate-200/90 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all" 
+                      value={props.customLoginBgUrl ?? localStorage.getItem('cashbook-custom-login-bg-url') ?? ''} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        localStorage.setItem('cashbook-custom-login-bg-url', val);
+                        if (props.setCustomLoginBgUrl) props.setCustomLoginBgUrl(val);
+                      }} 
+                      placeholder="https://example.com/login-wallpaper.jpg"
+                    />
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-1.5 sm:col-span-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">

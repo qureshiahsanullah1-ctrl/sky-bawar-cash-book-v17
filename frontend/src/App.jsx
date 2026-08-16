@@ -237,6 +237,8 @@ export default function App() {
   const [confirm, setConfirm] = useState(null);
   const [settingsStatus, setSettingsStatus] = useState('');
   const [lastBackupAt, setLastBackupAt] = useState(() => localStorage.getItem('cashbook-last-backup-at') || '');
+  const [loginBg, setLoginBg] = useState(() => localStorage.getItem('cashbook-login-bg') || 'gold_luxury');
+  const [customLoginBgUrl, setCustomLoginBgUrl] = useState(() => localStorage.getItem('cashbook-custom-login-bg-url') || '');
   const [isLoading, setIsLoading] = useState(() => {
     try {
       const cached = localStorage.getItem('cached_summary') || localStorage.getItem('cached_transactions');
@@ -2018,6 +2020,10 @@ export default function App() {
                     setAutoLogoutMinutes={setAutoLogoutMinutes}
                     printHeader={printHeader}
                     setPrintHeader={setPrintHeader}
+                    loginBg={loginBg}
+                    setLoginBg={setLoginBg}
+                    customLoginBgUrl={customLoginBgUrl}
+                    setCustomLoginBgUrl={setCustomLoginBgUrl}
                     onSave={onSaveSettings}
                     onPrintPreview={onPrint}
                     onBackup={onBackup}

@@ -189,8 +189,22 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
     }
   }
 
+  const activeLoginBg = localStorage.getItem('cashbook-login-bg') || 'gold_luxury';
+  const customBgUrl = localStorage.getItem('cashbook-custom-login-bg-url') || '';
+  const themeClass = activeLoginBg === 'emerald_cyber'
+    ? 'login-bg-emerald'
+    : activeLoginBg === 'sapphire_space'
+      ? 'login-bg-sapphire'
+      : activeLoginBg === 'onyx_slate'
+        ? 'login-bg-onyx'
+        : 'login-bg-gold';
+
+  const customStyle = activeLoginBg === 'custom_url' && customBgUrl
+    ? { backgroundImage: `linear-gradient(rgba(2, 6, 23, 0.75), rgba(15, 23, 42, 0.85)), url("${customBgUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
   return (
-    <main className={`login-screen ${isSubmitting ? 'login-success' : ''}`}>
+    <main className={`login-screen ${themeClass} ${isSubmitting ? 'login-success' : ''}`} style={customStyle}>
       <div className="login-bg-decorations" aria-hidden="true">
         <div className="login-bg-orb login-bg-orb-1" />
         <div className="login-bg-orb login-bg-orb-2" />
