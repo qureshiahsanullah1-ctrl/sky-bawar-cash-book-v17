@@ -108,15 +108,20 @@ export function filterCashBookRows(rows, filters) {
   let runningAfn = roundMoney(openingAfn);
   let runningUsd = roundMoney(openingUsd);
 
-  const filteredRows = rows.filter((transaction) => (
-    (!search || transaction.searchText.includes(search))
-    && (!startDate || transaction.date >= startDate)
-    && (!endDate || transaction.date <= endDate)
-    && (filters.type === 'all' || transaction.transaction_type === filters.type)
-    && (filters.category === 'all' || transaction.category === filters.category)
-    && (filters.payment === 'all' || transaction.payment_method === filters.payment)
-    && (!account || transaction.accountSearchText.includes(account))
-  )).map((transaction) => {
+  const filteredRows = rows.filter((transaction) => {
+    const searchText = (transaction.searchText || `${transaction.account_name || ''} ${transaction.detail || ''} ${transaction.note || ''}`).toLowerCase();
+    const accountSearchText = (transaction.accountSearchText || String(transaction.account_name || '')).toLowerCase();
+
+    return (
+      (!search || searchText.includes(search))
+      && (!startDate || transaction.date >= startDate)
+      && (!endDate || transaction.date <= endDate)
+      && (filters.type === 'all' || transaction.transaction_type === filters.type)
+      && (filters.category === 'all' || transaction.category === filters.category)
+      && (filters.payment === 'all' || transaction.payment_method === filters.payment)
+      && (!account || accountSearchText.includes(account))
+    );
+  }).map((transaction) => {
     runningAfn = roundMoney(runningAfn + cashDeltaAfn(transaction));
     runningUsd = roundMoney(runningUsd + cashDeltaUsd(transaction));
     return { ...transaction, runningBalance: runningAfn, runningBalanceUsd: runningUsd };

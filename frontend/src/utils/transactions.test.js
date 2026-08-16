@@ -115,3 +115,20 @@ test('filterCashBookRows clamps cross-month date ranges to the From date month',
   assert.deepEqual(result.map((row) => row.id), ['balance-brought-forward-2026-07-01', 2]);
   assert.deepEqual(result.map((row) => row.runningBalance), [100, 150]);
 });
+
+test('filterCashBookRows handles raw un-derived transaction objects safely', () => {
+  const rawRows = [
+    { id: 1, date: '2026-08-01', transaction_type: 'cash_in', cash_in_afn: 500, account_name: 'Raw Account', detail: 'Raw Detail' }
+  ];
+  const result = filterCashBookRows(rawRows, {
+    search: 'raw',
+    account: '',
+    startDate: '',
+    endDate: '',
+    type: 'all',
+    category: 'all',
+    payment: 'all'
+  });
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, 1);
+});
