@@ -3641,7 +3641,7 @@ button, a, select, input {
   height: 50vw !important;
   max-width: 700px !important;
   max-height: 700px !important;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.5) 0%, rgba(2, 132, 199, 0.18) 70%, transparent 100%) !important;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.65) 0%, rgba(2, 132, 199, 0.25) 70%, transparent 100%) !important;
   animation: loginOrbFloat1 18s ease-in-out infinite alternate !important;
 }
 
@@ -3652,30 +3652,30 @@ button, a, select, input {
   height: 55vw !important;
   max-width: 750px !important;
   max-height: 750px !important;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.48) 0%, rgba(79, 70, 229, 0.15) 70%, transparent 100%) !important;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.60) 0%, rgba(79, 70, 229, 0.22) 70%, transparent 100%) !important;
   animation: loginOrbFloat2 22s ease-in-out infinite alternate !important;
 }
 
 .login-bg-orb-3 {
-  top: 35% !important;
-  left: 45% !important;
+  top: 30% !important;
+  left: 55% !important;
   transform: translate(-50%, -50%) !important;
-  width: 42vw !important;
-  height: 42vw !important;
-  max-width: 600px !important;
-  max-height: 600px !important;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.12) 50%, transparent 100%) !important;
+  width: 50vw !important;
+  height: 50vw !important;
+  max-width: 700px !important;
+  max-height: 700px !important;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.55) 0%, rgba(234, 179, 8, 0.25) 55%, transparent 100%) !important;
   animation: loginOrbFloat3 16s ease-in-out infinite alternate !important;
 }
 
 .login-bg-orb-4 {
   bottom: 10% !important;
   left: 10% !important;
-  width: 35vw !important;
-  height: 35vw !important;
-  max-width: 480px !important;
-  max-height: 480px !important;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.1) 60%, transparent 100%) !important;
+  width: 38vw !important;
+  height: 38vw !important;
+  max-width: 520px !important;
+  max-height: 520px !important;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.45) 0%, rgba(245, 158, 11, 0.18) 60%, transparent 100%) !important;
   animation: loginOrbFloat1 24s ease-in-out infinite alternate-reverse !important;
 }
 
