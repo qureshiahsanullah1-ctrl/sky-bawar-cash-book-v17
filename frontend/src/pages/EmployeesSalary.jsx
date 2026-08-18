@@ -908,19 +908,19 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
               {/* Financial Metrics Grid */}
               <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/60 dark:border-slate-800/80 text-center">
                 <div>
-                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Payable</span>
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.totalPayable', 'Payable')}</span>
                   <strong className="text-xs font-mono font-black text-slate-900 dark:text-white block mt-0.5">
                     {currency(row.total_payable_salary ?? row.monthly_salary)}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Paid</span>
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.paidSalary', 'Paid')}</span>
                   <strong className="text-xs font-mono font-black text-emerald-600 dark:text-emerald-400 block mt-0.5">
                     {currency(row.paid_salary)}
                   </strong>
                 </div>
                 <div>
-                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Carry Fwd</span>
+                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.carryForward', 'Carry Fwd')}</span>
                   <strong className="text-xs font-mono font-black text-amber-600 dark:text-amber-400 block mt-0.5">
                     {currency(row.remaining_salary)}
                   </strong>
@@ -935,7 +935,7 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
                   onClick={() => onPay(row)}
                 >
                   <Banknote size={15} />
-                  <span>Pay Salary</span>
+                  <span>{t('payroll.paySalary', 'Pay Salary')}</span>
                 </button>
                 {onEditEmployee && (
                   <button
