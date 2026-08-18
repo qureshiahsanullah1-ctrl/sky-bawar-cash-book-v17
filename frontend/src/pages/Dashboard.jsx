@@ -23,6 +23,7 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import SimpleCashChart from '../components/SimpleCashChart';
+import AdvancedAnalyticsCharts from '../components/AdvancedAnalyticsCharts';
 import { currency, signedCurrency, dateLabel } from '../utils/format';
 
 const companyFallback = 'Cashbook Of All Companies';
@@ -359,21 +360,32 @@ export default function Dashboard({
               const amount = isCashIn ? tx.cash_in_afn : tx.cash_out_afn;
               return (
                 <div key={tx.id} className="mobile-tx-card">
-                  <div className="mobile-tx-header">
-                    <strong>{tx.account_name || 'General'}</strong>
-                    <span className={`badge-type ${isCashIn ? 'badge-cash-in' : 'badge-cash-out'}`}>
+                  <div className={`mobile-tx-icon ${isCashIn ? 'mobile-tx-icon-in' : 'mobile-tx-icon-out'}`}>
+                    {isCashIn ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+                  </div>
+                  <div className="mobile-tx-info">
+                    <span className="mobile-tx-name">{tx.account_name || 'General Account'}</span>
+                    <div className="mobile-tx-meta">
+                      <span>{dateLabel(tx.date)}</span>
+                      {tx.detail && <span>&bull; {tx.detail}</span>}
+                    </div>
+                  </div>
+                  <div className="mobile-tx-amount-block">
+                    <span className={`mobile-tx-amount ${isCashIn ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                      {signedCurrency(amount, tx.transaction_type)}
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isCashIn ? 'text-emerald-500' : 'text-rose-500'}`}>
                       {isCashIn ? 'Cash In' : 'Cash Out'}
                     </span>
-                  </div>
-                  <div className="mobile-tx-body">
-                    <span>{dateLabel(tx.date)}</span>
-                    <strong className={isCashIn ? 'amount-in' : 'amount-out'}>
-                      {signedCurrency(amount, tx.transaction_type)}
-                    </strong>
                   </div>
                 </div>
               );
             })}
+            {recentTransactions.length === 0 && (
+              <div className="p-4 text-center text-xs text-slate-500 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-800">
+                {t('dashboard.noTransactions', 'No transactions recorded yet.')}
+              </div>
+            )}
           </div>
         </div>
 
@@ -387,6 +399,9 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Advanced Analytics */}
+      <AdvancedAnalyticsCharts transactions={transactions} summary={summary} />
     </div>
   );
 }

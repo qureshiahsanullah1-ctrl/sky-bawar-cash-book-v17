@@ -19,6 +19,7 @@ from ..auth_dependencies import (
     require_authenticated_request,
     require_administrator_request,
 )
+from ..utils import rate_limit_login
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -236,8 +237,10 @@ def setup_owner(payload: schemas.SetupRequest, db: Session = Depends(get_db)):
     }
 
 
+from fastapi import Response
+
 @router.post("/login", response_model=schemas.LoginResponse)
-def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
+def login(payload: schemas.LoginRequest, response: Response, db: Session = Depends(get_db), _: None = Depends(rate_limit_login)):
     username_clean = payload.username.strip()
     user = (
         db.query(models.User)
@@ -305,6 +308,16 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
         db.refresh(user)
     except Exception:
         db.rollback()
+        
+    response.set_cookie(
+        key="access_token",
+        value=f"Bearer {access_token}",
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=int(expires_delta.total_seconds())
+    )
+        
     return {
         "token": access_token,
         "expires_at": now + expires_delta,
@@ -353,10 +366,18 @@ def change_password(
 @router.post("/logout")
 @router.get("/logout")
 def logout(
+    response: Response,
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
     # Since JWT is stateless, logout is handled by frontend dropping the token
+    # Also delete the HttpOnly cookie
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=True,
+        samesite="lax"
+    )
     return {"message": "Logged out"}
 
 

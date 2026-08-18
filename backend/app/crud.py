@@ -635,13 +635,14 @@ def update_account(
 
 
 def delete_account(db: Session, account: models.Account) -> None:
-    db.delete(account)
+    account.is_deleted = True
     db.commit()
 
 
 def list_transactions(db: Session) -> list[models.Transaction]:
     return (
         db.query(models.Transaction)
+        .filter(models.Transaction.is_deleted == False)
         .order_by(models.Transaction.date.asc(), models.Transaction.id.asc())
         .all()
     )
@@ -1336,7 +1337,7 @@ def update_transaction(
 
 
 def delete_transaction(db: Session, transaction: models.Transaction) -> None:
-    db.delete(transaction)
+    transaction.is_deleted = True
     db.commit()
 
 
@@ -1431,7 +1432,7 @@ def filtered_transactions(
     skip: int = 0,
     limit: int | None = None,
 ) -> list[models.Transaction]:
-    query = db.query(models.Transaction)
+    query = db.query(models.Transaction).filter(models.Transaction.is_deleted == False)
     if user and user.role not in ["Administrator", "Super Admin"]:
         if user.assigned_branch_id is not None:
             query = query.filter(

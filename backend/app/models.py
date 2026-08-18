@@ -55,6 +55,7 @@ class Account(Base):
     updated_at = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
 
     transactions = relationship(
         "Transaction", back_populates="account", cascade="all, delete-orphan"
@@ -87,6 +88,7 @@ class Employee(Base):
     updated_at = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
 
     account = relationship("Account", back_populates="employee")
     transactions = relationship("Transaction", back_populates="employee")
@@ -151,6 +153,7 @@ class Transaction(Base):
     updated_at = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
+    is_deleted = Column(Boolean, default=False, nullable=False, index=True)
 
     account = relationship("Account", back_populates="transactions")
     employee = relationship("Employee", back_populates="transactions")

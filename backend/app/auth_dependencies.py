@@ -41,6 +41,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 def require_authenticated_request(
+    request: Request,
     token: str | None = Depends(oauth2_scheme),
     x_session_token: str | None = Header(None),
     authorization: str | None = Header(None),
@@ -49,6 +50,12 @@ def require_authenticated_request(
     actual_token = token or x_session_token
     if not actual_token and authorization and authorization.lower().startswith("bearer "):
         actual_token = authorization.split(" ", 1)[1].strip()
+    if not actual_token and request.cookies.get("access_token"):
+        cookie_token = request.cookies.get("access_token")
+        if cookie_token.startswith("Bearer "):
+            actual_token = cookie_token.split(" ", 1)[1].strip()
+        else:
+            actual_token = cookie_token
 
     if actual_token:
         try:

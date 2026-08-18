@@ -8,6 +8,9 @@ from datetime import datetime, timezone
 import json
 import logging
 import uuid
+import asyncio
+import os
+import shutil
 
 from fastapi import FastAPI, Header, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -43,9 +46,33 @@ from .routes import (
     transport,
 )
 
+async def database_backup_task():
+    """Background task to back up the SQLite database daily."""
+    while True:
+        try:
+            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+            db_path = os.path.join(root_dir, "cashbook.db")
+            if os.path.exists(db_path):
+                backup_dir = os.path.join(root_dir, "backups")
+                os.makedirs(backup_dir, exist_ok=True)
+                timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+                backup_path = os.path.join(backup_dir, f"cashbook_backup_{timestamp}.db")
+                shutil.copy2(db_path, backup_path)
+                logger.info(f"Automated daily backup completed: {backup_path}")
+                
+                # Keep only last 7 backups to save space
+                backups = sorted([os.path.join(backup_dir, f) for f in os.listdir(backup_dir) if f.startswith("cashbook_backup_")])
+                for old_backup in backups[:-7]:
+                    os.remove(old_backup)
+        except Exception as e:
+            logger.error(f"Automated backup failed: {e}")
+        
+        # Wait 24 hours
+        await asyncio.sleep(24 * 60 * 60)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Seed default settings on application startup."""
+    """Seed default settings on application startup and start background tasks."""
     db = SessionLocal()
     try:
         if not db.query(models.Setting).first():
@@ -55,7 +82,14 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Initial seed notice: {exc}")
     finally:
         db.close()
+    
+    # Start backup task
+    backup_task = asyncio.create_task(database_backup_task())
+    
     yield
+    
+    # Cancel backup task on shutdown
+    backup_task.cancel()
 
 
 app = FastAPI(title=APP_NAME, lifespan=lifespan)

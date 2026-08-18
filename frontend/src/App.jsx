@@ -248,6 +248,7 @@ export default function App() {
     }
   });
   const [pageError, setPageError] = useState('');
+  const [isLocked, setIsLocked] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const cached = localStorage.getItem('cashbook-current-user');
@@ -342,7 +343,7 @@ export default function App() {
     if (!currentUser || !autoLogoutMinutes) return undefined;
     const timer = window.setInterval(() => {
       if (Date.now() - lastActivityRef.current > Number(autoLogoutMinutes) * 60 * 1000) {
-        onLogout('Session expired after inactivity.');
+        setIsLocked(true);
       }
     }, 30000);
     return () => window.clearInterval(timer);

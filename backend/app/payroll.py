@@ -186,11 +186,11 @@ def create_employee(db: Session, payload: schemas.EmployeeCreate) -> models.Empl
 
 
 def list_employees(db: Session) -> list[models.Employee]:
-    return db.query(models.Employee).order_by(models.Employee.full_name.asc()).all()
+    return db.query(models.Employee).filter(models.Employee.is_deleted == False).order_by(models.Employee.full_name.asc()).all()
 
 
 def get_employee(db: Session, employee_id: int) -> models.Employee | None:
-    return db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    return db.query(models.Employee).filter(models.Employee.id == employee_id, models.Employee.is_deleted == False).first()
 
 
 def update_employee(
@@ -240,7 +240,9 @@ def delete_employee(db: Session, employee: models.Employee) -> None:
         transaction.payroll_kind = None
         transaction.salary_month = None
 
-    db.delete(employee)
+    employee.is_deleted = True
+    if employee.account:
+        employee.account.is_deleted = True
     db.commit()
 
 
@@ -318,7 +320,10 @@ def _salary_rows_for_month(
     salary_month = _month_start_from_parts(month, year)
     salary_month_end = _month_end(salary_month)
     employees = (
-        db.query(models.Employee).order_by(models.Employee.full_name.asc()).all()
+        db.query(models.Employee)
+        .filter(models.Employee.is_deleted == False)
+        .order_by(models.Employee.full_name.asc())
+        .all()
     )
     payments = (
         db.query(models.SalaryPayment)

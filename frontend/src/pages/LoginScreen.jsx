@@ -34,12 +34,12 @@ function timeLabel(now) {
   return now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
 }
 
-export default function LoginScreen({ users, rememberedUsername, onLogin, connectionError, isPreparing, onRetryConnection, companyName, companyLogo }) {
+export default function LoginScreen({ users, rememberedUsername, onLogin, connectionError, isPreparing, onRetryConnection, companyName, companyLogo, isLockedMode, lockedUser }) {
   const { t } = useTranslation();
-  const [username, setUsername] = useState(rememberedUsername || '');
+  const [username, setUsername] = useState(isLockedMode && lockedUser ? lockedUser.username : (rememberedUsername || ''));
   const [password, setPassword] = useState('');
   const [rememberUser, setRememberUser] = useState(Boolean(rememberedUsername));
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(isLockedMode ? 'Session locked due to inactivity.' : '');
   const [helpOpen, setHelpOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -263,13 +263,13 @@ export default function LoginScreen({ users, rememberedUsername, onLogin, connec
                 <input
                   id="login-username"
                   type="text"
-                  value={username}
+                  value={isLockedMode && lockedUser ? lockedUser.username : username}
                   onChange={(event) => setUsername(event.target.value)}
                   placeholder={t('login.usernamePlaceholder')}
                   autoComplete="username"
                   autoFocus
                   required
-                  disabled={isSubmitting || isPreparing}
+                  disabled={isSubmitting || isPreparing || isLockedMode}
                 />
               </div>
             </div>
