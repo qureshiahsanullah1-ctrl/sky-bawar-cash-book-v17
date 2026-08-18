@@ -52,10 +52,10 @@ export default function EmployeeLedgerModal({
   const [adjSaving, setAdjSaving] = useState(false);
   const [adjError, setAdjError] = useState('');
 
-  // Set Joining Date state
   const [showSetJoiningDate, setShowSetJoiningDate] = useState(false);
   const [joiningDateInput, setJoiningDateInput] = useState('');
   const [joiningDateSaving, setJoiningDateSaving] = useState(false);
+  const [joiningDateError, setJoiningDateError] = useState('');
 
   useEffect(() => {
     if (employee?.id) {
@@ -119,6 +119,7 @@ export default function EmployeeLedgerModal({
     e.preventDefault();
     if (!joiningDateInput) return;
     setJoiningDateSaving(true);
+    setJoiningDateError('');
     try {
       await api.updateEmployee(employee.id, { joining_date: joiningDateInput });
       if (onUpdateEmployee) {
@@ -127,7 +128,7 @@ export default function EmployeeLedgerModal({
       setShowSetJoiningDate(false);
       await loadLedger();
     } catch (err) {
-      alert(err.message || 'Failed to save joining date');
+      setJoiningDateError(err.message || 'Failed to save joining date');
     } finally {
       setJoiningDateSaving(false);
     }
@@ -295,35 +296,41 @@ export default function EmployeeLedgerModal({
                 onClick={() => {
                   setJoiningDateInput(new Date().toISOString().slice(0, 10));
                   setShowSetJoiningDate(true);
+                  setJoiningDateError('');
                 }}
                 className="px-3.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs font-semibold rounded-lg border border-amber-500/40 transition-all whitespace-nowrap"
               >
                 Set Joining Date
               </button>
             ) : (
-              <form onSubmit={handleSaveJoiningDate} className="flex items-center gap-2 w-full sm:w-auto">
-                <input
-                  type="date"
-                  value={joiningDateInput}
-                  onChange={(e) => setJoiningDateInput(e.target.value)}
-                  className="px-2.5 py-1 text-xs bg-slate-900 border border-amber-500/50 rounded-lg text-white"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={joiningDateSaving}
-                  className="px-3 py-1 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-400"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSetJoiningDate(false)}
-                  className="px-2 py-1 text-xs text-slate-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-              </form>
+              <div className="flex flex-col gap-2 w-full sm:w-auto">
+                {joiningDateError && (
+                  <div className="text-rose-400 text-xs font-bold">{joiningDateError}</div>
+                )}
+                <form onSubmit={handleSaveJoiningDate} className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={joiningDateInput}
+                    onChange={(e) => setJoiningDateInput(e.target.value)}
+                    className="px-2.5 py-1 text-xs bg-slate-900 border border-amber-500/50 rounded-lg text-white"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={joiningDateSaving}
+                    className="px-3 py-1 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-400"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSetJoiningDate(false)}
+                    className="px-2 py-1 text-xs text-slate-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </div>
             )}
           </div>
         )}

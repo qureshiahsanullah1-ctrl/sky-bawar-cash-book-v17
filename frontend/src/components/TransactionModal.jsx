@@ -12,15 +12,24 @@ export function TransactionModal({ isOpen, onClose, type = 'CREDIT', onSuccess }
   const [amount, setAmount] = useState('');
   const [detail, setDetail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg('');
     try {
       const isCredit = type === 'CREDIT';
       const numAmount = parseFloat(amount);
+      
+      if (isNaN(numAmount) || numAmount <= 0) {
+        setErrorMsg('Please enter a valid positive amount.');
+        setIsSubmitting(false);
+        return;
+      }
+      
       const isUsd = activeCompany?.currency === 'USD';
 
       await api.createTransaction({
@@ -40,6 +49,7 @@ export function TransactionModal({ isOpen, onClose, type = 'CREDIT', onSuccess }
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
+      setErrorMsg(error.message || 'Transaction failed. Please try again.');
       console.error("Transaction failed:", error);
     } finally {
       setIsSubmitting(false);
@@ -55,6 +65,12 @@ export function TransactionModal({ isOpen, onClose, type = 'CREDIT', onSuccess }
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
           Transaction will be saved in {activeCompany?.currency}
         </p>
+
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 rounded-xl text-xs font-semibold">
+            {errorMsg}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -80,6 +96,7 @@ export function TransactionModal({ isOpen, onClose, type = 'CREDIT', onSuccess }
             <input 
               type="number" 
               step="0.01"
+              min="0.01"
               value={amount} 
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"

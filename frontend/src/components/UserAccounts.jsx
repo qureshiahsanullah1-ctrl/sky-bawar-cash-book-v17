@@ -578,6 +578,54 @@ export default function UserAccounts({ currentUser, users, onCreate, onUpdate, o
             }
             emptyTitle="No system users found"
             emptyDescription={searchTerm ? "No users match your search criteria." : "Add the first user account to see it listed here."}
+            renderMobileCard={(row) => {
+              const conf = ROLE_PERMISSIONS[row.role] || { color: 'blue' };
+              return (
+                <div key={row.id} className="mobile-transaction-card p-4 rounded-xl mb-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-indigo-200 dark:border-indigo-500/30">
+                        {row.avatar_path ? <img src={row.avatar_path} alt="" className="w-full h-full object-cover" /> : row.full_name?.[0]?.toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <strong className="text-zinc-900 dark:text-zinc-100 text-sm">{row.full_name}</strong>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">@{row.username}</span>
+                      </div>
+                    </div>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-${conf.color}-100 text-${conf.color}-700 dark:bg-${conf.color}-500/20 dark:text-${conf.color}-400 border border-${conf.color}-200 dark:border-${conf.color}-500/30`}>
+                      {row.role}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-1 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-2 h-2 rounded-full ${row.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                      <span className={`font-semibold ${row.is_active ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                        {row.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <span className="text-zinc-500">
+                      {row.last_login ? new Date(row.last_login).toLocaleString() : 'Never'}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-end gap-1.5 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 mt-1">
+                    <button type="button" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors disabled:opacity-50" onClick={() => edit(row)} disabled={!canAdmin || !!loadingAction} title="Edit User">
+                      <Edit3 size={14} /> Edit
+                    </button>
+                    <button type="button" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors disabled:opacity-50" onClick={() => resetPassword(row.id, true)} disabled={!canAdmin || !!loadingAction} title="Generate Password">
+                      <KeyRound size={14} /> Password
+                    </button>
+                    <button type="button" className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-lg transition-colors disabled:opacity-50 ${row.is_active ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`} onClick={() => toggleUserStatus(row)} disabled={!canAdmin || currentUser?.id === row.id || !!loadingAction} title={row.is_active ? "Deactivate User" : "Activate User"}>
+                      {row.is_active ? <ToggleRight size={14} /> : <ToggleLeft size={14} />} {row.is_active ? 'Off' : 'On'}
+                    </button>
+                    <button type="button" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-50" onClick={() => onDelete(row)} disabled={!canAdmin || currentUser?.id === row.id || !!loadingAction} title="Delete User">
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
           />
         </div>
 

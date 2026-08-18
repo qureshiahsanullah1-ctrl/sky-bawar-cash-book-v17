@@ -74,6 +74,7 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
   const [showSetJoiningDate, setShowSetJoiningDate] = useState(false);
   const [joiningDateInput, setJoiningDateInput] = useState('');
   const [joiningDateSaving, setJoiningDateSaving] = useState(false);
+  const [joiningDateError, setJoiningDateError] = useState('');
 
   const [showPayModal, setShowPayModal] = useState(false);
   const [payAmount, setPayAmount] = useState('');
@@ -155,13 +156,14 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
     e.preventDefault();
     if (!joiningDateInput) return;
     setJoiningDateSaving(true);
+    setJoiningDateError('');
     try {
       await api.updateEmployee(employeeId, { joining_date: joiningDateInput });
       setShowSetJoiningDate(false);
       await loadEmployeeAndLedger();
     } catch (err) {
       console.error('Failed to update joining date:', err);
-      alert('Failed to update joining date: ' + (err.message || 'Unknown error'));
+      setJoiningDateError(err.message || 'Failed to update joining date');
     } finally {
       setJoiningDateSaving(false);
     }
@@ -408,35 +410,41 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
               onClick={() => {
                 setJoiningDateInput(new Date().toISOString().slice(0, 10));
                 setShowSetJoiningDate(true);
+                setJoiningDateError('');
               }}
               className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all whitespace-nowrap"
             >
               {t('employeeLedger.setJoiningDate') || 'Set Joining Date'}
             </button>
           ) : (
-            <form onSubmit={handleSaveJoiningDate} className="flex items-center gap-2 w-full sm:w-auto">
-              <input
-                type="date"
-                value={joiningDateInput}
-                onChange={(e) => setJoiningDateInput(e.target.value)}
-                className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl text-slate-900 dark:text-white focus:outline-none"
-                required
-              />
-              <button
-                type="submit"
-                disabled={joiningDateSaving}
-                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition-all"
-              >
-                {t('employeeLedger.save') || 'Save'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowSetJoiningDate(false)}
-                className="px-2 py-1.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
-              >
-                {t('employeeLedger.cancel') || 'Cancel'}
-              </button>
-            </form>
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              {joiningDateError && (
+                <div className="text-rose-500 font-bold text-xs">{joiningDateError}</div>
+              )}
+              <form onSubmit={handleSaveJoiningDate} className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={joiningDateInput}
+                  onChange={(e) => setJoiningDateInput(e.target.value)}
+                  className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-xl text-slate-900 dark:text-white focus:outline-none"
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={joiningDateSaving}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition-all"
+                >
+                  {t('employeeLedger.save') || 'Save'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSetJoiningDate(false)}
+                  className="px-2 py-1.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                >
+                  {t('employeeLedger.cancel') || 'Cancel'}
+                </button>
+              </form>
+            </div>
           )}
         </div>
       )}
