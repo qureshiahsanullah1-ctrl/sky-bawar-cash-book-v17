@@ -1,5 +1,5 @@
-import { Clock3, Moon, Printer, Sun, Search, Menu, Building2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import GoogleIcon from '../GoogleIcon';
 
 export default function TopHeader({ 
   title, 
@@ -33,7 +33,7 @@ export default function TopHeader({
           onClick={() => setMobileOpen(true)} 
           aria-label="Open menu"
         >
-          <Menu size={20} />
+          <GoogleIcon name="menu" size={20} />
         </button>
         
         <div className="header-titles min-w-0">
@@ -47,7 +47,7 @@ export default function TopHeader({
             
             {/* Branch Selector Pill */}
             <div className="branch-dropdown-pill hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold shadow-xs hover:border-amber-500/50 transition-all shrink-0">
-              <Building2 size={15} className="text-amber-500 dark:text-amber-400 shrink-0" />
+              <GoogleIcon name="domain" size={16} className="text-amber-500 dark:text-amber-400 shrink-0" />
               <select className="branch-select-input bg-transparent text-amber-800 dark:text-amber-200 font-bold text-xs focus:outline-none cursor-pointer border-none p-0" aria-label="Branch select filter">
                 <option value="consolidated" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Branches (Consolidated)</option>
                 <option value="branch-a" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Main Branch - Kabul</option>
@@ -67,7 +67,7 @@ export default function TopHeader({
         tabIndex={0} 
         onKeyDown={(e) => e.key === 'Enter' && onSearchClick()}
       >
-        <Search size={16} className="text-slate-400 shrink-0" />
+        <GoogleIcon name="search" size={17} className="text-slate-400 shrink-0" />
         <span className="truncate text-slate-500 dark:text-slate-400">Search accounts, transactions, reports...</span>
         <kbd className="px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-slate-300/50 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 shrink-0 ml-auto">
           ⌘K
@@ -78,8 +78,8 @@ export default function TopHeader({
       <div className="topbar-actions flex items-center gap-2.5 shrink-0">
         
         {/* Time Chip */}
-        <div className="time-chip hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 h-10 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 text-xs shadow-xs shrink-0" aria-label="Current date and time">
-          <Clock3 size={16} className="text-amber-500 dark:text-amber-400 shrink-0" aria-hidden="true" />
+        <div className="time-chip hidden lg:flex items-center gap-2 px-3 h-10 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 text-xs shadow-xs shrink-0" aria-label="Current date and time">
+          <GoogleIcon name="schedule" size={16} className="text-amber-500 dark:text-amber-400 shrink-0" />
           <span className="time-chip-text flex items-center gap-2">
             <strong className="text-xs font-bold text-slate-800 dark:text-slate-200">{dateLabel}</strong>
             <small className="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400">{timeLabel}</small>
@@ -95,7 +95,7 @@ export default function TopHeader({
             aria-label="Search" 
             title="Search"
           >
-            <Search size={18} className="text-slate-700 dark:text-slate-200" />
+            <GoogleIcon name="search" size={18} className="text-slate-700 dark:text-slate-200" />
           </button>
 
           <button 
@@ -105,7 +105,7 @@ export default function TopHeader({
             aria-label="Toggle theme" 
             title="Toggle theme"
           >
-            {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-700" />}
+            {theme === 'dark' ? <GoogleIcon name="light_mode" size={18} className="text-amber-400" filled /> : <GoogleIcon name="dark_mode" size={18} className="text-slate-700" filled />}
           </button>
           
           <button 
@@ -115,7 +115,7 @@ export default function TopHeader({
             aria-label="Print" 
             title="Print studio"
           >
-            <Printer size={18} className="text-slate-700 dark:text-slate-200" />
+            <GoogleIcon name="print" size={18} className="text-slate-700 dark:text-slate-200" />
           </button>
         </div>
       </div>

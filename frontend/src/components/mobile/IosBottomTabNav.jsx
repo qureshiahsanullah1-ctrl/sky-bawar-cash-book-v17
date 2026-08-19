@@ -1,23 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  UsersRound, 
-  BarChart3, 
-  Settings,
-  Grid,
-  Users,
-  RefreshCw,
-  DatabaseBackup,
-  Lock,
-  X,
-  ChevronRight,
-  Ship,
-  Factory
-} from 'lucide-react';
-
+import GoogleIcon from '../GoogleIcon';
 import { useCompany } from '../../context/CompanyContext';
 
 export default function IosBottomTabNav() {
@@ -28,21 +12,21 @@ export default function IosBottomTabNav() {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   const mainNavItems = [
-    { path: '/', label: t('Home', 'Home'), icon: LayoutDashboard },
-    { path: '/cashbook', label: t('Cash Book', 'Cash Book'), icon: BookOpen },
-    { path: '/bawar-star', label: t('Bawar Star', 'Bawar Star'), icon: Factory },
-    { path: '/employees', label: t('Salary', 'Salary'), icon: UsersRound },
-    { path: '/reports', label: t('Reports', 'Reports'), icon: BarChart3 },
+    { path: '/', label: t('Home', 'Home'), iconName: 'dashboard' },
+    { path: '/cashbook', label: t('Cash Book', 'Cash Book'), iconName: 'menu_book' },
+    { path: '/bawar-star', label: t('Bawar Star', 'Bawar Star'), iconName: 'factory' },
+    { path: '/employees', label: t('Salary', 'Salary'), iconName: 'badge' },
+    { path: '/reports', label: t('Reports', 'Reports'), iconName: 'monitoring' },
   ];
 
   const moreMenuItems = [
-    { path: '/bawar-star', label: t('Bawar Star Ledger', 'Bawar Star Ledger'), icon: Factory, desc: 'Manufacturing & plastic accounting' },
-    { path: '/accounts', label: t('Accounts Ledger', 'Accounts Ledger'), icon: Users, desc: 'Manage customers & suppliers' },
-    { path: '/exports', label: t('Sky Ariana Exports', 'Sky Ariana Exports'), icon: Ship, desc: 'Container tracking & shipping' },
-    { path: '/converter', label: t('Currency Converter', 'Currency Converter'), icon: RefreshCw, desc: 'AFN / USD exchange rates' },
-    { path: '/backup', label: t('Backup & Restore', 'Backup & Restore'), icon: DatabaseBackup, desc: 'Save & sync database' },
-    { path: '/security', label: t('Security & Access', 'Security & Access'), icon: Lock, desc: 'Users & permissions' },
-    { path: '/settings', label: t('Settings', 'Settings'), icon: Settings, desc: 'System configuration' },
+    { path: '/bawar-star', label: t('Bawar Star Ledger', 'Bawar Star Ledger'), iconName: 'precision_manufacturing', desc: 'Manufacturing & plastic accounting' },
+    { path: '/accounts', label: t('Accounts Ledger', 'Accounts Ledger'), iconName: 'group', desc: 'Manage customers & suppliers' },
+    { path: '/exports', label: t('Sky Ariana Exports', 'Sky Ariana Exports'), iconName: 'local_shipping', desc: 'Container tracking & shipping' },
+    { path: '/converter', label: t('Currency Converter', 'Currency Converter'), iconName: 'currency_exchange', desc: 'AFN / USD exchange rates' },
+    { path: '/backup', label: t('Backup & Restore', 'Backup & Restore'), iconName: 'cloud_sync', desc: 'Save & sync database' },
+    { path: '/security', label: t('Security & Access', 'Security & Access'), iconName: 'shield', desc: 'Users & permissions' },
+    { path: '/settings', label: t('Settings', 'Settings'), iconName: 'settings', desc: 'System configuration' },
   ];
 
   const isMoreActive = moreMenuItems.some(item => location.pathname.startsWith(item.path));
@@ -68,13 +52,12 @@ export default function IosBottomTabNav() {
                 onClick={() => setMoreMenuOpen(false)}
                 className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white"
               >
-                <X size={18} />
+                <GoogleIcon name="close" size={18} />
               </button>
             </div>
 
             <div className="grid grid-cols-1 gap-2 mt-4">
               {moreMenuItems.map((item) => {
-                const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
 
                 return (
@@ -93,7 +76,7 @@ export default function IosBottomTabNav() {
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
                       <div className={`p-2.5 rounded-xl ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200'}`}>
-                        <Icon size={20} />
+                        <GoogleIcon name={item.iconName} size={20} filled={isActive} />
                       </div>
                       <div className="min-w-0">
                         <strong className={`block text-sm font-bold truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>
@@ -102,7 +85,7 @@ export default function IosBottomTabNav() {
                         <span className="text-[11px] text-slate-500 font-medium truncate block">{item.desc}</span>
                       </div>
                     </div>
-                    <ChevronRight size={18} className="text-slate-400 shrink-0" />
+                    <GoogleIcon name="chevron_right" size={18} className="text-slate-400 shrink-0" />
                   </button>
                 );
               })}
@@ -118,7 +101,6 @@ export default function IosBottomTabNav() {
       >
         <div className="flex items-center justify-around h-12 px-2 max-w-md mx-auto">
           {mainNavItems.map((item) => {
-            const Icon = item.icon;
             const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
 
             return (
@@ -135,8 +117,8 @@ export default function IosBottomTabNav() {
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
                 }`}
               >
-                <Icon size={20} className={isActive ? 'stroke-[2.5px]' : 'stroke-[1.75px]'} />
-                <span className="text-[10.5px] font-semibold tracking-tight leading-none mt-0.5">{item.label}</span>
+                <GoogleIcon name={item.iconName} size={22} filled={isActive} />
+                <span className="text-[10px] font-bold tracking-tight leading-none mt-0.5">{item.label}</span>
                 {isActive && (
                   <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-blue-600 dark:bg-blue-400 shadow-sm shadow-blue-500/50" />
                 )}
@@ -154,8 +136,8 @@ export default function IosBottomTabNav() {
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium'
             }`}
           >
-            <Grid size={20} className={isMoreActive || moreMenuOpen ? 'stroke-[2.5px]' : 'stroke-[1.75px]'} />
-            <span className="text-[10.5px] font-semibold tracking-tight leading-none mt-0.5">{t('More', 'More')}</span>
+            <GoogleIcon name="grid_view" size={22} filled={isMoreActive || moreMenuOpen} />
+            <span className="text-[10px] font-bold tracking-tight leading-none mt-0.5">{t('More', 'More')}</span>
             {(isMoreActive || moreMenuOpen) && (
               <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-blue-600 dark:bg-blue-400 shadow-sm shadow-blue-500/50" />
             )}

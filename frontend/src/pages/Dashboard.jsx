@@ -1,37 +1,7 @@
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  CalendarDays,
-  CalendarRange,
-  DatabaseBackup,
-  FileText,
-  Landmark,
-  Printer,
-  WalletCards,
-  ChevronDown,
-  ArrowRight,
-  TrendingUp,
-  Receipt,
-  CheckCircle2,
-  ListFilter,
-  UsersRound,
-  Users,
-  RefreshCw,
-  Coins,
-  DollarSign,
-  CircleDollarSign,
-  Activity,
-  Plus,
-  Factory,
-  Shield,
-  Wallet,
-  Sparkles,
-  ArrowUp,
-  ArrowDown
-} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import GoogleIcon from '../components/GoogleIcon';
 import SimpleCashChart from '../components/SimpleCashChart';
 import AdvancedAnalyticsCharts from '../components/AdvancedAnalyticsCharts';
 import { currency, signedCurrency, dateLabel } from '../utils/format';
@@ -58,7 +28,7 @@ function getMetricStyle(c, styles) {
   return styles.blue;
 }
 
-function MetricCard({ title, value, secondaryValue, icon: Icon, color, subtext, badge }) {
+function MetricCard({ title, value, secondaryValue, googleIcon, icon: Icon, color, subtext, badge }) {
   const colorStyles = {
     emerald: {
       bg: 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50',
@@ -88,7 +58,7 @@ function MetricCard({ title, value, secondaryValue, icon: Icon, color, subtext, 
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
           <div className={`p-1.5 rounded-xl ${currentStyle.bg} border flex items-center justify-center shrink-0 shadow-2xs`}>
-            <Icon size={14} />
+            {googleIcon ? <GoogleIcon name={googleIcon} size={16} /> : Icon ? <Icon size={14} /> : null}
           </div>
           <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
             {title}
@@ -127,7 +97,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'employees',
       label: t('dashboard.employeesSalaries', 'Salaries'),
       desc: 'Payroll & staff',
-      icon: UsersRound,
+      iconName: 'badge',
       color: 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-800/50',
       action: () => onNavigate('employees')
     },
@@ -135,7 +105,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'accounts',
       label: t('dashboard.accounts', 'Accounts'),
       desc: 'Parties & clients',
-      icon: Users,
+      iconName: 'group',
       color: 'bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400 border-sky-200/50 dark:border-sky-800/50',
       action: () => onNavigate('accounts')
     },
@@ -143,7 +113,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'ledger',
       label: t('dashboard.accountLedger', 'Ledger'),
       desc: 'Account history',
-      icon: Landmark,
+      iconName: 'menu_book',
       color: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200/50 dark:border-amber-800/50',
       action: () => onNavigate('ledger')
     },
@@ -151,7 +121,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'converter',
       label: t('dashboard.currencyConverter', 'Converter'),
       desc: 'AFN / USD rates',
-      icon: RefreshCw,
+      iconName: 'currency_exchange',
       color: 'bg-cyan-500/10 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 border-cyan-200/50 dark:border-cyan-800/50',
       action: () => onNavigate('converter')
     },
@@ -159,7 +129,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'reports',
       label: t('dashboard.financialReports', 'Reports'),
       desc: 'Financial insights',
-      icon: FileText,
+      iconName: 'analytics',
       color: 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border-purple-200/50 dark:border-purple-800/50',
       action: () => onNavigate('reports')
     },
@@ -167,7 +137,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'bawar-star',
       label: t('dashboard.bawarStar', 'Bawar Star'),
       desc: 'Production ERP',
-      icon: Factory,
+      iconName: 'precision_manufacturing',
       color: 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 border-orange-200/50 dark:border-orange-800/50',
       action: () => onNavigate('bawar-star')
     },
@@ -175,7 +145,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'print',
       label: t('dashboard.printView', 'Print Studio'),
       desc: 'Vouchers & PDF',
-      icon: Printer,
+      iconName: 'print',
       color: 'bg-slate-500/10 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300 border-slate-200/50 dark:border-slate-800/50',
       action: onPrint
     },
@@ -183,7 +153,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
       id: 'backup',
       label: t('dashboard.backupData', 'Backup & Sync'),
       desc: 'Save snapshot',
-      icon: DatabaseBackup,
+      iconName: 'cloud_sync',
       color: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/50',
       action: onBackup
     }
@@ -193,7 +163,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
     <div className="glass-card p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
       <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800/80">
         <div className="flex items-center gap-2">
-          <Activity size={15} className="text-indigo-500" />
+          <GoogleIcon name="bolt" size={18} className="text-indigo-500" filled />
           <span className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200 tracking-tight">
             {t('dashboard.quickActions', 'Quick Actions & Shortcuts')}
           </span>
@@ -205,7 +175,6 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
 
       <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2 sm:gap-2.5">
         {actions.map((act) => {
-          const Icon = act.icon;
           return (
             <button
               key={act.id}
@@ -214,7 +183,7 @@ function QuickActions({ onNavigate, onPrint, onBackup }) {
               className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150 active:scale-90 shadow-2xs group"
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-2xs group-hover:scale-105 transition-transform duration-150 ${act.color}`}>
-                <Icon size={18} />
+                <GoogleIcon name={act.iconName} size={20} />
               </div>
               <span className="text-[10.5px] font-extrabold text-slate-800 dark:text-slate-200 text-center leading-tight mt-1.5 line-clamp-1">
                 {act.label}
@@ -313,14 +282,14 @@ export default function Dashboard({
 
         <div className="welcome-stats flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800/80">
           <div className="stat-pill flex-1 sm:flex-initial px-3 py-1.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-xs">
-            <CalendarDays size={15} className="text-indigo-500 shrink-0" />
+            <GoogleIcon name="today" size={16} className="text-indigo-500 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[8px] uppercase font-bold text-slate-400">{t('dashboard.today', 'Today')}</span>
               <strong className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{todayCount} entries</strong>
             </div>
           </div>
           <div className="stat-pill flex-1 sm:flex-initial px-3 py-1.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2 text-xs">
-            <CalendarRange size={15} className="text-purple-500 shrink-0" />
+            <GoogleIcon name="date_range" size={16} className="text-purple-500 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[8px] uppercase font-bold text-slate-400">{t('dashboard.thisMonth', 'This Month')}</span>
               <strong className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{monthCount} entries</strong>
@@ -339,7 +308,7 @@ export default function Dashboard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
-                <Wallet size={15} />
+                <GoogleIcon name="account_balance_wallet" size={16} />
               </div>
               <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {t('dashboard.totalAvailableCash', 'Total Available Cash')}
@@ -418,7 +387,7 @@ export default function Dashboard({
                 onNavigate('cashbook');
               }}
             >
-              <ArrowDownLeft size={18} className="stroke-[2.5px]" />
+              <GoogleIcon name="south_west" size={18} />
               <span>{t('dashboard.addCashIn', 'Add Cash In')}</span>
             </button>
 
@@ -430,7 +399,7 @@ export default function Dashboard({
                 onNavigate('cashbook');
               }}
             >
-              <ArrowUpRight size={18} className="stroke-[2.5px]" />
+              <GoogleIcon name="north_east" size={18} />
               <span>{t('dashboard.addCashOut', 'Add Cash Out')}</span>
             </button>
           </div>
@@ -439,7 +408,7 @@ export default function Dashboard({
           <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-800/80">
             <div className="flex items-center gap-2 p-2 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50">
               <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <ArrowDown size={14} className="stroke-[2.5px]" />
+                <GoogleIcon name="arrow_downward" size={14} />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-[9px] uppercase font-bold text-slate-400">Total Cash In</span>
@@ -451,7 +420,7 @@ export default function Dashboard({
 
             <div className="flex items-center gap-2 p-2 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50">
               <div className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                <ArrowUp size={14} className="stroke-[2.5px]" />
+                <GoogleIcon name="arrow_upward" size={14} />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-[9px] uppercase font-bold text-slate-400">Total Cash Out</span>
@@ -469,7 +438,7 @@ export default function Dashboard({
         <MetricCard
           title="Total Cash In (AFN)"
           value={currency(cashInAfn, 'AFN')}
-          icon={ArrowDownLeft}
+          googleIcon="south_west"
           color="emerald"
           badge="Inflow"
           subtext={`${totalTxCount} total transactions`}
@@ -477,7 +446,7 @@ export default function Dashboard({
         <MetricCard
           title="Total Cash Out (AFN)"
           value={currency(cashOutAfn, 'AFN')}
-          icon={ArrowUpRight}
+          googleIcon="north_east"
           color="rose"
           badge="Outflow"
           subtext="Verified accurate balance"
@@ -485,7 +454,7 @@ export default function Dashboard({
         <MetricCard
           title="Current AFN Balance"
           value={currency(currentBalanceAfn, 'AFN')}
-          icon={WalletCards}
+          googleIcon="account_balance_wallet"
           color={currentBalanceAfn >= 0 ? "blue" : "rose"}
           badge="Net"
           subtext={currentBalanceAfn >= 0 ? "Positive Net Balance" : "Deficit Balance"}
@@ -493,7 +462,7 @@ export default function Dashboard({
         <MetricCard
           title="Total Transactions"
           value={totalTxCount}
-          icon={TrendingUp}
+          googleIcon="query_stats"
           color="violet"
           badge="Database"
           subtext="Recorded in database"
@@ -522,7 +491,7 @@ export default function Dashboard({
             </div>
             <NavLink to="/cashbook" className="view-all-link text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
               <span>{t('dashboard.viewAll', 'View all')}</span>
-              <ArrowRight size={14} />
+              <GoogleIcon name="arrow_forward" size={14} />
             </NavLink>
           </div>
 
@@ -560,7 +529,7 @@ export default function Dashboard({
                       </td>
                       <td>
                         <span className="badge-status">
-                          <CheckCircle2 size={12} />
+                          <GoogleIcon name="check_circle" size={14} className="text-emerald-500" filled />
                           <span>{t('dashboard.completed', 'Completed')}</span>
                         </span>
                       </td>
@@ -597,7 +566,7 @@ export default function Dashboard({
                       ? 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-800/40'
                       : 'bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-200/40 dark:border-rose-800/40'
                   }`}>
-                    {isCashIn ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+                    <GoogleIcon name={isCashIn ? "south_west" : "north_east"} size={18} />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -629,7 +598,7 @@ export default function Dashboard({
             })}
             {recentTransactions.length === 0 && (
               <div className="p-6 text-center text-xs text-slate-500 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center gap-2">
-                <Receipt size={24} className="text-slate-400" />
+                <GoogleIcon name="receipt_long" size={24} className="text-slate-400" />
                 <span>{t('dashboard.noTransactions', 'No transactions recorded yet.')}</span>
               </div>
             )}
