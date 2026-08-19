@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app import crud, models
+from app import crud, models, schemas
+from app.crud import accounts as crud_accounts, backups as crud_backups, settings as crud_settings
 from app.database import Base
 
 
@@ -82,7 +83,7 @@ class BackupRestoreCompatibilityTests(unittest.TestCase):
             }
         }
 
-        result = crud.import_backup(self.db, payload, replace_all=True)
+        result = crud_backups.import_backup(self.db, payload, replace_all=True)
 
         self.assertEqual(1, result["imported_accounts"])
         self.assertEqual(1, result["imported_employees"])
@@ -90,7 +91,7 @@ class BackupRestoreCompatibilityTests(unittest.TestCase):
         self.assertEqual(1, result["imported_salary_payments"])
         self.assertEqual(2, self.db.query(models.Transaction).count())
 
-        settings = crud.get_settings(self.db)
+        settings = crud_settings.get_settings(self.db)
         employee = (
             self.db.query(models.Employee).filter_by(full_name="Legacy Worker").one()
         )
@@ -106,13 +107,13 @@ class BackupRestoreCompatibilityTests(unittest.TestCase):
         self.assertEqual("bank", salary_payment.payment_method)
 
     def test_invalid_backup_root_does_not_clear_existing_data(self):
-        crud.create_account(
+        crud_accounts.create_account(
             self.db,
-            crud.schemas.AccountCreate(name="Keep Me", account_type="customer"),
+            schemas.AccountCreate(name="Keep Me", account_type="customer"),
         )
 
         with self.assertRaisesRegex(ValueError, "JSON object"):
-            crud.import_backup(self.db, ["not", "an", "object"], replace_all=True)
+            crud_backups.import_backup(self.db, ["not", "an", "object"], replace_all=True)
 
         self.assertEqual(1, self.db.query(models.Account).count())
 

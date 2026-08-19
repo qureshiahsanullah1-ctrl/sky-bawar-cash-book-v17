@@ -4,7 +4,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app import crud, models, payroll, schemas
+from app import crud, models, schemas
+from app.crud import payroll as payroll_crud, transactions as crud_transactions, backups as crud_backups
+from app.services import payroll as payroll_services
 from app.database import Base
 
 
@@ -37,7 +39,7 @@ def create_test_employee(
         employment_end_date=end_date,
         currency=currency,
     )
-    return payroll.create_employee(db, payload)
+    return payroll_crud.create_employee(db, payload)
 
 
 def test_case_1_joining_date_present_proration(db):
@@ -48,7 +50,7 @@ def test_case_1_joining_date_present_proration(db):
     )
 
     # Ledger through July 2026
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 7, 31)
     )
 
@@ -63,7 +65,7 @@ def test_case_2_no_joining_date(db):
     # Monthly salary: 30000, Joining date: null, No payments
     emp = create_test_employee(db, name="Emp Case 2", salary=30000.0, joining_date=None)
 
-    ledger = payroll.calculate_employee_salary_ledger(db, emp.id)
+    ledger = payroll_services.calculate_employee_salary_ledger(db, emp.id)
 
     assert ledger["policy"]["carry_forward_enabled"] is False
     assert "disabled" in ledger["policy"]["notice"].lower()
@@ -77,7 +79,7 @@ def test_case_3_no_joining_date_partial_payment(db):
     today = date.today()
 
     # Pay 10,000 for current month
-    payroll.create_salary_payment(
+    payroll_crud.create_salary_payment(
         db,
         schemas.SalaryPaymentCreate(
             employee_id=emp.id,
@@ -88,7 +90,7 @@ def test_case_3_no_joining_date_partial_payment(db):
         ),
     )
 
-    ledger = payroll.calculate_employee_salary_ledger(db, emp.id)
+    ledger = payroll_services.calculate_employee_salary_ledger(db, emp.id)
     assert ledger["policy"]["carry_forward_enabled"] is False
     assert ledger["summary"]["current_month_paid"] == 10000.0
     assert ledger["summary"]["current_month_remaining"] == 20000.0
@@ -101,7 +103,7 @@ def test_case_4_joining_date_historical_unpaid_salary(db):
     )
 
     # Jan paid: 0, Feb paid: 5,000
-    payroll.create_salary_payment(
+    payroll_crud.create_salary_payment(
         db,
         schemas.SalaryPaymentCreate(
             employee_id=emp.id,
@@ -113,7 +115,7 @@ def test_case_4_joining_date_historical_unpaid_salary(db):
     )
 
     # Check through Feb 28, 2026
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 2, 28)
     )
 
@@ -128,7 +130,7 @@ def test_case_5_future_joining_date(db):
         db, name="Emp Case 5", salary=30000.0, joining_date=date(2099, 1, 1)
     )
 
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 7, 20)
     )
 
@@ -143,7 +145,7 @@ def test_case_6_salary_rate_change(db):
     )
 
     # Record salary history change effective March 1, 2026
-    payroll.create_salary_history(
+    payroll_crud.create_salary_history(
         db,
         emp,
         schemas.SalaryHistoryCreate(
@@ -155,7 +157,7 @@ def test_case_6_salary_rate_change(db):
         changed_by="Admin",
     )
 
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 4, 30)
     )
 
@@ -179,7 +181,7 @@ def test_case_7_terminated_employee(db):
         end_date=date(2026, 3, 15),
     )
 
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 5, 31)
     )
     accruals = [e for e in ledger["entries"] if e["entry_type"] == "salary_accrual"]
@@ -196,7 +198,7 @@ def test_case_8_partial_multiple_payments_cashbook(db):
         db, name="Emp Case 8", salary=20000.0, joining_date=date(2026, 1, 1)
     )
 
-    p1 = payroll.create_salary_payment(
+    p1 = payroll_crud.create_salary_payment(
         db,
         schemas.SalaryPaymentCreate(
             employee_id=emp.id,
@@ -206,7 +208,7 @@ def test_case_8_partial_multiple_payments_cashbook(db):
             payment_date=date(2026, 1, 15),
         ),
     )
-    p2 = payroll.create_salary_payment(
+    p2 = payroll_crud.create_salary_payment(
         db,
         schemas.SalaryPaymentCreate(
             employee_id=emp.id,
@@ -217,7 +219,7 @@ def test_case_8_partial_multiple_payments_cashbook(db):
         ),
     )
 
-    ledger = payroll.calculate_employee_salary_ledger(
+    ledger = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 1, 31)
     )
 
@@ -226,8 +228,8 @@ def test_case_8_partial_multiple_payments_cashbook(db):
     assert ledger["summary"]["outstanding_balance"] == 5000.0
 
     # Verify linked Cashbook entries created
-    tx1 = crud.get_transaction(db, p1.cashbook_entry_id)
-    tx2 = crud.get_transaction(db, p2.cashbook_entry_id)
+    tx1 = crud_transactions.get_transaction(db, p1.cashbook_entry_id)
+    tx2 = crud_transactions.get_transaction(db, p2.cashbook_entry_id)
     assert tx1 is not None and tx1.cash_out_afn == 5000.0
     assert tx2 is not None and tx2.cash_out_afn == 10000.0
 
@@ -244,10 +246,10 @@ def test_case_9_multiple_currencies(db):
         db, name="Emp USD", salary=500.0, joining_date=date(2026, 1, 1), currency="USD"
     )
 
-    ledger_afn = payroll.calculate_employee_salary_ledger(
+    ledger_afn = payroll_services.calculate_employee_salary_ledger(
         db, emp_afn.id, to_date=date(2026, 1, 31)
     )
-    ledger_usd = payroll.calculate_employee_salary_ledger(
+    ledger_usd = payroll_services.calculate_employee_salary_ledger(
         db, emp_usd.id, to_date=date(2026, 1, 31)
     )
 
@@ -262,7 +264,7 @@ def test_case_10_backup_restore_ledger_equivalence(db):
     emp = create_test_employee(
         db, name="Emp Case 10", salary=25000.0, joining_date=date(2026, 1, 1)
     )
-    payroll.create_salary_payment(
+    payroll_crud.create_salary_payment(
         db,
         schemas.SalaryPaymentCreate(
             employee_id=emp.id,
@@ -272,7 +274,7 @@ def test_case_10_backup_restore_ledger_equivalence(db):
             payment_date=date(2026, 1, 20),
         ),
     )
-    payroll.create_salary_adjustment(
+    payroll_crud.create_salary_adjustment(
         db,
         emp.id,
         schemas.EmployeeSalaryAdjustmentCreate(
@@ -284,14 +286,14 @@ def test_case_10_backup_restore_ledger_equivalence(db):
         ),
     )
 
-    ledger_before = payroll.calculate_employee_salary_ledger(
+    ledger_before = payroll_services.calculate_employee_salary_ledger(
         db, emp.id, to_date=date(2026, 1, 31)
     )
 
     # Perform backup export
     from fastapi.encoders import jsonable_encoder
 
-    backup = jsonable_encoder(crud.backup_payload(db))
+    backup = jsonable_encoder(crud_backups.backup_payload(db))
 
     # Restore backup in clean database
     engine2 = create_engine(
@@ -302,7 +304,7 @@ def test_case_10_backup_restore_ledger_equivalence(db):
     db2 = Session2()
     crud._ensure_settings(db2)
 
-    crud.import_backup(db2, backup, replace_all=True)
+    crud_backups.import_backup(db2, backup, replace_all=True)
 
     emp2 = (
         db2.query(models.Employee)
@@ -310,7 +312,7 @@ def test_case_10_backup_restore_ledger_equivalence(db):
         .first()
     )
 
-    ledger_after = payroll.calculate_employee_salary_ledger(
+    ledger_after = payroll_services.calculate_employee_salary_ledger(
         db2, emp2.id, to_date=date(2026, 1, 31)
     )
 

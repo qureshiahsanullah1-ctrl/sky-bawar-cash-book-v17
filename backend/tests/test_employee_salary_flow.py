@@ -5,14 +5,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app import crud, schemas
+from app import crud, models, schemas
 from app.database import Base
-from app.payroll import (
+from app.crud import transactions as crud_transactions, backups as crud_backups
+from app.crud.payroll import (
     create_employee,
     create_salary_history,
     create_salary_payment,
     delete_employee,
     delete_salary_payment,
+)
+from app.services.payroll import (
     employee_salary_summary,
     salary_report,
 )
@@ -43,7 +46,7 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
             ),
         )
 
-        transaction = crud.create_transaction(
+        transaction = crud_transactions.create_transaction(
             self.db,
             schemas.TransactionCreate(
                 date=date(2026, 6, 15),
@@ -82,7 +85,7 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
             ),
         )
         for amount, kind in [(20000, "salary"), (5000, "advance")]:
-            crud.create_transaction(
+            crud_transactions.create_transaction(
                 self.db,
                 schemas.TransactionCreate(
                     date=date(2026, 6, 15),
@@ -117,11 +120,11 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
             ),
         )
 
-        backup = crud.backup_payload(self.db)
+        backup = crud_backups.backup_payload(self.db)
         self.assertEqual("Backup Salary Employee", backup["employees"][0].full_name)
 
-        crud.clear_all(self.db)
-        self.assertEqual([], self.db.query(crud.models.Employee).all())
+        crud_backups.clear_all(self.db)
+        self.assertEqual([], self.db.query(models.Employee).all())
 
     def test_salary_payment_creates_linked_cashbook_entry_and_report_totals(self):
         employee = create_employee(
@@ -148,7 +151,7 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
                 notes="June salary",
             ),
         )
-        transaction = crud.get_transaction(self.db, payment.cashbook_entry_id)
+        transaction = crud_transactions.get_transaction(self.db, payment.cashbook_entry_id)
         report = salary_report(self.db, 6, 2026)
         row = report["rows"][0]
 
@@ -162,7 +165,7 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
         self.assertEqual(3000, report["summary"]["total_paid_this_month"])
 
         delete_salary_payment(self.db, payment)
-        self.assertIsNone(crud.get_transaction(self.db, payment.cashbook_entry_id))
+        self.assertIsNone(crud_transactions.get_transaction(self.db, payment.cashbook_entry_id))
 
     def test_salary_change_keeps_old_month_and_updates_current_remaining(self):
         employee = create_employee(
@@ -268,7 +271,7 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
             ),
         )
         linked_cashbook_id = payment.cashbook_entry_id
-        legacy_transaction = crud.create_transaction(
+        legacy_transaction = crud_transactions.create_transaction(
             self.db,
             schemas.TransactionCreate(
                 date=date(2026, 6, 14),
@@ -287,10 +290,10 @@ class EmployeeSalaryFlowTests(unittest.TestCase):
         )
 
         delete_employee(self.db, employee)
-        self.assertIsNone(crud.get_transaction(self.db, linked_cashbook_id))
-        self.assertIsNotNone(crud.get_transaction(self.db, legacy_transaction.id))
+        self.assertIsNone(crud_transactions.get_transaction(self.db, linked_cashbook_id))
+        self.assertIsNotNone(crud_transactions.get_transaction(self.db, legacy_transaction.id))
         self.assertIsNone(
-            crud.get_transaction(self.db, legacy_transaction.id).employee_id
+            crud_transactions.get_transaction(self.db, legacy_transaction.id).employee_id
         )
         self.assertEqual([], salary_report(self.db, 6, 2026)["rows"])
 

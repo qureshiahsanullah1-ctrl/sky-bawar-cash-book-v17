@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 """System‑level backup & restore endpoints.
 
 Provides:
@@ -18,8 +20,6 @@ Environment variables:
 * BACKUP_MAX_SIZE_MB   – optional safety limit (default 100 MiB) for uploaded
   backup files.
 """
-
-from __future__ import annotations
 
 import io
 import json
@@ -49,7 +49,8 @@ except Exception as exc:  # pragma: no cover
 # ---------------------------------------------------------------------
 # Application imports
 # ---------------------------------------------------------------------
-from .. import crud, models
+from .. import models
+from ..crud import backups as crud_backups
 from ..auth_dependencies import require_administrator_request
 from ..database import SessionLocal
 
@@ -117,7 +118,7 @@ def _gzip_decompress(data: bytes) -> bytes:
 
 def _stream_encrypted_backup(db: Session) -> AsyncGenerator[bytes, None]:
     """Yield the encrypted‑gzip snapshot in one chunk (still streaming)."""
-    payload = crud.backup_payload(db)
+    payload = crud_backups.backup_payload(db)
     json_bytes = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     compressed = _gzip_compress(json_bytes)
     encrypted = _encrypt(compressed)
@@ -189,7 +190,7 @@ async def restore_backup(
 
     # 4️⃣ Perform restore inside a DB transaction
     try:
-        result = crud.import_backup(db, payload, replace_all=True)
+        result = crud_backups.import_backup(db, payload, replace_all=True)
         db.commit()
     except Exception as exc:  # pragma: no cover
         db.rollback()

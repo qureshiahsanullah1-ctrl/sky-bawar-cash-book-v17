@@ -2666,25 +2666,35 @@ button, a, select, input {
 }
 
 .actions-buttons-grid {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .actions-buttons-grid {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+  }
 }
 
 .btn-action {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  padding: 10px 6px;
+  border-radius: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
   background: var(--surface-strong);
   border: 1px solid var(--border);
   color: var(--text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .btn-action:hover {
@@ -2692,6 +2702,10 @@ button, a, select, input {
   border-color: var(--primary);
   color: var(--primary);
   transform: translateY(-1px);
+}
+
+.btn-action:active {
+  transform: scale(0.94);
 }
 
 .btn-action-cash-in {

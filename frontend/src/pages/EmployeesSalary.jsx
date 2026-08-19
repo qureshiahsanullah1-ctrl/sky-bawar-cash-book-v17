@@ -472,10 +472,10 @@ export default function EmployeesSalary({
             <form id="employeeForm" className="modal-form flex flex-col gap-4" onSubmit={submitEmployee}>
               {/* 1. PERSONAL INFORMATION CARD */}
               <div className="p-3 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">1. Personal Information</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">{t('payroll.personalInfo')}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Full Name *</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.fullNameRequired')}</span>
                     <input 
                       className="form-control text-xs" 
                       name="fullName" 
@@ -488,7 +488,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Father Name</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.fatherName')}</span>
                     <input 
                       className="form-control text-xs" 
                       name="fatherName" 
@@ -499,7 +499,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Phone Number</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.phoneNumber')}</span>
                     <input 
                       className="form-control text-xs" 
                       name="phoneNumber" 
@@ -511,7 +511,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Employee ID / Code</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.employeeCode')}</span>
                     <input 
                       className="form-control text-xs" 
                       name="employeeCode" 
@@ -522,7 +522,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field sm:col-span-2">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Employee Profile Photo</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.profilePhoto')}</span>
                     <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
                       <div className="w-10 h-10 rounded-full bg-slate-900 border border-blue-500 text-white font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden">
                         {employeeForm.avatar_url ? (
@@ -555,10 +555,10 @@ export default function EmployeesSalary({
 
               {/* 2. EMPLOYMENT DETAILS CARD */}
               <div className="p-3 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">2. Employment Details</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">{t('payroll.employmentDetails')}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Position / Job Title *</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.positionJobTitle')}</span>
                     <EditableCombobox
                       name="position"
                       value={employeeForm.position}
@@ -571,7 +571,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Department</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.department')}</span>
                     <EditableCombobox
                       name="department"
                       value={employeeForm.department}
@@ -583,14 +583,14 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Assigned Company / Organization *</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.assignedCompany')}</span>
                     <select 
                       className="form-select text-xs font-bold" 
                       name="company_id" 
                       value={employeeForm.company_id || 'all'} 
                       onChange={(e) => setEmployeeForm({ ...employeeForm, company_id: e.target.value })}
                     >
-                      <option value="all">🌐 All Companies (Shared Employee)</option>
+                      <option value="all">🌐 {t('payroll.allCompaniesShared')}</option>
                       {companies.map((comp) => (
                         <option key={comp.id} value={comp.id}>
                           🏬 {comp.name}
@@ -600,21 +600,21 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Employment Status</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.employmentStatus')}</span>
                     <select 
                       className="form-select text-xs" 
                       name="status" 
                       value={employeeForm.status} 
                       onChange={(e) => setEmployeeForm({ ...employeeForm, status: e.target.value })}
                     >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                      <option value="on_leave">On Leave</option>
+                      <option value="active">{t('payroll.statusActive')}</option>
+                      <option value="inactive">{t('payroll.statusInactive')}</option>
+                      <option value="on_leave">{t('payroll.statusOnLeave')}</option>
                     </select>
                   </label>
 
                   <label className="form-field sm:col-span-2">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Joining Date (Carry Forward Benchmark)</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.joiningDateBenchmark')}</span>
                     <input 
                       className="form-control text-xs" 
                       name="joiningDate" 
@@ -623,7 +623,7 @@ export default function EmployeesSalary({
                       onChange={(e) => setEmployeeForm({ ...employeeForm, joining_date: e.target.value })} 
                     />
                     <span className="text-[10px] text-slate-500 mt-0.5 block">
-                      Salary carry forward calculates starting from this date.
+                      {t('payroll.salaryCarryForwardHint')}
                     </span>
                   </label>
                 </div>
@@ -631,10 +631,10 @@ export default function EmployeesSalary({
 
               {/* 3. SALARY & REMARKS CARD */}
               <div className="p-3 bg-slate-50 dark:bg-slate-800/70 rounded-xl border border-slate-200 dark:border-slate-700/80">
-                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">3. Salary Information & Remarks</h4>
+                <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">{t('payroll.salaryInfoRemarks')}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Monthly Base Salary *</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.monthlyBaseSalary')}</span>
                     <input 
                       className="form-control text-xs font-mono font-bold" 
                       name="monthlySalary" 
@@ -649,7 +649,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Currency *</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.currencyRequired')}</span>
                     <select 
                       className="form-select text-xs font-bold" 
                       name="currency" 
@@ -662,7 +662,7 @@ export default function EmployeesSalary({
                   </label>
 
                   <label className="form-field sm:col-span-2">
-                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">Notes & Remarks</span>
+                    <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1 block">{t('payroll.notesRemarks')}</span>
                     <textarea 
                       className="form-textarea text-xs" 
                       name="notes" 
@@ -1183,6 +1183,7 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
 }
 
 function SalaryDiffPreview({ oldSalary, oldCurrency, newSalary, newCurrency }) {
+  const { t } = useTranslation();
   const oldVal = Number(oldSalary || 0);
   const newVal = Number(newSalary || 0);
   const diff = newVal - oldVal;
@@ -1191,15 +1192,15 @@ function SalaryDiffPreview({ oldSalary, oldCurrency, newSalary, newCurrency }) {
     return (
       <div className="salary-diff-preview">
         <div className="salary-diff-item">
-          <span>Previous Salary</span>
+          <span>{t('payroll.previousSalary')}</span>
           <strong>{currency(oldVal, oldCurrency)}</strong>
         </div>
         <div className="salary-diff-item">
-          <span>New Salary</span>
+          <span>{t('payroll.newSalary')}</span>
           <strong>{currency(newVal, newCurrency)}</strong>
         </div>
         <div className="salary-diff-item">
-          <span>Currency</span>
+          <span>{t('payroll.currency')}</span>
           <strong>{oldCurrency} → {newCurrency}</strong>
         </div>
       </div>
@@ -1213,15 +1214,15 @@ function SalaryDiffPreview({ oldSalary, oldCurrency, newSalary, newCurrency }) {
   return (
     <div className="salary-diff-preview">
       <div className="salary-diff-item">
-        <span>Previous Salary</span>
+        <span>{t('payroll.previousSalary')}</span>
         <strong>{currency(oldVal, oldCurrency)}</strong>
       </div>
       <div className="salary-diff-item">
-        <span>New Salary</span>
+        <span>{t('payroll.newSalary')}</span>
         <strong>{currency(newVal, newCurrency)}</strong>
       </div>
       <div className={`salary-diff-item ${isIncrease ? 'diff-positive' : isDecrease ? 'diff-negative' : 'diff-neutral'}`}>
-        <span>Difference</span>
+        <span>{t('payroll.difference')}</span>
         <strong>{diffFormatted}</strong>
       </div>
     </div>
@@ -1300,7 +1301,7 @@ function EditEmployeeSalaryModal({ row, currentUser, onClose, onSave }) {
             <span className="salary-summary-id">{row.employee_code || `EMP-${row.employee_id}`}</span>
           </div>
           <div className="salary-summary-amount">
-            <span className="salary-summary-label">Current Salary</span>
+            <span className="salary-summary-label">{t('payroll.currentSalary')}</span>
             <strong className="salary-summary-val">{currency(row.monthly_salary, row.currency)}</strong>
           </div>
         </div>
@@ -1397,10 +1398,10 @@ function EditEmployeeSalaryModal({ row, currentUser, onClose, onSave }) {
                 <div className="salary-history-item" key={change.id}>
                   <div>
                     <strong>{currency(change.old_salary, change.old_currency)} → {currency(change.new_salary, change.new_currency)}</strong>
-                    <span>Reason: {change.reason}</span>
+                    <span>{t('payroll.reason')}{change.reason}</span>
                   </div>
                   <div>
-                    <span>Effective: {dateLabel(change.effective_date)}</span>
+                    <span>{t('payroll.effective')}{dateLabel(change.effective_date)}</span>
                     <span>By: {change.changed_by}</span>
                   </div>
                 </div>
@@ -1567,6 +1568,7 @@ function EmployeeCardRow({
   uploadingAvatarId,
   navigate
 }) {
+  const { t } = useTranslation();
   function unescapeText(str) {
     if (!str || typeof str !== 'string') return String(str ?? '');
     let text = str;
@@ -1586,20 +1588,20 @@ function EmployeeCardRow({
   const getCompanyBadge = () => {
     const companyId = employee.company_id || 'all';
     if (companyId === 'bawar-star') {
-      return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25">BAWAR STAR PLASTIC</span>;
+      return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25">{t('payroll.bawarStarPlastic')}</span>;
     }
     if (companyId === 'sky-ariana') {
-      return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25">SKY ARIANA LTD</span>;
+      return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25">{t('payroll.skyArianaLtd')}</span>;
     }
-    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25">ALL COMPANIES (SHARED)</span>;
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25">{t('payroll.allCompaniesShared')}</span>;
   };
 
   const getStatusBadge = () => {
     const status = row.payment_status;
-    if (status === 'Paid') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">Fully Paid</span>;
-    if (status === 'Partial Paid') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25">Partially Paid</span>;
-    if (status === 'Advance') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">Overpaid / Advance</span>;
-    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25">Unpaid</span>;
+    if (status === 'Paid') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">{t('payroll.fullyPaidBadge')}</span>;
+    if (status === 'Partial Paid') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25">{t('payroll.partiallyPaidBadge')}</span>;
+    if (status === 'Advance') return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/25">{t('payroll.overpaidAdvanceBadge')}</span>;
+    return <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25">{t('payroll.unpaidBadge')}</span>;
   };
 
   const handleNavigateLedger = () => {
@@ -1627,11 +1629,11 @@ function EmployeeCardRow({
             {getCompanyBadge()}
             {hasJoiningDate ? (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" title={`Carry forward since ${employee.joining_date}`}>
-                Carry Forward Enabled
+                {t('payroll.carryForwardEnabled')}
               </span>
             ) : (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20" title="Historical carry forward disabled">
-                Joining Date Required
+                {t('payroll.joiningDateRequired')}
               </span>
             )}
             {getStatusBadge()}
@@ -1648,7 +1650,7 @@ function EmployeeCardRow({
               </>
             )}
             <span>&bull;</span>
-            <span className="text-slate-700 dark:text-slate-300 font-semibold">Salary: {(employee.monthly_salary || row.monthly_salary || 0).toLocaleString()} {row.currency}</span>
+            <span className="text-slate-700 dark:text-slate-300 font-semibold">{t('payroll.salaryPrefix')}{(employee.monthly_salary || row.monthly_salary || 0).toLocaleString()} {row.currency}</span>
           </div>
         </div>
       </div>
@@ -1656,7 +1658,7 @@ function EmployeeCardRow({
       <div className="w-full lg:w-auto bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/25 rounded-2xl p-3.5 flex items-center justify-between gap-3 shrink-0 my-0.5 lg:my-0 lg:min-w-[220px]">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-            {hasJoiningDate ? "Outstanding Salary" : "Current Month Remaining"}
+            {hasJoiningDate ? t('payroll.outstandingSalary') : t('payroll.currentMonthRemaining')}
           </span>
           <strong className="text-lg sm:text-xl font-black font-mono tracking-tight text-amber-600 dark:text-amber-400 block">
             {row.remaining_salary.toLocaleString()} {row.currency}
@@ -1675,7 +1677,7 @@ function EmployeeCardRow({
             onClick={() => onPay(row)}
           >
             <CircleDollarSign size={15} />
-            <span>Pay Salary</span>
+            <span>{t('payroll.paySalary')}</span>
           </button>
         )}
 
@@ -1686,7 +1688,7 @@ function EmployeeCardRow({
           title="View Employee Salary Ledger"
         >
           <BookOpenText size={15} className="text-blue-500" />
-          <span>Ledger</span>
+          <span>{t('payroll.ledger')}</span>
         </button>
 
         {onEditEmployee && (
@@ -1696,7 +1698,7 @@ function EmployeeCardRow({
             onClick={() => onEditEmployee(employee)}
           >
             <Edit size={15} className="text-indigo-500" />
-            <span>Edit</span>
+            <span>{t('payroll.edit')}</span>
           </button>
         )}
 
@@ -1721,7 +1723,7 @@ function EmployeeCardRow({
                   onClick={() => { setMenuOpen(false); onEditSalary(row); }}
                   className="flex items-center gap-2 p-2 text-xs font-medium text-slate-200 hover:bg-slate-800 rounded-xl transition-all w-full text-left"
                 >
-                  <CircleDollarSign size={14} className="text-blue-400" /> Edit Salary
+                  <CircleDollarSign size={14} className="text-blue-400" /> {t('payroll.editSalary')}
                 </button>
               )}
               <button
@@ -1729,14 +1731,14 @@ function EmployeeCardRow({
                 onClick={() => { setMenuOpen(false); handleNavigateLedger(); }}
                 className="flex items-center gap-2 p-2 text-xs font-medium text-slate-200 hover:bg-slate-800 rounded-xl transition-all w-full text-left"
               >
-                <Clock3 size={14} className="text-indigo-400" /> Salary History
+                <Clock3 size={14} className="text-indigo-400" /> {t('payroll.salaryHistory')}
               </button>
               <button
                 type="button"
                 onClick={() => { setMenuOpen(false); handleNavigateLedger(); }}
                 className="flex items-center gap-2 p-2 text-xs font-medium text-slate-200 hover:bg-slate-800 rounded-xl transition-all w-full text-left"
               >
-                <Printer size={14} className="text-emerald-400" /> Print Ledger
+                <Printer size={14} className="text-emerald-400" /> {t('payroll.printLedger')}
               </button>
               {onDeleteEmployee && (
                 <button
@@ -1745,7 +1747,7 @@ function EmployeeCardRow({
                   onClick={() => { setMenuOpen(false); onDeleteEmployee({ ...row, id: employee.id, full_name: employee.full_name, employee_code: employee.employee_code }); }}
                   className="flex items-center gap-2 p-2 text-xs font-medium text-rose-400 hover:bg-rose-950/40 rounded-xl transition-all w-full text-left"
                 >
-                  <Trash2 size={14} /> {deletingEmployeeId === Number(employee.id) ? 'Deleting...' : 'Delete Employee'}
+                  <Trash2 size={14} /> {deletingEmployeeId === Number(employee.id) ? 'Deleting...' : t('payroll.deleteEmployee')}
                 </button>
               )}
             </div>
@@ -1789,7 +1791,7 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
             selectedCompanyFilter === 'all' ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
-          🌐 All Companies ({employees.length})
+          🌐 {t('payroll.allCompanies')} ({employees.length})
         </button>
         <button
           type="button"
@@ -1798,7 +1800,7 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
             selectedCompanyFilter === 'bawar-star' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
-          🏬 BAWAR STAR PLASTIC ({bawarCount})
+          🏬 {t('payroll.bawarStarPlastic')} ({bawarCount})
         </button>
         <button
           type="button"
@@ -1807,7 +1809,7 @@ function EmployeeList({ employees, transactions, reportRows = [], expanded = fal
             selectedCompanyFilter === 'sky-ariana' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
-          ✈️ SKY ARIANA LTD ({skyCount})
+          ✈️ {t('payroll.skyArianaLtd')} ({skyCount})
         </button>
       </div>
 

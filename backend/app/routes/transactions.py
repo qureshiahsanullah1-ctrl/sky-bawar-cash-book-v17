@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from .. import crud, models, schemas
+from .. import models, schemas
+from ..crud import transactions as crud_transactions, reports as crud_reports
 from ..auth_dependencies import get_current_tenant, require_authenticated_request
 from ..database import get_db
 
@@ -28,7 +29,7 @@ def read_transactions(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
-    return crud.filtered_transactions(
+    return crud_reports.filtered_transactions(
         db, user=user, group_id=group_id, branch_id=branch_id, skip=skip, limit=limit
     )
 
@@ -40,7 +41,7 @@ def read_summary(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
-    return crud.summary(db, user=user, group_id=group_id, branch_id=branch_id)
+    return crud_reports.summary(db, user=user, group_id=group_id, branch_id=branch_id)
 
 
 @router.get("/filter", response_model=list[schemas.TransactionRead])
@@ -59,7 +60,7 @@ def filter_transactions(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
-    return crud.filtered_transactions(
+    return crud_reports.filtered_transactions(
         db,
         user=user,
         start_date=start_date,
@@ -82,7 +83,7 @@ def today_transactions(
     db: Session = Depends(get_db),
 ):
     today = date.today()
-    return crud.filtered_transactions(db, user=user, start_date=today, end_date=today)
+    return crud_reports.filtered_transactions(db, user=user, start_date=today, end_date=today)
 
 
 @router.get("/monthly", response_model=list[schemas.TransactionRead])
@@ -92,7 +93,7 @@ def monthly_transactions(
 ):
     today = date.today()
     start = today.replace(day=1)
-    return crud.filtered_transactions(db, user=user, start_date=start, end_date=today)
+    return crud_reports.filtered_transactions(db, user=user, start_date=start, end_date=today)
 
 
 @router.get("/yearly", response_model=list[schemas.TransactionRead])
@@ -102,7 +103,7 @@ def yearly_transactions(
 ):
     today = date.today()
     start = today.replace(month=1, day=1)
-    return crud.filtered_transactions(db, user=user, start_date=start, end_date=today)
+    return crud_reports.filtered_transactions(db, user=user, start_date=start, end_date=today)
 
 
 @router.get("/export")
@@ -110,7 +111,7 @@ def export_transactions(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
-    txs = crud.filtered_transactions(db, user=user)
+    txs = crud_reports.filtered_transactions(db, user=user)
 
     def generate():
         output = io.StringIO()
@@ -172,7 +173,7 @@ def export_ledger_csv(
     tenant_id: str = Depends(get_current_tenant),
     db: Session = Depends(get_db),
 ):
-    txs = crud.filtered_transactions(db, user=user)
+    txs = crud_reports.filtered_transactions(db, user=user)
     if branch and not branch.startswith("All"):
         txs = [
             t
@@ -240,7 +241,7 @@ def read_transaction(
     user: models.User = Depends(require_authenticated_request),
     db: Session = Depends(get_db),
 ):
-    tx = crud.get_transaction(db, transaction_id, user=user)
+    tx = crud_transactions.get_transaction(db, transaction_id, user=user)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return tx
@@ -274,7 +275,7 @@ def create_transaction(
             )
         payload.branch_id = user.assigned_branch_id
     try:
-        return crud.create_transaction(db, payload)
+        return crud_transactions.create_transaction(db, payload)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -295,7 +296,7 @@ def update_transaction(
         raise HTTPException(
             status_code=403, detail="Forbidden: Clerks cannot modify transactions"
         )
-    tx = crud.get_transaction(db, transaction_id, user=user)
+    tx = crud_transactions.get_transaction(db, transaction_id, user=user)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     if user.role == "Branch Manager":
@@ -305,7 +306,7 @@ def update_transaction(
             )
         payload.branch_id = user.assigned_branch_id
     try:
-        return crud.update_transaction(db, tx, payload)
+        return crud_transactions.update_transaction(db, tx, payload)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -325,11 +326,11 @@ def delete_transaction(
         raise HTTPException(
             status_code=403, detail="Forbidden: Clerks cannot delete transactions"
         )
-    tx = crud.get_transaction(db, transaction_id, user=user)
+    tx = crud_transactions.get_transaction(db, transaction_id, user=user)
     if not tx:
         raise HTTPException(status_code=404, detail="Transaction not found")
     try:
-        crud.delete_transaction(db, tx)
+        crud_transactions.delete_transaction(db, tx)
         return {"ok": True}
     except Exception as error:
         db.rollback()
@@ -348,7 +349,7 @@ def filter_ledger_transactions(
     tenant_id: str = Depends(get_current_tenant),
     db: Session = Depends(get_db),
 ):
-    txs = crud.filtered_transactions(db, user=user)
+    txs = crud_reports.filtered_transactions(db, user=user)
     if branch and not branch.startswith("All"):
         txs = [
             t
@@ -395,7 +396,7 @@ def create_dual_currency_tx(
     ):
         raise HTTPException(status_code=403, detail="Tenant mismatch detected.")
     try:
-        tx = crud.create_transaction(db, payload)
+        tx = crud_transactions.create_transaction(db, payload)
         return {
             "status": "success",
             "message": f"Recorded transaction at exchange rate {payload.exchange_rate}",

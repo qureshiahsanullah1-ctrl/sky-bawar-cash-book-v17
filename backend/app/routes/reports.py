@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
-from .. import crud
+from ..crud import accounts as crud_accounts, transactions as crud_transactions, reports as crud_reports
 from ..auth_dependencies import require_authenticated_request
 from ..database import get_db
 
@@ -36,13 +36,13 @@ def report_summary(rows):
 @router.get("/api/summary")
 @router.get("/api/summary/", include_in_schema=False)
 def all_summary(db: Session = Depends(get_db)):
-    return crud.summary(db)
+    return crud_reports.summary(db)
 
 
 @router.get("/api/summary/daily")
 @router.get("/api/summary/daily/", include_in_schema=False)
 def daily_summary(db: Session = Depends(get_db)):
-    rows = crud.filtered_transactions(
+    rows = crud_reports.filtered_transactions(
         db, start_date=date.today(), end_date=date.today()
     )
     return report_summary(rows)
@@ -52,7 +52,7 @@ def daily_summary(db: Session = Depends(get_db)):
 @router.get("/api/summary/monthly/", include_in_schema=False)
 def monthly_summary(db: Session = Depends(get_db)):
     today = date.today()
-    rows = crud.filtered_transactions(
+    rows = crud_reports.filtered_transactions(
         db, start_date=today.replace(day=1), end_date=today
     )
     return report_summary(rows)
@@ -60,7 +60,7 @@ def monthly_summary(db: Session = Depends(get_db)):
 
 @router.get("/api/summary/account/{account_id}")
 def account_summary(account_id: int, db: Session = Depends(get_db)):
-    ledger = crud.account_ledger(db, account_id)
+    ledger = crud_reports.account_ledger(db, account_id)
     if not ledger:
         raise HTTPException(status_code=404, detail="Account not found")
     return ledger
@@ -68,13 +68,13 @@ def account_summary(account_id: int, db: Session = Depends(get_db)):
 
 @router.get("/api/reports/cashbook")
 def cashbook_report(db: Session = Depends(get_db)):
-    rows = crud.list_transactions(db)
+    rows = crud_transactions.list_transactions(db)
     return {"summary": report_summary(rows), "transactions": rows}
 
 
 @router.get("/api/reports/ledger/{account_id}")
 def ledger_report(account_id: int, db: Session = Depends(get_db)):
-    ledger = crud.account_ledger(db, account_id)
+    ledger = crud_reports.account_ledger(db, account_id)
     if not ledger:
         raise HTTPException(status_code=404, detail="Account not found")
     return ledger
@@ -82,13 +82,13 @@ def ledger_report(account_id: int, db: Session = Depends(get_db)):
 
 @router.get("/api/reports/profit-loss")
 def profit_loss(db: Session = Depends(get_db)):
-    rows = crud.list_transactions(db)
+    rows = crud_transactions.list_transactions(db)
     return report_summary(rows)
 
 
 @router.get("/api/reports/expenses")
 def expense_report(db: Session = Depends(get_db)):
-    rows = crud.filtered_transactions(db, type="cash_out")
+    rows = crud_reports.filtered_transactions(db, type="cash_out")
     return {"summary": report_summary(rows), "transactions": rows}
 
 
@@ -98,7 +98,7 @@ def date_range_report(
     end_date: date = Query(...),
     db: Session = Depends(get_db),
 ):
-    rows = crud.filtered_transactions(db, start_date=start_date, end_date=end_date)
+    rows = crud_reports.filtered_transactions(db, start_date=start_date, end_date=end_date)
     return {"summary": report_summary(rows), "transactions": rows}
 
 
@@ -149,23 +149,23 @@ def csv_response(rows, filename):
 
 @router.get("/api/export/transactions/json")
 def export_transactions_json(db: Session = Depends(get_db)):
-    return JSONResponse(jsonable_encoder(crud.list_transactions(db)))
+    return JSONResponse(jsonable_encoder(crud_transactions.list_transactions(db)))
 
 
 @router.get("/api/export/transactions/csv")
 def export_transactions_csv(db: Session = Depends(get_db)):
-    return csv_response(crud.list_transactions(db), "transactions.csv")
+    return csv_response(crud_transactions.list_transactions(db), "transactions.csv")
 
 
 @router.get("/api/export/accounts/json")
 def export_accounts_json(db: Session = Depends(get_db)):
-    return JSONResponse(jsonable_encoder(crud.list_accounts(db)))
+    return JSONResponse(jsonable_encoder(crud_accounts.list_accounts(db)))
 
 
 @router.get("/api/export/ledger/{account_id}/csv")
 def export_ledger_csv(account_id: int, db: Session = Depends(get_db)):
-    account = crud.get_account(db, account_id)
+    account = crud_accounts.get_account(db, account_id)
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
-    rows = [row for row in crud.list_transactions(db) if row.account_id == account_id]
+    rows = [row for row in crud_transactions.list_transactions(db) if row.account_id == account_id]
     return csv_response(rows, f"ledger-{account_id}.csv")

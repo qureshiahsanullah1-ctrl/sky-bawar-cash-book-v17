@@ -1,3 +1,6 @@
+from app.crud import accounts as crud_accounts, transactions as crud_transactions, settings as crud_settings, backups as crud_backups, imports_exports as crud_imports_exports, reports as crud_reports
+from app.crud import payroll as payroll_crud
+from app.services import payroll as payroll_services
 import os
 import sys
 import unittest
@@ -14,7 +17,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 from app.database import Base
-from app import models, schemas, crud
+from app import models, schemas
 
 
 class MainEndpointTests(unittest.TestCase):
@@ -68,7 +71,7 @@ class MainEndpointTests(unittest.TestCase):
         self.db.commit()
 
         # Check initial summary values
-        initial_totals = crud.summary(self.db)
+        initial_totals = crud_reports.summary(self.db)
         self.assertEqual(0, initial_totals["cash_in_afn"])
         self.assertEqual(0, initial_totals["afn_balance"])
 
@@ -84,10 +87,10 @@ class MainEndpointTests(unittest.TestCase):
             category="other",
             note="Payment received",
         )
-        crud.create_transaction(self.db, tx_payload)
+        crud_transactions.create_transaction(self.db, tx_payload)
 
         # Confirm summary contains updated values
-        updated_totals = crud.summary(self.db)
+        updated_totals = crud_reports.summary(self.db)
         self.assertEqual(5000.0, updated_totals["cash_in_afn"])
         self.assertEqual(5000.0, updated_totals["afn_balance"])
 
@@ -137,27 +140,27 @@ class MainEndpointTests(unittest.TestCase):
             branch_id=herat.id,
         )
 
-        crud.create_transaction(self.db, tx1)
-        crud.create_transaction(self.db, tx2)
-        crud.create_transaction(self.db, tx3)
+        crud_transactions.create_transaction(self.db, tx1)
+        crud_transactions.create_transaction(self.db, tx2)
+        crud_transactions.create_transaction(self.db, tx3)
 
         # 4. Check consolidated summary (neither group nor branch parameter)
-        totals_all = crud.summary(self.db)
+        totals_all = crud_reports.summary(self.db)
         self.assertEqual(7000.0, totals_all["cash_in_afn"])
         self.assertEqual(7000.0, totals_all["afn_balance"])
 
         # 5. Check Group A summary (should sum Kabul and Kandahar)
-        totals_group_a = crud.summary(self.db, group_id=group_a.id)
+        totals_group_a = crud_reports.summary(self.db, group_id=group_a.id)
         self.assertEqual(3000.0, totals_group_a["cash_in_afn"])
         self.assertEqual(3000.0, totals_group_a["afn_balance"])
 
         # 6. Check Kabul Branch summary (should just return Kabul)
-        totals_kabul = crud.summary(self.db, branch_id=kabul.id)
+        totals_kabul = crud_reports.summary(self.db, branch_id=kabul.id)
         self.assertEqual(1000.0, totals_kabul["cash_in_afn"])
         self.assertEqual(1000.0, totals_kabul["afn_balance"])
 
         # 7. Check Herat Branch summary (should just return Herat)
-        totals_herat = crud.summary(self.db, branch_id=herat.id)
+        totals_herat = crud_reports.summary(self.db, branch_id=herat.id)
         self.assertEqual(4000.0, totals_herat["cash_in_afn"])
         self.assertEqual(4000.0, totals_herat["afn_balance"])
 

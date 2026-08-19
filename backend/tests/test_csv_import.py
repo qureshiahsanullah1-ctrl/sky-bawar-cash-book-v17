@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app import models
 from app.csv_import import CsvImportError, parse_cashbook_csv
-from app.crud import import_cashbook_csv
+from app.crud.imports_exports import import_cashbook_csv
 
 
 class CashbookCsvImportTests(unittest.TestCase):

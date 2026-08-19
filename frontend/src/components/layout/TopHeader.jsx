@@ -87,7 +87,17 @@ export default function TopHeader({
         </div>
 
         {/* Action Buttons (100% Equal Height & Icon Size) */}
-        <div className="topbar-buttons flex items-center gap-2">
+        <div className="topbar-buttons flex items-center gap-1.5 sm:gap-2">
+          <button 
+            type="button"
+            className="w-10 h-10 rounded-xl flex md:hidden items-center justify-center bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 transition-all shadow-xs shrink-0 active:scale-95" 
+            onClick={onSearchClick} 
+            aria-label="Search" 
+            title="Search"
+          >
+            <Search size={18} className="text-slate-700 dark:text-slate-200" />
+          </button>
+
           <button 
             type="button"
             className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 transition-all shadow-xs shrink-0 active:scale-95" 

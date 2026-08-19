@@ -143,19 +143,75 @@ def ensure_sqlite_schema(bind_engine=None):
             "account_type VARCHAR(30) DEFAULT 'other'",
             "phone VARCHAR(100) DEFAULT ''",
             "address TEXT DEFAULT ''",
+            "opening_balance_afn FLOAT DEFAULT 0",
+            "opening_balance_usd FLOAT DEFAULT 0",
             "note TEXT DEFAULT ''",
+            "created_at DATETIME",
             "updated_at DATETIME",
+            "is_deleted BOOLEAN DEFAULT 0",
+            "company_id VARCHAR(100) DEFAULT 'bawar-star'",
         ]:
             add("accounts", column_sql)
 
         for column_sql in [
+            "company_id VARCHAR(100) DEFAULT 'bawar-star'",
             "transaction_no VARCHAR(40) DEFAULT ''",
             "transaction_type VARCHAR(20) DEFAULT 'cash_in'",
+            "cash_in_afn FLOAT DEFAULT 0",
+            "cash_out_afn FLOAT DEFAULT 0",
+            "usd_in FLOAT DEFAULT 0",
+            "usd_out FLOAT DEFAULT 0",
+            "exchange_rate FLOAT DEFAULT 0",
             "converted_afn FLOAT DEFAULT 0",
             "payment_method VARCHAR(30) DEFAULT 'cash'",
             "category VARCHAR(40) DEFAULT 'other'",
+            "note TEXT DEFAULT ''",
+            "employee_id INTEGER",
+            "salary_month DATE",
+            "payroll_kind VARCHAR(20)",
+            "branch_id INTEGER",
+            "created_at DATETIME",
+            "updated_at DATETIME",
+            "is_deleted BOOLEAN DEFAULT 0",
         ]:
             add("transactions", column_sql)
+
+        for column_sql in [
+            "company_id VARCHAR(100) DEFAULT 'bawar-star'",
+            "employee_code VARCHAR(40) DEFAULT ''",
+            "father_name VARCHAR(255) DEFAULT ''",
+            "phone VARCHAR(100) DEFAULT ''",
+            "position VARCHAR(180) DEFAULT ''",
+            "department VARCHAR(180) DEFAULT ''",
+            "joining_date DATE",
+            "employment_end_date DATE",
+            "monthly_salary FLOAT DEFAULT 0",
+            "currency VARCHAR(10) DEFAULT 'AFN'",
+            "avatar_url TEXT DEFAULT ''",
+            "status VARCHAR(20) DEFAULT 'active'",
+            "notes TEXT DEFAULT ''",
+            "created_at DATETIME",
+            "updated_at DATETIME",
+            "is_deleted BOOLEAN DEFAULT 0",
+        ]:
+            add("employees", column_sql)
+
+        for column_sql in [
+            "previous_carry_forward_balance FLOAT DEFAULT 0",
+            "total_payable_salary FLOAT DEFAULT 0",
+            "carry_forward_balance FLOAT DEFAULT 0",
+            "cashbook_entry_id INTEGER",
+            "created_at DATETIME",
+            "updated_at DATETIME",
+        ]:
+            add("salary_payments", column_sql)
+
+        for column_sql in [
+            "old_currency VARCHAR(10) DEFAULT 'AFN'",
+            "new_currency VARCHAR(10) DEFAULT 'AFN'",
+            "notes TEXT DEFAULT ''",
+        ]:
+            add("salary_history", column_sql)
 
         transaction_cols = columns("transactions")
         if "transactions" in tables:
@@ -182,6 +238,8 @@ def ensure_sqlite_schema(bind_engine=None):
             )
 
         for column_sql in [
+            "company_id VARCHAR(100) DEFAULT 'bawar-star'",
+            "company_name VARCHAR(255) DEFAULT 'Cashbook Of All companies'",
             "company_phone VARCHAR(100) DEFAULT ''",
             "company_email VARCHAR(180) DEFAULT ''",
             "company_website VARCHAR(180) DEFAULT ''",
@@ -194,6 +252,8 @@ def ensure_sqlite_schema(bind_engine=None):
             "date_display_format VARCHAR(20) DEFAULT 'dual'",
             "print_footer_text TEXT DEFAULT 'Prepared by BAWAR STAR PLASTIC INDUSTRY'",
             "auto_logout_minutes INTEGER DEFAULT 30",
+            "created_at DATETIME",
+            "updated_at DATETIME",
         ]:
             add("settings", column_sql)
 
@@ -202,6 +262,8 @@ def ensure_sqlite_schema(bind_engine=None):
             "updated_at DATETIME",
             "must_change_password BOOLEAN DEFAULT 0",
             "password_changed_at DATETIME",
+            "assigned_group_id INTEGER",
+            "assigned_branch_id INTEGER",
         ]:
             add("users", column_sql)
 

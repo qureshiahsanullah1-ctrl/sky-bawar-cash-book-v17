@@ -10,7 +10,8 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from .. import crud, models
+from .. import models
+from ..crud import backups as crud_backups, imports_exports as crud_imports_exports
 from ..auth_dependencies import require_administrator_request
 from ..csv_import import CsvImportError
 from ..database import get_db
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/api/backup", tags=["backup"])
 
 @router.get("/export", dependencies=[Depends(require_administrator_request)])
 def export_backup(db: Session = Depends(get_db)):
-    payload = crud.backup_payload(db)
+    payload = crud_backups.backup_payload(db)
     return JSONResponse(jsonable_encoder(payload))
 
 
@@ -30,7 +31,7 @@ def import_backup(
     payload: dict, replace_all: bool = False, db: Session = Depends(get_db)
 ):
     try:
-        return crud.import_backup(db, payload, replace_all=replace_all)
+        return crud_backups.import_backup(db, payload, replace_all=replace_all)
     except (KeyError, TypeError, ValueError, ValidationError) as error:
         db.rollback()
         raise HTTPException(
@@ -43,7 +44,7 @@ def import_csv(payload: CsvImportRequest, db: Session = Depends(get_db)):
     if len(payload.content.encode("utf-8")) > 5 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="CSV file must be 5 MB or smaller")
     try:
-        return crud.import_cashbook_csv(db, payload.content, payload.filename)
+        return crud_imports_exports.import_cashbook_csv(db, payload.content, payload.filename)
     except CsvImportError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
@@ -68,7 +69,7 @@ async def import_master_excel(
         )
 
     try:
-        return crud.import_master_excel(db, contents, filename)
+        return crud_imports_exports.import_master_excel(db, contents, filename)
     except Exception as error:
         raise HTTPException(
             status_code=422, detail=f"Master Excel import failed: {error}"
@@ -78,11 +79,11 @@ async def import_master_excel(
 @router.delete("/clear-all", dependencies=[Depends(require_administrator_request)])
 @router.post("/clear-all", dependencies=[Depends(require_administrator_request)])
 def clear_all(db: Session = Depends(get_db)):
-    return crud.clear_all(db)
+    return crud_backups.clear_all(db)
 
 
 def create_snapshot(db: Session, backup_type: str) -> models.BackupSnapshot:
-    payload = jsonable_encoder(crud.backup_payload(db))
+    payload = jsonable_encoder(crud_backups.backup_payload(db))
     snapshot = models.BackupSnapshot(
         backup_name=f"cashbook-{backup_type}-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}",
         backup_type=backup_type,
@@ -130,7 +131,7 @@ def export_system_backup(
     cron_secret = os.getenv("CRON_SECRET")
     if not cron_secret or authorization != f"Bearer {cron_secret}":
         raise HTTPException(status_code=401, detail="Invalid cron authorization")
-    payload = crud.backup_payload(db)
+    payload = crud_backups.backup_payload(db)
     return JSONResponse(jsonable_encoder(payload))
 
 
@@ -166,7 +167,7 @@ def restore_snapshot(snapshot_id: int, db: Session = Depends(get_db)):
     if not snapshot:
         raise HTTPException(status_code=404, detail="Backup snapshot not found")
     try:
-        return crud.import_backup(db, json.loads(snapshot.payload), replace_all=True)
+        return crud_backups.import_backup(db, json.loads(snapshot.payload), replace_all=True)
     except (KeyError, TypeError, ValueError, ValidationError) as error:
         db.rollback()
         raise HTTPException(
