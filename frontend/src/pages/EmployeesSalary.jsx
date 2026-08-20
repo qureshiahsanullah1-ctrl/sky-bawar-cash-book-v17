@@ -774,17 +774,17 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
         <SalaryMiniStat label={t('payroll.unpaid')} value={summary.unpaid_employees} tone="amber" />
       </div>
       <div className="salary-report-filters">
-        <label><Search size={16} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search employee name" /></label>
-        <select value={filters.company_id || 'all'} onChange={(event) => setFilters({ ...filters, company_id: event.target.value })}>
+        <label className="salary-filter-search"><Search size={16} /><input value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} placeholder="Search employee name" /></label>
+        <select className="salary-filter-company" value={filters.company_id || 'all'} onChange={(event) => setFilters({ ...filters, company_id: event.target.value })}>
           <option value="all">🏢 All Companies (All Employees)</option>
           <option value="bawar-star">🏬 Bawar Star Plastic Industry</option>
           <option value="sky-ariana">✈️ Sky Ariana Ltd</option>
         </select>
-        <select value={filters.department} onChange={(event) => setFilters({ ...filters, department: event.target.value })}><option value="">{t('payroll.allDepartments')}</option>{departments.map((department) => <option key={department} value={department}>{department}</option>)}</select>
-        <select value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">{t('payroll.allStatus')}</option><option value="Paid">{t('payroll.paid')}</option><option value="Partial Paid">{t('payroll.partialPaid')}</option><option value="Unpaid">{t('payroll.unpaidStatus')}</option><option value="Advance">{t('payroll.advance')}</option></select>
-        <select value={filters.month} onChange={(event) => setFilters({ ...filters, month: Number(event.target.value) })}>{monthNames.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select>
-        <select value={filters.year} onChange={(event) => setFilters({ ...filters, year: Number(event.target.value) })}>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select>
-        <button className="ghost-btn" type="button" onClick={onRefresh}>{loading ? 'Refreshing...' : 'Refresh'}</button>
+        <select className="salary-filter-dept" value={filters.department} onChange={(event) => setFilters({ ...filters, department: event.target.value })}><option value="">{t('payroll.allDepartments')}</option>{departments.map((department) => <option key={department} value={department}>{department}</option>)}</select>
+        <select className="salary-filter-status" value={filters.status} onChange={(event) => setFilters({ ...filters, status: event.target.value })}><option value="">{t('payroll.allStatus')}</option><option value="Paid">{t('payroll.paid')}</option><option value="Partial Paid">{t('payroll.partialPaid')}</option><option value="Unpaid">{t('payroll.unpaidStatus')}</option><option value="Advance">{t('payroll.advance')}</option></select>
+        <select className="salary-filter-month" value={filters.month} onChange={(event) => setFilters({ ...filters, month: Number(event.target.value) })}>{monthNames.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}</select>
+        <select className="salary-filter-year" value={filters.year} onChange={(event) => setFilters({ ...filters, year: Number(event.target.value) })}>{years.map((year) => <option key={year} value={year}>{year}</option>)}</select>
+        <button className="ghost-btn salary-filter-refresh" type="button" onClick={onRefresh}>{loading ? 'Refreshing...' : 'Refresh'}</button>
       </div>
       {error && <div className="error-banner">{error}</div>}
       {/* Desktop Table View (Visible on Tablet & Desktop) */}
@@ -854,112 +854,132 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
         </table>
       </div>
       {/* Mobile Card View (Visible on Mobile Screens) */}
-      <div className="block md:hidden salary-report-mobile-list flex flex-col gap-3 mt-4">
+      <div className="block md:hidden salary-report-mobile-list flex flex-col gap-3.5 mt-4">
         {rows.map((row, index) => {
           const empName = unescapeText(row.employee_name);
           const initials = empName ? empName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'EM';
           const avatarUrl = resolveAvatarUrl(row.avatar_url);
+          const paymentStatus = row.payment_status || 'Unpaid';
+          const isPaid = paymentStatus === 'Paid';
+          const isPartial = paymentStatus === 'Partial Paid';
+          const isAdvance = paymentStatus === 'Advance';
+
+          const glowClass = isPaid
+            ? 'ring-2 ring-emerald-500/70 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+            : isPartial
+            ? 'ring-2 ring-amber-500/70 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+            : isAdvance
+            ? 'ring-2 ring-indigo-500/70 shadow-[0_0_12px_rgba(99,102,241,0.4)]'
+            : 'ring-2 ring-rose-500/70 shadow-[0_0_12px_rgba(244,63,94,0.4)]';
+
+          const remainingNum = Number(row.remaining_salary || 0);
+          const remainingTone = remainingNum < 0
+            ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500/30'
+            : remainingNum > 0
+            ? 'text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 border-amber-500/30'
+            : 'text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-800/40 border-slate-200/50';
 
           return (
-            <div key={row.employee_id} className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col gap-3 transition-all active:scale-[0.99]">
-              {/* Top Row: Avatar, Name & Code, Status Badge */}
-              <div className="flex items-center justify-between gap-2.5">
-                <div className="flex items-center gap-3 min-w-0">
+            <div key={row.employee_id} className="mobile-employee-card p-4 rounded-2xl bg-white/85 dark:bg-slate-850/85 backdrop-blur-xl border border-slate-200/80 dark:border-slate-700/80 shadow-md flex flex-col gap-3.5 transition-all">
+              {/* Top Row: Avatar with status glow ring, Name & Code, Status Badge Pill */}
+              <div className="flex items-start justify-between gap-2.5">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="relative shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-xs overflow-hidden border border-white/40">
+                    <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white font-black text-xs flex items-center justify-center overflow-hidden border-2 border-white/60 dark:border-slate-800 transition-all ${glowClass}`}>
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={empName} className="w-full h-full object-cover" />
                       ) : (
-                        initials
+                        <span>{initials}</span>
                       )}
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-slate-900 dark:bg-slate-700 text-white font-extrabold text-[9px] flex items-center justify-center border border-white dark:border-slate-800">
+                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-slate-900 dark:bg-slate-700 text-white font-extrabold text-[9px] flex items-center justify-center border border-white dark:border-slate-800 shadow-xs">
                       {index + 1}
                     </span>
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white truncate tracking-tight">
                       {empName}
                     </h4>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                        {row.employee_code}
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      <span className="text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/90 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-600/50">
+                        {row.employee_code || `EMP-${row.employee_id}`}
                       </span>
                       {row.last_payment_date && (
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                          &bull; {dateLabel(row.last_payment_date)}
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate flex items-center gap-1">
+                          <span>&bull;</span>
+                          <span>{dateLabel(row.last_payment_date)}</span>
                         </span>
                       )}
                     </div>
                   </div>
                 </div>
-                <span className={`salary-status-badge ${row.payment_status.toLowerCase().replaceAll(' ', '-')} shrink-0`}>
-                  {row.payment_status}
+                <span className={`salary-status-badge ${paymentStatus.toLowerCase().replaceAll(' ', '-')} shrink-0 self-start text-[11px] font-black px-2.5 py-1 rounded-full shadow-xs`}>
+                  {paymentStatus}
                 </span>
               </div>
 
               {/* Department & Position Tags */}
-              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 flex-wrap bg-slate-50/70 dark:bg-slate-900/40 px-2.5 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                <span className="font-medium text-slate-700 dark:text-slate-300">{unescapeText(row.department) || 'General Dept'}</span>
+              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 flex-wrap bg-slate-50/80 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{unescapeText(row.department) || 'General Dept'}</span>
                 <span>&bull;</span>
                 <span className="text-slate-600 dark:text-slate-400">{unescapeText(row.position) || 'Employee'}</span>
               </div>
 
               {/* Financial Metrics Grid */}
-              <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/60 dark:border-slate-800/80 text-center">
-                <div>
+              <div className="grid grid-cols-3 gap-2 p-2 rounded-xl bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/90 text-center">
+                <div className="p-1.5 rounded-lg bg-white/70 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50">
                   <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.totalPayable', 'Payable')}</span>
                   <strong className="text-xs font-mono font-black text-slate-900 dark:text-white block mt-0.5">
                     {currency(row.total_payable_salary ?? row.monthly_salary)}
                   </strong>
                 </div>
-                <div>
-                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.paidSalary', 'Paid')}</span>
+                <div className="p-1.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-500/20">
+                  <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">{t('payroll.paidSalary', 'Paid')}</span>
                   <strong className="text-xs font-mono font-black text-emerald-600 dark:text-emerald-400 block mt-0.5">
                     {currency(row.paid_salary)}
                   </strong>
                 </div>
-                <div>
-                  <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">{t('payroll.carryForward', 'Carry Fwd')}</span>
-                  <strong className="text-xs font-mono font-black text-amber-600 dark:text-amber-400 block mt-0.5">
+                <div className={`p-1.5 rounded-lg border ${remainingTone}`}>
+                  <span className="text-[9px] font-extrabold uppercase tracking-wider block opacity-85">{t('payroll.carryForward', 'Carry Fwd')}</span>
+                  <strong className="text-xs font-mono font-black block mt-0.5">
                     {currency(row.remaining_salary)}
                   </strong>
                 </div>
               </div>
 
-              {/* Actions Bar */}
+              {/* Touch-Friendly Action Bar */}
               <div className="flex items-center gap-2 pt-0.5">
                 <button
-                  className="flex-1 min-h-[40px] py-2 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-extrabold rounded-xl shadow-xs flex items-center justify-center gap-1.5 active:scale-97 transition-all"
+                  className="flex-1 min-h-[42px] py-2 px-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 active:scale-[0.97] transition-all cursor-pointer"
                   type="button"
                   onClick={() => onPay(row)}
                 >
-                  <Banknote size={15} />
+                  <Banknote size={16} />
                   <span>{t('payroll.paySalary', 'Pay Salary')}</span>
                 </button>
                 {onEditEmployee && (
                   <button
-                    className="min-h-[40px] min-w-[40px] p-2 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all flex items-center justify-center active:scale-95"
+                    className="min-h-[42px] min-w-[42px] p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200/80 dark:border-slate-700 transition-all flex items-center justify-center active:scale-95 cursor-pointer"
                     type="button"
                     onClick={() => onEditEmployee(row)}
                     title={t('payroll.edit')}
                   >
-                    <Edit size={16} />
+                    <Edit size={16} className="text-indigo-500 dark:text-indigo-400" />
                   </button>
                 )}
                 {onEditSalary && (
                   <button
-                    className="min-h-[40px] min-w-[40px] p-2 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all flex items-center justify-center active:scale-95"
+                    className="min-h-[42px] min-w-[42px] p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200/80 dark:border-slate-700 transition-all flex items-center justify-center active:scale-95 cursor-pointer"
                     type="button"
                     onClick={() => onEditSalary(row)}
                     title={t('payroll.editSalary')}
                   >
-                    <CircleDollarSign size={16} />
+                    <CircleDollarSign size={16} className="text-blue-500 dark:text-blue-400" />
                   </button>
                 )}
                 {onDeleteEmployee && (
                   <button
-                    className="min-h-[40px] min-w-[40px] p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-xl transition-all flex items-center justify-center active:scale-95"
+                    className="min-h-[42px] min-w-[42px] p-2 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-xl border border-rose-200/60 dark:border-rose-900/50 transition-all flex items-center justify-center active:scale-95 cursor-pointer disabled:opacity-50"
                     type="button"
                     disabled={deletingEmployeeId === Number(row.employee_id)}
                     onClick={() => onDeleteEmployee(row)}

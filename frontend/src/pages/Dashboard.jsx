@@ -510,8 +510,11 @@ export default function Dashboard({
               <tbody>
                 {recentTransactions.map((tx) => {
                   const isCashIn = tx.transaction_type === 'cash_in';
-                  const amount = isCashIn ? (tx.cash_in_afn || tx.usd_in) : (tx.cash_out_afn || tx.usd_out);
-                  const isUsd = Boolean(tx.usd_in || tx.usd_out);
+                  const afnAmount = isCashIn 
+                    ? (Number(tx.cash_in_afn) || Number(tx.converted_afn) || 0) 
+                    : (Number(tx.cash_out_afn) || Number(tx.converted_afn) || 0);
+                  const usdAmount = isCashIn ? Number(tx.usd_in || 0) : Number(tx.usd_out || 0);
+
                   return (
                     <tr key={tx.id}>
                       <td className="account-cell">
@@ -525,7 +528,16 @@ export default function Dashboard({
                         </span>
                       </td>
                       <td className={`amount-cell text-right ${isCashIn ? 'amount-in' : 'amount-out'}`}>
-                        {signedCurrency(amount, tx.transaction_type, isUsd ? 'USD' : 'AFN')}
+                        <div className="flex flex-col items-end">
+                          <span className="font-mono font-black">
+                            {signedCurrency(afnAmount, tx.transaction_type, 'AFN')}
+                          </span>
+                          {usdAmount > 0 && (
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              ≈ ${usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <span className="badge-status">
@@ -551,10 +563,10 @@ export default function Dashboard({
           <div className="recent-mobile-cards mt-3">
             {recentTransactions.map((tx) => {
               const isCashIn = tx.transaction_type === 'cash_in';
-              const isUsd = Boolean(tx.usd_in || tx.usd_out);
-              const amount = isCashIn
-                ? (tx.cash_in_afn || tx.usd_in || 0)
-                : (tx.cash_out_afn || tx.usd_out || 0);
+              const afnAmount = isCashIn 
+                ? (Number(tx.cash_in_afn) || Number(tx.converted_afn) || 0) 
+                : (Number(tx.cash_out_afn) || Number(tx.converted_afn) || 0);
+              const usdAmount = isCashIn ? Number(tx.usd_in || 0) : Number(tx.usd_out || 0);
 
               return (
                 <div
@@ -585,9 +597,14 @@ export default function Dashboard({
                     <span className={`font-mono font-black text-xs sm:text-sm block ${
                       isCashIn ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                     }`}>
-                      {signedCurrency(amount, tx.transaction_type, isUsd ? 'USD' : 'AFN')}
+                      {signedCurrency(afnAmount, tx.transaction_type, 'AFN')}
                     </span>
-                    <span className={`text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${
+                    {usdAmount > 0 && (
+                      <span className="text-[9.5px] font-mono text-slate-400 block">
+                        ≈ ${usdAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                      </span>
+                    )}
+                    <span className={`text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-md mt-0.5 inline-block ${
                       isCashIn ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300'
                     }`}>
                       {isCashIn ? 'Cash In' : 'Cash Out'}

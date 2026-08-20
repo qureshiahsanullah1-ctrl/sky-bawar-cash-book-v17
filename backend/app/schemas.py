@@ -348,7 +348,7 @@ class EmployeeCreate(BaseModel):
     avatar_url: str = Field(
         default="", validation_alias=AliasChoices("avatar_url", "avatarUrl", "avatar")
     )
-    status: Literal["active", "inactive"] = "active"
+    status: Literal["active", "inactive", "on_leave", "terminated"] = "active"
     notes: str = ""
 
     @field_validator(
@@ -384,7 +384,7 @@ class EmployeeUpdate(BaseModel):
     avatar_url: Optional[str] = Field(
         default=None, validation_alias=AliasChoices("avatar_url", "avatarUrl", "avatar")
     )
-    status: Optional[Literal["active", "inactive"]] = None
+    status: Optional[Literal["active", "inactive", "on_leave", "terminated"]] = None
     notes: Optional[str] = None
 
     @field_validator(

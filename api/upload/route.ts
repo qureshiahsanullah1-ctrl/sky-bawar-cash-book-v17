@@ -9,10 +9,28 @@ const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
 export async function POST(req: Request) {
   try {
-    if (!privateKey || !clientEmail || !folderId) {
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+
+    if (!file) {
       return new Response(
-        JSON.stringify({ error: 'Missing cloud-storage parameters.' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'No media payload detected.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!privateKey || !clientEmail || !folderId) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const base64 = buffer.toString('base64');
+      const mime = file.type || 'image/jpeg';
+      const dataUrl = `data:${mime};base64,${base64}`;
+      return new Response(
+        JSON.stringify({
+          success: true,
+          url: dataUrl,
+          filename: file.name,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -23,17 +41,6 @@ export async function POST(req: Request) {
       scopes: SCOPES,
     });
     const drive = google.drive({ version: 'v3', auth });
-
-    // Extract Form Data
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
-
-    if (!file) {
-      return new Response(
-        JSON.stringify({ error: 'No media payload detected.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
 
     // Convert File ArrayBuffer into a node readable stream
     const buffer = Buffer.from(await file.arrayBuffer());

@@ -15,17 +15,32 @@ from .utils import _normalize_text, _amount, _date_value, _datetime_value, _firs
 
 
 def list_accounts(db: Session) -> list[models.Account]:
-    return db.query(models.Account).order_by(models.Account.name.asc()).all()
+    return (
+        db.query(models.Account)
+        .filter(or_(models.Account.is_deleted.is_(False), models.Account.is_deleted.is_(None)))
+        .order_by(models.Account.name.asc())
+        .all()
+    )
 
 
 def get_account(db: Session, account_id: int) -> models.Account | None:
-    return db.query(models.Account).filter(models.Account.id == account_id).first()
+    return (
+        db.query(models.Account)
+        .filter(
+            models.Account.id == account_id,
+            or_(models.Account.is_deleted.is_(False), models.Account.is_deleted.is_(None)),
+        )
+        .first()
+    )
 
 
 def get_account_by_name(db: Session, name: str) -> models.Account | None:
     return (
         db.query(models.Account)
-        .filter(func.lower(models.Account.name) == name.lower())
+        .filter(
+            func.lower(models.Account.name) == name.lower(),
+            or_(models.Account.is_deleted.is_(False), models.Account.is_deleted.is_(None)),
+        )
         .first()
     )
 

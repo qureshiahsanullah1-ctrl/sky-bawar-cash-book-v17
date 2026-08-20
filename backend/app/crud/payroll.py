@@ -28,7 +28,10 @@ def create_employee(db: Session, payload: schemas.EmployeeCreate) -> models.Empl
     name = _text(payload.full_name)
     existing = (
         db.query(models.Employee)
-        .filter(func.lower(models.Employee.full_name) == name.lower())
+        .filter(
+            func.lower(models.Employee.full_name) == name.lower(),
+            models.Employee.is_deleted == False,
+        )
         .first()
     )
     if existing:
@@ -39,8 +42,8 @@ def create_employee(db: Session, payload: schemas.EmployeeCreate) -> models.Empl
         .filter(func.lower(models.Account.name) == name.lower())
         .first()
     )
-    if account and account.employee:
-        raise ValueError("This account is already linked to an employee")
+    if account and account.employee and not account.employee.is_deleted:
+        raise ValueError("This account is already linked to an active employee")
     if not account:
         account = models.Account(
             name=name, account_type="worker", phone=_text(payload.phone)
@@ -48,6 +51,7 @@ def create_employee(db: Session, payload: schemas.EmployeeCreate) -> models.Empl
         db.add(account)
         db.flush()
     else:
+        account.is_deleted = False
         account.account_type = "worker"
         account.phone = _text(payload.phone) or account.phone
 

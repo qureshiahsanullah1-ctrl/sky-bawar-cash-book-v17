@@ -23,9 +23,13 @@ def normalize_database_url(url: str) -> str:
 
 
 def _check_is_vercel() -> bool:
-    if os.getenv("VERCEL") in ("1", "true", "True") or os.getenv("VERCEL_ENV") or os.getenv("VERCEL_REGION"):
-        return True
-    if os.name != "nt" and os.path.exists("/tmp"):
+    if (
+        os.getenv("VERCEL") in ("1", "true", "True")
+        or os.getenv("VERCEL_ENV") is not None
+        or os.getenv("VERCEL_REGION") is not None
+        or os.getenv("NOW_REGION") is not None
+        or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
+    ):
         return True
     return False
 

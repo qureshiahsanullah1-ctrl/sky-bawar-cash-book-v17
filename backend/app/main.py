@@ -12,36 +12,43 @@ import asyncio
 import os
 import shutil
 
-from fastapi import FastAPI, Header, Request, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import models
-from .auth_dependencies import ALGORITHM, SECRET_KEY
-from .config import APP_NAME, FRONTEND_ORIGINS, FRONTEND_ORIGIN_REGEX
+from . import crud, models, models_plastic  # noqa: F401
+from .auth_dependencies import ALGORITHM, SECRET_KEY, require_administrator_request
+from .config import APP_NAME
 from .database import (
     Base,
     SessionLocal,
+    _check_is_vercel,
     engine,
     ensure_company_schema,
     ensure_payroll_schema,
     ensure_sqlite_schema,
     ensure_user_schema,
+    get_db,
 )
 from .routes import (
     accounts,
     auth,
     backup,
     bawar_star,
+    cashbook,
     employees,
+    iot_telemetry,
     neon_auth,
+    plastic_erp,
     reports,
     settings,
+    system,
     transactions,
     transport,
 )
@@ -71,7 +78,7 @@ async def database_backup_task():
         await asyncio.sleep(24 * 60 * 60)
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     """Seed default settings on application startup and start background tasks."""
     db = SessionLocal()
     try:
@@ -83,13 +90,16 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     
-    # Start backup task
-    backup_task = asyncio.create_task(database_backup_task())
+    # Start backup task only in persistent/non-serverless environments
+    backup_task = None
+    if not _check_is_vercel():
+        backup_task = asyncio.create_task(database_backup_task())
     
     yield
     
-    # Cancel backup task on shutdown
-    backup_task.cancel()
+    # Cancel backup task on shutdown if active
+    if backup_task:
+        backup_task.cancel()
 
 
 app = FastAPI(title=APP_NAME, lifespan=lifespan)
@@ -113,16 +123,25 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com data: blob:; "
+            "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: blob: https:; "
+            "connect-src 'self' https: http: ws: wss:;"
+        )
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
 
-Base.metadata.create_all(bind=engine)
-ensure_sqlite_schema()
-ensure_user_schema()
-ensure_payroll_schema()
-ensure_company_schema()
+try:
+    getattr(Base, "metadata").create_all(bind=engine)
+    ensure_sqlite_schema()
+    ensure_user_schema()
+    ensure_payroll_schema()
+    ensure_company_schema()
+except Exception as schema_exc:
+    logger.warning("Database schema initialization notice: %s", schema_exc)
 
 
 @app.exception_handler(RequestValidationError)
@@ -250,6 +269,21 @@ def health(
     x_session_token: str | None = Header(default=None),
 ):
     """Retrieve service health, check DB, and show current user session."""
+    is_cloud = bool(
+        os.environ.get("VERCEL")
+        or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+        or os.environ.get("K_SERVICE")
+    )
+    port_val = str(request.url.port) if request and request.url.port else "N/A"
+
+    db_engine_name = "SQLite"
+    try:
+        url_str = str(engine.url)
+        if "postgres" in url_str or "pg8000" in url_str:
+            db_engine_name = "PostgreSQL"
+    except Exception:
+        pass
+
     payload = {
         "backend": "online",
         "database": "unknown",
@@ -257,7 +291,9 @@ def health(
         "auth": "unknown",
         "status": "ok",
         "version": "2.1.0",
-        "port": request.url.port or "N/A" if request else "N/A",
+        "port": port_val,
+        "environment": "Vercel Serverless" if os.environ.get("VERCEL") else ("Cloud Production" if is_cloud else "Local Development"),
+        "database_engine": db_engine_name,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "currentUser": None,
     }
@@ -283,6 +319,7 @@ def health(
                         payload["currentUser"] = {
                             "id": user.id,
                             "username": user.username,
+                            "full_name": user.full_name or user.username,
                             "role": user.role,
                             "assigned_group_id": user.assigned_group_id,
                             "assigned_branch_id": user.assigned_branch_id,
@@ -337,26 +374,10 @@ app.include_router(auth.router)
 app.include_router(neon_auth.router)
 app.include_router(bawar_star.router)
 app.include_router(transport.router)
-
-from .routes import plastic_erp, iot_telemetry
-
 app.include_router(plastic_erp.router)
 app.include_router(iot_telemetry.router)
-
-
-from fastapi import Depends, File, HTTPException, UploadFile
-from sqlalchemy.orm import Session
-from . import crud
-from .auth_dependencies import require_administrator_request
-from .database import SessionLocal
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+app.include_router(cashbook.router)
+app.include_router(system.router)
 
 
 @app.post(
@@ -386,13 +407,21 @@ async def direct_import_master_excel(
         ) from error
 
 
-import shutil
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 
-uploads_dir = Path("uploads")
-uploads_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+is_vercel_env = _check_is_vercel()
+uploads_dir = Path("/tmp/uploads" if is_vercel_env else "uploads")
+try:
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
+
+if uploads_dir.exists():
+    try:
+        app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    except Exception as mount_err:
+        logger.warning("StaticFiles /uploads mount notice: %s", mount_err)
 
 
 @app.post("/api/upload")
@@ -404,7 +433,18 @@ async def upload_media_file(file: UploadFile = File(...)):
     filename = f"{uuid.uuid4().hex}{ext}"
     file_path = uploads_dir / filename
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    return {"url": f"/uploads/{filename}", "filename": filename}
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        return {"url": f"/uploads/{filename}", "filename": filename}
+    except Exception as write_err:
+        logger.warning("Filesystem upload fallback: %s", write_err)
+        try:
+            file.file.seek(0)
+            contents = await file.read()
+            import base64
+            mime = file.content_type or "image/jpeg"
+            data_url = f"data:{mime};base64,{base64.b64encode(contents).decode('utf-8')}"
+            return {"url": data_url, "filename": filename}
+        except Exception as read_err:
+            raise HTTPException(status_code=500, detail=f"Upload failed: {read_err}")

@@ -1,8 +1,8 @@
+# cspell:ignore CUST Aziz Yusuf Shahab SHAHAB
 from __future__ import annotations
 
 import datetime
-from typing import Any, Optional
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -13,17 +13,17 @@ router = APIRouter(prefix="/api/v1/cashbook", tags=["Enterprise Ledgers"])
 
 
 class PaymentCollectionInput(BaseModel):
-    company_id: str = Field(..., example="CUST-BAWAR-01")
+    company_id: str = Field(..., json_schema_extra={"example": "CUST-BAWAR-01"})
     branch_id: str = Field(default="KABUL-PLANT-01")
     amount_afn: float = Field(
-        ..., gt=0, example=25000.00, description="Amount paid in Afghanis"
+        ..., gt=0, json_schema_extra={"example": 25000.00}, description="Amount paid in Afghanis"
     )
     payment_method: str = Field(
         default="CASH",
-        example="CASH",
+        json_schema_extra={"example": "CASH"},
         description="CASH, PREFORM_TRADE, or BANK_TRANSFER",
     )
-    courier_note: str = Field(..., example="Hand delivered by Aziz Ahmad")
+    courier_note: str = Field(..., json_schema_extra={"example": "Hand delivered by Aziz Ahmad"})
 
 
 @router.post("/record-payment")
@@ -130,7 +130,7 @@ def record_incoming_customer_payment(
             new_balance_due = base_balance - payload.amount_afn
 
         db.commit()
-    except Exception as e:
+    except Exception:
         db.rollback()
         # Fallback for dev/testing when schema differs
         new_balance_due = base_balance - payload.amount_afn

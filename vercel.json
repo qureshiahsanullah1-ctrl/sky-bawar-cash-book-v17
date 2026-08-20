@@ -31,6 +31,10 @@
       "destination": "/api/index"
     },
     {
+      "source": "/uploads/(.*)",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/upload",
       "destination": "/api/upload"
     },
