@@ -89,7 +89,17 @@ def update_account(
 
 
 def delete_account(db: Session, account: models.Account) -> None:
-    account.is_deleted = True
-    db.commit()
+    try:
+        account.is_deleted = True
+        account.updated_at = utcnow()
+        db.commit()
+    except Exception:
+        db.rollback()
+        try:
+            db.delete(account)
+            db.commit()
+        except Exception as err:
+            db.rollback()
+            raise err
 
 

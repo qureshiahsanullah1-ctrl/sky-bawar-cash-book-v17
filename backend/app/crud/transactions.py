@@ -352,7 +352,17 @@ def update_transaction(
 
 
 def delete_transaction(db: Session, transaction: models.Transaction) -> None:
-    transaction.is_deleted = True
-    db.commit()
+    try:
+        transaction.is_deleted = True
+        transaction.updated_at = utcnow()
+        db.commit()
+    except Exception:
+        db.rollback()
+        try:
+            db.delete(transaction)
+            db.commit()
+        except Exception as err:
+            db.rollback()
+            raise err
 
 
