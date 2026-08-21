@@ -34,10 +34,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Initialize OAuth JWT client
-    const auth = new google.auth.JWT({
-      email: clientEmail,
-      key: privateKey,
+    // Initialize OAuth GoogleAuth client
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey,
+      },
       scopes: SCOPES,
     });
     const drive = google.drive({ version: 'v3', auth });

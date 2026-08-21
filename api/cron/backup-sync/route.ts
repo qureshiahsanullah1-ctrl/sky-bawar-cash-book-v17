@@ -40,9 +40,11 @@ export async function GET(req: Request) {
     const systemBackupPayload = await apiResponse.json();
 
     // 2. Initialize Google Drive Client Connection
-    const auth = new google.auth.JWT({
-      email: clientEmail,
-      key: privateKey,
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey,
+      },
       scopes: SCOPES,
     });
     const drive = google.drive({ version: 'v3', auth });
