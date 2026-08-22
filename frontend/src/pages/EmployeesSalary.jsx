@@ -7,9 +7,11 @@ import { currency, csvCell, dateLabel, jalaliDateLabel, jalaliFullDateLabel, jal
 import { calculatePayrollMetrics, employeeSalarySnapshot } from '../utils/payroll';
 import BaseModal from '../components/BaseModal';
 import EmployeeLedgerModal from '../components/EmployeeLedgerModal';
+import SalaryPrintModal from '../components/SalaryPrintModal';
 import EditableCombobox from '../components/EditableCombobox';
 import { DEFAULT_POSITIONS, DEFAULT_DEPARTMENTS } from '../data/employeeOptions';
 import { useCompany } from '../context/CompanyContext';
+
 
 function unescapeText(str) {
   if (typeof str !== 'string') return String(str ?? '');
@@ -133,10 +135,12 @@ export default function EmployeesSalary({
   const [filters, setFilters] = useState({ search: '', department: '', status: '', ...currentMonthYear() });
   const [payingRow, setPayingRow] = useState(null);
   const [editingSalaryRow, setEditingSalaryRow] = useState(null);
-  const [salaryChanges, setSalaryChanges] = useState([]);
   const [deletingEmployeeId, setDeletingEmployeeId] = useState(null);
   const [uploadingAvatarId, setUploadingAvatarId] = useState(null);
   const [selectedLedgerEmployee, setSelectedLedgerEmployee] = useState(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [defaultPrintMode, setDefaultPrintMode] = useState('all');
+
 
   const salaryTransactions = useMemo(
     () => transactions.filter((transaction) => transaction.category === 'salary' && transaction.transaction_type === 'cash_out'),
@@ -333,13 +337,9 @@ export default function EmployeesSalary({
     partial_paid_employees: 0
   };
 
-  function printReport() {
-    const html = salaryReportHtml({ rows, summary, filters, companyName, companyLogo });
-    const printWindow = window.open('', '_blank', 'width=1200,height=800');
-    if (!printWindow) return;
-    printWindow.document.write(html);
-    printWindow.document.close();
-    // Print is triggered by the script inside the HTML after the logo loads
+  function printReport(mode = 'all') {
+    setDefaultPrintMode(mode);
+    setIsPrintModalOpen(true);
   }
 
   function exportExcel() {
@@ -376,11 +376,21 @@ export default function EmployeesSalary({
           <h3>{t('payroll.title')}</h3>
           <p>{t('payroll.description')}</p>
         </div>
-        <div className="salary-page-actions">
+        <div className="salary-page-actions flex items-center gap-2 flex-wrap">
+          <button 
+            className="ghost-btn flex items-center gap-1.5 border border-slate-200 dark:border-slate-700" 
+            type="button" 
+            onClick={() => printReport('all')}
+            title="Open Print Options & Custom Reports"
+          >
+            <Printer size={16} />
+            <span>Print Reports (چاپ)</span>
+          </button>
           <button className="ghost-btn" type="button" onClick={() => setActiveTab('Employees')}>{t('payroll.addEmployee')}</button>
           <button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.salaryReport')}</button>
         </div>
       </header>
+
 
       <nav className="salary-tabs" aria-label="Employees and salary sections">
         {tabs.map((tab) => {
@@ -867,6 +877,19 @@ export default function EmployeesSalary({
           }}
         />
       )}
+
+      <SalaryPrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        rows={rows}
+        transactions={transactions}
+        summary={summary}
+        filters={filters}
+        departments={departments}
+        companyName={companyName}
+        companyLogo={companyLogo}
+        currencyCode={currencyCode}
+      />
     </section>
   );
 }
@@ -876,14 +899,61 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
   const years = Array.from({ length: 6 }, (_, index) => new Date().getFullYear() - 3 + index);
   return (
     <article className="glass-card salary-panel salary-report-workspace">
-      <div className="salary-panel-heading">
-        <div><p className="eyebrow">{t('payroll.monthlyPayroll')}</p><h3>{t('payroll.salaryReport')}</h3></div>
-        <div className="salary-report-actions">
-          <button className="ghost-btn" type="button" onClick={onPrint}><Printer size={18} /> Print Report</button>
-          <button className="ghost-btn" type="button" onClick={onPdf}><Download size={18} /> Download PDF</button>
-          <button className="ghost-btn" type="button" onClick={onExcel}><FileSpreadsheet size={18} /> Export Excel</button>
+      <div className="salary-panel-heading flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <p className="eyebrow">{t('payroll.monthlyPayroll')}</p>
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            {t('payroll.salaryReport')}
+          </h3>
+        </div>
+        <div className="salary-report-actions flex flex-wrap items-center gap-2">
+          <button 
+            className="primary-btn flex items-center gap-1.5 py-2 px-3.5" 
+            type="button" 
+            onClick={() => onPrint('all')}
+            title="Open Print Options & Custom Filters"
+          >
+            <Printer size={15} /> 
+            <span>Print Options (چاپ راپور)</span>
+          </button>
+          <button 
+            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            type="button" 
+            onClick={() => onPrint('salaries_only')} 
+            title="Print employee list with contracted base salaries only"
+          >
+            <Banknote size={14} className="text-emerald-500" />
+            <span>Salaries Only (فقط معاشات)</span>
+          </button>
+          <button 
+            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            type="button" 
+            onClick={() => onPrint('payments_only')} 
+            title="Print record of all disbursed salary payments (How much paid)"
+          >
+            <CheckCircle2 size={14} className="text-indigo-500" />
+            <span>How Much Paid (ورکړل شوي)</span>
+          </button>
+          <button 
+            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            type="button" 
+            onClick={() => onPrint('unpaid_only')} 
+            title="Print list of employees with outstanding/unpaid balances only"
+          >
+            <Clock3 size={14} className="text-amber-500" />
+            <span>Unpaid Only (پاتې طلبات)</span>
+          </button>
+          <button 
+            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            type="button" 
+            onClick={onExcel}
+          >
+            <FileSpreadsheet size={14} className="text-emerald-600" /> 
+            <span>Export Excel</span>
+          </button>
         </div>
       </div>
+
       <div className="salary-report-summary-grid">
         <SalaryMiniStat label={t('payroll.totalEmployees')} value={summary.total_employees} />
         <SalaryMiniStat label={t('payroll.totalPayable')} value={currency(summary.total_payable_salary ?? summary.total_monthly_salary)} />
