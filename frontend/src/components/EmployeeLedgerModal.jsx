@@ -19,7 +19,8 @@ import {
 } from 'lucide-react';
 import BaseModal from './BaseModal';
 import { api } from '../services/api';
-import { currency as formatCurrency, dateLabel, csvCell, resolveAvatarUrl } from '../utils/format';
+import { currency as formatCurrency, dateLabel, jalaliDateLabel, jalaliFullDateLabel, jalaliPeriodLabel, dualDateLabel, csvCell, resolveAvatarUrl } from '../utils/format';
+import GoogleIcon from './GoogleIcon';
 import { generateEmployeeLedgerPrintHtml } from '../utils/employeePrint';
 
 export default function EmployeeLedgerModal({
@@ -208,6 +209,27 @@ export default function EmployeeLedgerModal({
     }
   };
 
+  const getBadgeIcon = (type) => {
+    switch (type) {
+      case 'salary_accrual':
+        return 'event_available';
+      case 'salary_payment':
+        return 'payments';
+      case 'bonus':
+        return 'trending_up';
+      case 'deduction':
+        return 'trending_down';
+      case 'advance':
+        return 'receipt_long';
+      case 'adjustment':
+        return 'tune';
+      case 'reversal':
+        return 'history';
+      default:
+        return 'description';
+    }
+  };
+
   return (
     <BaseModal
       isOpen={true}
@@ -243,7 +265,12 @@ export default function EmployeeLedgerModal({
                 {employee.department && <span className="flex items-center gap-1.5"><Building2 className="w-4 h-4 text-indigo-400" /> {employee.department}</span>}
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-emerald-400" />
-                  {employee.joining_date ? `Joined: ${dateLabel(employee.joining_date)}` : 'No Joining Date'}
+                  {employee.joining_date ? (
+                    <span>
+                      Joined: <strong className="text-slate-200">{dateLabel(employee.joining_date)}</strong>{' '}
+                      <span className="text-indigo-400 font-mono text-xs">({jalaliFullDateLabel(employee.joining_date)})</span>
+                    </span>
+                  ) : 'No Joining Date'}
                 </span>
               </div>
             </div>
@@ -452,52 +479,90 @@ export default function EmployeeLedgerModal({
             <table className="w-full text-left text-xs text-slate-300 border-collapse">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 uppercase text-[11px] font-semibold tracking-wider">
-                  <th className="py-3.5 px-3.5 whitespace-nowrap min-w-[105px]">Date</th>
-                  <th className="py-3.5 px-3 whitespace-nowrap min-w-[85px]">Period</th>
-                  <th className="py-3.5 px-3 whitespace-nowrap min-w-[125px]">Entry Type</th>
-                  <th className="py-3.5 px-4 min-w-[200px]">Description</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap min-w-[110px]">Accrued</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap min-w-[110px]">Payment</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap min-w-[95px]">Bonus</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap min-w-[110px]">Deduction</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap min-w-[120px]">Adjustment</th>
-                  <th className="py-3.5 px-4 text-right whitespace-nowrap min-w-[125px]">Running Balance</th>
-                  <th className="py-3.5 px-3 text-center whitespace-nowrap min-w-[80px]">Reference</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap min-w-[125px]">
+                    <div className="flex items-center gap-1">
+                      <GoogleIcon name="calendar_month" size={13} className="text-blue-400" />
+                      <span>Date / تاریخ</span>
+                    </div>
+                  </th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[95px]">Period / دوره</th>
+                  <th className="py-3 px-3 whitespace-nowrap min-w-[125px]">Entry Type / نوعیت</th>
+                  <th className="py-3 px-4 min-w-[200px]">Description / تفصیل</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[105px]">Accrued</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[105px]">Payment</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[85px]">Bonus</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[95px]">Deduction</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap min-w-[105px]">Adjustment</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap min-w-[120px]">Balance / باقیمانده</th>
+                  <th className="py-3 px-3 text-center whitespace-nowrap min-w-[75px]">Ref</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {ledgerData.entries.map((entry) => (
                   <tr key={entry.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-2.5 px-3 font-medium text-slate-200 whitespace-nowrap">{dateLabel(entry.date)}</td>
-                    <td className="py-2.5 px-2.5 font-mono text-slate-400 whitespace-nowrap">{entry.period}</td>
-                    <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span className={`px-2.5 py-0.5 rounded-md border text-[10px] font-bold uppercase inline-block whitespace-nowrap ${getBadgeStyle(entry.entry_type)}`}>
-                        {entry.entry_type.replace('_', ' ')}
+                    <td className="py-2.5 px-3.5 whitespace-nowrap">
+                      <div className="font-bold text-slate-200">{dateLabel(entry.date)}</div>
+                      <div className="text-[10.5px] font-mono text-indigo-400 font-semibold mt-0.5 flex items-center gap-1">
+                        <span>{jalaliDateLabel(entry.date)}</span>
+                        <span className="text-slate-500 font-normal">({jalaliFullDateLabel(entry.date).split(' ')[1] || ''})</span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <div className="font-mono text-slate-300 font-bold">{entry.period}</div>
+                      <div className="text-[10px] text-slate-400">{jalaliPeriodLabel(entry.period)}</div>
+                    </td>
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-lg border text-[10.5px] font-bold uppercase inline-flex items-center gap-1.5 whitespace-nowrap ${getBadgeStyle(entry.entry_type)}`}>
+                        <GoogleIcon name={getBadgeIcon(entry.entry_type)} size={13} filled />
+                        <span>{entry.entry_type.replace('_', ' ')}</span>
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 text-slate-300 max-w-[260px] truncate" title={entry.description}>{entry.description}</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium text-blue-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-4 text-slate-300 max-w-[260px] truncate" title={entry.description}>{entry.description}</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-blue-400 whitespace-nowrap tabular-nums">
                       {(entry.salary_accrued || entry.debit) > 0 ? formatCurrency(entry.salary_accrued || entry.debit, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono font-medium text-emerald-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-400 whitespace-nowrap tabular-nums">
                       {(entry.payment || entry.credit) > 0 ? formatCurrency(entry.payment || entry.credit, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono text-teal-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-teal-400 whitespace-nowrap tabular-nums">
                       {entry.bonus ? formatCurrency(entry.bonus, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono text-rose-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-400 whitespace-nowrap tabular-nums">
                       {entry.deduction ? formatCurrency(entry.deduction, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono text-amber-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-400 whitespace-nowrap tabular-nums">
                       {entry.adjustment ? (entry.adjustment > 0 ? `+${formatCurrency(entry.adjustment, entry.currency)}` : formatCurrency(entry.adjustment, entry.currency)) : '-'}
                     </td>
-                    <td className={`py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap tabular-nums ${entry.running_balance < 0 ? 'text-amber-400' : 'text-slate-100'}`}>
+                    <td className={`py-2.5 px-4 text-right font-mono font-black whitespace-nowrap tabular-nums ${entry.running_balance < 0 ? 'text-amber-400' : 'text-slate-100'}`}>
                       {formatCurrency(entry.running_balance, entry.currency)}
                     </td>
-                    <td className="py-2.5 px-2.5 text-center font-mono text-slate-500 text-[10px] whitespace-nowrap">{entry.reference || '-'}</td>
+                    <td className="py-2.5 px-3 text-center font-mono text-slate-400 text-[10.5px] whitespace-nowrap">{entry.reference || '-'}</td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="bg-slate-900/90 border-t-2 border-slate-700 font-bold text-xs">
+                <tr>
+                  <td colSpan="4" className="py-3 px-3.5 text-slate-200 uppercase tracking-wider font-extrabold text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <GoogleIcon name="analytics" size={15} className="text-indigo-400" />
+                      <span>Total Summary ({ledgerData.entries.length} entries)</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-black text-blue-400 tabular-nums">
+                    {formatCurrency(ledgerData.summary?.total_accrued || 0, selectedCurrency)}
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-black text-emerald-400 tabular-nums">
+                    {formatCurrency(ledgerData.summary?.total_paid || 0, selectedCurrency)}
+                  </td>
+                  <td colSpan="3"></td>
+                  <td className="py-3 px-4 text-right font-mono font-black text-white tabular-nums text-sm">
+                    {formatCurrency(ledgerData.summary?.outstanding_balance || 0, selectedCurrency)}
+                  </td>
+                  <td className="py-3 px-3 text-center">
+                    <GoogleIcon name="check_circle" size={14} className="text-emerald-400 inline" />
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

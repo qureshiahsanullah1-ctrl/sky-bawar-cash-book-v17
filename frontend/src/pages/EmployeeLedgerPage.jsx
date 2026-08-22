@@ -24,7 +24,8 @@ import {
   Filter
 } from 'lucide-react';
 import { api } from '../services/api';
-import { currency as formatCurrency, dateLabel, csvCell, resolveAvatarUrl } from '../utils/format';
+import { currency as formatCurrency, dateLabel, jalaliDateLabel, jalaliFullDateLabel, jalaliPeriodLabel, dualDateLabel, csvCell, resolveAvatarUrl } from '../utils/format';
+import GoogleIcon from '../components/GoogleIcon';
 import BaseModal from '../components/BaseModal';
 import PaySalaryModal from '../components/PaySalaryModal';
 
@@ -218,6 +219,27 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
     }
   };
 
+  const getBadgeIcon = (entryType) => {
+    switch (entryType) {
+      case 'salary_accrual':
+        return 'event_available';
+      case 'salary_payment':
+        return 'payments';
+      case 'bonus':
+        return 'trending_up';
+      case 'deduction':
+        return 'trending_down';
+      case 'advance':
+        return 'receipt_long';
+      case 'adjustment':
+        return 'tune';
+      case 'reversal':
+        return 'history';
+      default:
+        return 'description';
+    }
+  };
+
   const displayedEntries = useMemo(() => {
     if (!ledgerData?.entries) return [];
     let list = [...ledgerData.entries];
@@ -234,6 +256,23 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
     }
     return list;
   }, [ledgerData?.entries, periodFilter, entryTypeFilter, sortOrder]);
+
+  const totals = useMemo(() => {
+    let accrued = 0;
+    let payment = 0;
+    let bonus = 0;
+    let deduction = 0;
+    let adjustment = 0;
+
+    for (const e of displayedEntries) {
+      accrued += Number(e.salary_accrued || e.debit || 0);
+      payment += Number(e.payment || e.credit || 0);
+      bonus += Number(e.bonus || 0);
+      deduction += Number(e.deduction || 0);
+      adjustment += Number(e.adjustment || 0);
+    }
+    return { accrued, payment, bonus, deduction, adjustment };
+  }, [displayedEntries]);
 
   function exportCsv() {
     if (!displayedEntries.length) return;
@@ -583,38 +622,54 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800/90 backdrop-blur-xs border-b border-slate-200 dark:border-slate-700 text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-                <th className="py-2.5 px-2.5 whitespace-nowrap min-w-[90px]">{t('employeeLedger.date') || 'Date'}</th>
-                <th className="py-2.5 px-2 whitespace-nowrap min-w-[70px]">{t('employeeLedger.period') || 'Period'}</th>
-                <th className="py-2.5 px-2 whitespace-nowrap min-w-[110px]">{t('employeeLedger.entryType') || 'Entry Type'}</th>
-                <th className="py-2.5 px-3 min-w-[170px]">{t('employeeLedger.description') || 'Description'}</th>
-                <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[95px]">{t('employeeLedger.accrued') || 'Accrued'}</th>
-                <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[95px]">{t('employeeLedger.payment') || 'Payment'}</th>
-                <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[75px]">{t('employeeLedger.bonus') || 'Bonus'}</th>
+                <th className="py-2.5 px-3 whitespace-nowrap min-w-[125px]">
+                  <div className="flex items-center gap-1">
+                    <GoogleIcon name="calendar_month" size={13} className="text-blue-500" />
+                    <span>{t('employeeLedger.date') || 'Date / تاریخ'}</span>
+                  </div>
+                </th>
+                <th className="py-2.5 px-2.5 whitespace-nowrap min-w-[95px]">{t('employeeLedger.period') || 'Period / دوره'}</th>
+                <th className="py-2.5 px-2.5 whitespace-nowrap min-w-[125px]">{t('employeeLedger.entryType') || 'Entry Type / نوعیت'}</th>
+                <th className="py-2.5 px-3 min-w-[180px]">{t('employeeLedger.description') || 'Description / تفصیل'}</th>
+                <th className="py-2.5 px-2.5 text-right whitespace-nowrap min-w-[100px]">{t('employeeLedger.accrued') || 'Accrued'}</th>
+                <th className="py-2.5 px-2.5 text-right whitespace-nowrap min-w-[100px]">{t('employeeLedger.payment') || 'Payment'}</th>
+                <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[80px]">{t('employeeLedger.bonus') || 'Bonus'}</th>
                 <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[90px]">{t('employeeLedger.deduction') || 'Deduction'}</th>
                 <th className="py-2.5 px-2 text-right whitespace-nowrap min-w-[95px]">{t('employeeLedger.adjustment') || 'Adjustment'}</th>
-                <th className="py-2.5 px-2.5 text-right whitespace-nowrap min-w-[105px]">{t('employeeLedger.balance') || 'Balance'}</th>
-                <th className="py-2.5 px-2 text-center whitespace-nowrap min-w-[65px]">{t('employeeLedger.reference') || 'Reference'}</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap min-w-[115px]">{t('employeeLedger.balance') || 'Balance / باقیمانده'}</th>
+                <th className="py-2.5 px-2.5 text-center whitespace-nowrap min-w-[70px]">{t('employeeLedger.reference') || 'Ref'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
               {displayedEntries.length === 0 ? (
                 <tr>
-                  <td colSpan="11" className="py-10 text-center text-slate-500 font-medium">
-                    {t('employeeLedger.noEntriesFound') || 'No ledger entries found matching your filters.'}
+                  <td colSpan="11" className="py-12 text-center text-slate-500 font-medium">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <GoogleIcon name="folder_off" size={32} className="text-slate-400" />
+                      <span>{t('employeeLedger.noEntriesFound') || 'No ledger entries found matching your filters.'}</span>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 displayedEntries.map((entry) => (
-                  <tr key={entry.id} className="even:bg-slate-50/40 dark:even:bg-slate-900/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors border-b border-slate-200/50 dark:border-slate-800/50">
-                    <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap" title={dateLabel(entry.date)}>
-                      {dateLabel(entry.date)}
-                    </td>
-                    <td className="py-2.5 px-2.5 text-slate-600 dark:text-slate-400 font-mono font-medium whitespace-nowrap">
-                      {entry.period}
+                  <tr key={entry.id} className="even:bg-slate-50/40 dark:even:bg-slate-900/40 hover:bg-blue-50/40 dark:hover:bg-slate-800/60 transition-colors border-b border-slate-200/50 dark:border-slate-800/50">
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <div className="font-bold text-slate-900 dark:text-slate-100">{dateLabel(entry.date)}</div>
+                      <div className="text-[10.5px] font-mono text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5 flex items-center gap-1">
+                        <span>{jalaliDateLabel(entry.date)}</span>
+                        <span className="text-slate-400 font-normal">({jalaliFullDateLabel(entry.date).split(' ')[1] || ''})</span>
+                      </div>
                     </td>
                     <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase border inline-block whitespace-nowrap ${getBadgeStyle(entry.entry_type)}`}>
-                        {entry.entry_type.replace('_', ' ')}
+                      <div className="text-slate-800 dark:text-slate-200 font-mono font-bold text-xs">{entry.period}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                        {jalaliPeriodLabel(entry.period)}
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-2.5 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold uppercase border inline-flex items-center gap-1.5 whitespace-nowrap shadow-2xs ${getBadgeStyle(entry.entry_type)}`}>
+                        <GoogleIcon name={getBadgeIcon(entry.entry_type)} size={13} filled />
+                        <span>{entry.entry_type.replace('_', ' ')}</span>
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-slate-800 dark:text-slate-200 font-medium max-w-xl">
@@ -628,13 +683,13 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
                     <td className="py-2.5 px-2.5 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400 whitespace-nowrap tabular-nums">
                       {(entry.payment || entry.credit) ? formatCurrency(entry.payment || entry.credit, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono font-bold text-teal-600 dark:text-teal-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-2 text-right font-mono font-bold text-teal-600 dark:text-teal-400 whitespace-nowrap tabular-nums">
                       {entry.bonus ? formatCurrency(entry.bonus, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-2 text-right font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap tabular-nums">
                       {entry.deduction ? formatCurrency(entry.deduction, entry.currency) : '-'}
                     </td>
-                    <td className="py-2.5 px-2.5 text-right font-mono font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap tabular-nums">
+                    <td className="py-2.5 px-2 text-right font-mono font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap tabular-nums">
                       {entry.adjustment ? (entry.adjustment > 0 ? `+${formatCurrency(entry.adjustment, entry.currency)}` : formatCurrency(entry.adjustment, entry.currency)) : '-'}
                     </td>
                     <td className={`py-2.5 px-3 text-right font-mono font-black whitespace-nowrap tabular-nums ${
@@ -649,6 +704,39 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
                 ))
               )}
             </tbody>
+            {displayedEntries.length > 0 && (
+              <tfoot className="bg-slate-100 dark:bg-slate-800/90 border-t-2 border-slate-300 dark:border-slate-700 font-bold text-xs">
+                <tr>
+                  <td colSpan="4" className="py-3 px-3 text-slate-800 dark:text-slate-200 uppercase tracking-wider font-extrabold text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <GoogleIcon name="analytics" size={15} className="text-indigo-500" />
+                      <span>{t('employeeLedger.totalSummary') || 'Total Summary'} ({displayedEntries.length} entries)</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-2.5 text-right font-mono font-black text-blue-600 dark:text-blue-400 tabular-nums">
+                    {totals.accrued > 0 ? formatCurrency(totals.accrued, selectedCurrency) : '-'}
+                  </td>
+                  <td className="py-3 px-2.5 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                    {totals.payment > 0 ? formatCurrency(totals.payment, selectedCurrency) : '-'}
+                  </td>
+                  <td className="py-3 px-2 text-right font-mono font-black text-teal-600 dark:text-teal-400 tabular-nums">
+                    {totals.bonus > 0 ? `+${formatCurrency(totals.bonus, selectedCurrency)}` : '-'}
+                  </td>
+                  <td className="py-3 px-2 text-right font-mono font-black text-rose-600 dark:text-rose-400 tabular-nums">
+                    {totals.deduction > 0 ? formatCurrency(totals.deduction, selectedCurrency) : '-'}
+                  </td>
+                  <td className="py-3 px-2 text-right font-mono font-black text-amber-600 dark:text-amber-400 tabular-nums">
+                    {totals.adjustment !== 0 ? (totals.adjustment > 0 ? `+${formatCurrency(totals.adjustment, selectedCurrency)}` : formatCurrency(totals.adjustment, selectedCurrency)) : '-'}
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-white tabular-nums text-sm">
+                    {formatCurrency(ledgerData.summary.outstanding_balance || 0, selectedCurrency)}
+                  </td>
+                  <td className="py-3 px-2.5 text-center text-[10px] text-slate-400 font-mono">
+                    <GoogleIcon name="check_circle" size={14} className="text-emerald-500 inline" />
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
 
@@ -660,29 +748,38 @@ export default function EmployeeLedgerPage({ currentUser, companyName = 'Cashboo
             </div>
           ) : (
             displayedEntries.map((entry) => (
-              <div key={entry.id} className="p-4 space-y-2">
+              <div key={entry.id} className="p-4 space-y-2.5 bg-white dark:bg-slate-900">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500 dark:text-slate-400">{dateLabel(entry.date)}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getBadgeStyle(entry.entry_type)}`}>
-                    {entry.entry_type.replace('_', ' ')}
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{dateLabel(entry.date)}</span>
+                    <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 font-semibold ml-2">
+                      ({jalaliDateLabel(entry.date)})
+                    </span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase border inline-flex items-center gap-1 ${getBadgeStyle(entry.entry_type)}`}>
+                    <GoogleIcon name={getBadgeIcon(entry.entry_type)} size={12} filled />
+                    <span>{entry.entry_type.replace('_', ' ')}</span>
                   </span>
                 </div>
                 <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{entry.description}</div>
-                <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-100 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
                   <div>
                     <span className="text-slate-500 dark:text-slate-400">{t('employeeLedger.periodPrefix') || 'Period: '}</span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300">{entry.period}</span>
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{entry.period}</span>
+                    <span className="text-[10px] text-slate-400 block">{jalaliPeriodLabel(entry.period)}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-slate-500 dark:text-slate-400">{t('employeeLedger.balancePrefix') || 'Balance: '}</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white">{formatCurrency(entry.running_balance, entry.currency)}</span>
+                    <span className={`font-mono font-black text-sm block ${entry.running_balance < 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-900 dark:text-white'}`}>
+                      {formatCurrency(entry.running_balance, entry.currency)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono text-slate-700 dark:text-slate-300">
-                  {(entry.salary_accrued || entry.debit) > 0 && <span className="text-blue-600 dark:text-blue-400">{t('employeeLedger.accruedPrefix') || 'Accrued: +'}{formatCurrency(entry.salary_accrued || entry.debit, entry.currency)}</span>}
-                  {(entry.payment || entry.credit) > 0 && <span className="text-emerald-600 dark:text-emerald-400">{t('employeeLedger.paidPrefix') || 'Paid: -'}{formatCurrency(entry.payment || entry.credit, entry.currency)}</span>}
-                  {entry.bonus > 0 && <span className="text-teal-600 dark:text-teal-400">{t('employeeLedger.bonusPrefix') || 'Bonus: +'}{formatCurrency(entry.bonus, entry.currency)}</span>}
-                  {entry.deduction > 0 && <span className="text-rose-600 dark:text-rose-400">{t('employeeLedger.deductionPrefix') || 'Deduction: -'}{formatCurrency(entry.deduction, entry.currency)}</span>}
+                <div className="flex items-center justify-between text-xs font-mono text-slate-700 dark:text-slate-300 pt-1">
+                  {(entry.salary_accrued || entry.debit) > 0 && <span className="text-blue-600 dark:text-blue-400 font-bold">{t('employeeLedger.accruedPrefix') || 'Accrued: +'}{formatCurrency(entry.salary_accrued || entry.debit, entry.currency)}</span>}
+                  {(entry.payment || entry.credit) > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('employeeLedger.paidPrefix') || 'Paid: -'}{formatCurrency(entry.payment || entry.credit, entry.currency)}</span>}
+                  {entry.bonus > 0 && <span className="text-teal-600 dark:text-teal-400 font-bold">{t('employeeLedger.bonusPrefix') || 'Bonus: +'}{formatCurrency(entry.bonus, entry.currency)}</span>}
+                  {entry.deduction > 0 && <span className="text-rose-600 dark:text-rose-400 font-bold">{t('employeeLedger.deductionPrefix') || 'Deduction: -'}{formatCurrency(entry.deduction, entry.currency)}</span>}
                 </div>
               </div>
             ))

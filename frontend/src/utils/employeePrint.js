@@ -1,4 +1,4 @@
-import { currency as formatCurrency, dateLabel } from './format';
+import { currency as formatCurrency, dateLabel, jalaliDateLabel, jalaliFullDateLabel, jalaliPeriodLabel } from './format';
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -25,16 +25,35 @@ export function generateEmployeeLedgerPrintHtml({
     hour: '2-digit',
     minute: '2-digit'
   });
+  const printedAtJalali = jalaliFullDateLabel(new Date());
 
   const displayEntries = entries || ledgerData?.entries || [];
   const currency = currencyCode || employee?.currency || 'AFN';
 
+  let totalAccruedSum = 0;
+  let totalPaidSum = 0;
+  let totalBonusSum = 0;
+  let totalDeductSum = 0;
+  let totalAdjSum = 0;
+
   const rowsHtml = displayEntries.map((e, index) => {
-    const acc = (e.salary_accrued || e.debit) > 0 ? formatCurrency(e.salary_accrued || e.debit, currency) : '-';
-    const pay = (e.payment || e.credit) > 0 ? formatCurrency(e.payment || e.credit, currency) : '-';
-    const bonus = e.bonus > 0 ? `+${formatCurrency(e.bonus, currency)}` : '-';
-    const deduct = e.deduction > 0 ? formatCurrency(e.deduction, currency) : '-';
-    const adj = e.adjustment ? (e.adjustment > 0 ? `+${formatCurrency(e.adjustment, currency)}` : formatCurrency(e.adjustment, currency)) : '-';
+    const accNum = Number(e.salary_accrued || e.debit || 0);
+    const payNum = Number(e.payment || e.credit || 0);
+    const bonusNum = Number(e.bonus || 0);
+    const deductNum = Number(e.deduction || 0);
+    const adjNum = Number(e.adjustment || 0);
+
+    totalAccruedSum += accNum;
+    totalPaidSum += payNum;
+    totalBonusSum += bonusNum;
+    totalDeductSum += deductNum;
+    totalAdjSum += adjNum;
+
+    const acc = accNum > 0 ? formatCurrency(accNum, currency) : '-';
+    const pay = payNum > 0 ? formatCurrency(payNum, currency) : '-';
+    const bonus = bonusNum > 0 ? `+${formatCurrency(bonusNum, currency)}` : '-';
+    const deduct = deductNum > 0 ? formatCurrency(deductNum, currency) : '-';
+    const adj = adjNum !== 0 ? (adjNum > 0 ? `+${formatCurrency(adjNum, currency)}` : formatCurrency(adjNum, currency)) : '-';
     const bal = formatCurrency(e.running_balance, currency);
     const typeLabel = (e.entry_type || '').replace(/_/g, ' ');
 
@@ -46,11 +65,20 @@ export function generateEmployeeLedgerPrintHtml({
     else if (e.entry_type === 'adjustment' || e.entry_type === 'reversal') badgeClass = 'badge-amber';
 
     const rowBg = index % 2 === 0 ? 'bg-even' : 'bg-odd';
+    const jDate = jalaliDateLabel(e.date);
+    const jMonth = jalaliFullDateLabel(e.date).split(' ')[1] || '';
+    const jPeriod = jalaliPeriodLabel(e.period);
 
     return [
       '<tr class="' + rowBg + '">',
-      '  <td class="col-date">' + escapeHtml(dateLabel(e.date)) + '</td>',
-      '  <td class="col-period">' + escapeHtml(e.period || '-') + '</td>',
+      '  <td class="col-date">',
+      '    <div class="date-greg">' + escapeHtml(dateLabel(e.date)) + '</div>',
+      '    <div class="date-jalali">' + escapeHtml(jDate) + ' (' + escapeHtml(jMonth) + ')</div>',
+      '  </td>',
+      '  <td class="col-period">',
+      '    <div>' + escapeHtml(e.period || '-') + '</div>',
+      '    <div class="period-jalali">' + escapeHtml(jPeriod) + '</div>',
+      '  </td>',
       '  <td class="col-type"><span class="badge ' + badgeClass + '">' + escapeHtml(typeLabel) + '</span></td>',
       '  <td class="col-desc">' + escapeHtml(e.description || '-') + '</td>',
       '  <td class="col-num text-blue">' + escapeHtml(acc) + '</td>',
@@ -65,9 +93,9 @@ export function generateEmployeeLedgerPrintHtml({
   }).join('');
 
   const summary = ledgerData?.summary || {};
-  const totalAccrued = formatCurrency(summary.total_accrued || 0, currency);
-  const totalPaid = formatCurrency(summary.total_paid || 0, currency);
-  const totalAdjustments = formatCurrency(summary.total_adjustments || 0, currency);
+  const totalAccrued = formatCurrency(summary.total_accrued || totalAccruedSum, currency);
+  const totalPaid = formatCurrency(summary.total_paid || totalPaidSum, currency);
+  const totalAdjustments = formatCurrency(summary.total_adjustments || totalAdjSum, currency);
   const outstandingBalance = formatCurrency(summary.outstanding_balance || 0, currency);
 
   const safeEmpName = escapeHtml(employee?.full_name || 'Employee');
@@ -76,7 +104,7 @@ export function generateEmployeeLedgerPrintHtml({
   const safeEmpDept = escapeHtml(employee?.department || 'General');
   const safeCompName = escapeHtml(companyName);
   const logoHtml = companyLogo ? '<img src="' + escapeHtml(companyLogo) + '" class="company-logo" alt="Logo" />' : '';
-  const joiningDateStr = employee?.joining_date ? escapeHtml(dateLabel(employee.joining_date)) : 'Not Set';
+  const joiningDateStr = employee?.joining_date ? `${escapeHtml(dateLabel(employee.joining_date))} (${escapeHtml(jalaliFullDateLabel(employee.joining_date))})` : 'Not Set';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -188,12 +216,16 @@ export function generateEmployeeLedgerPrintHtml({
     table.ledger-table tr.bg-odd { background: #f8fafc; }
 
     /* Column Widths & Alignment */
-    .col-date { width: 9%; font-weight: 600; white-space: nowrap; }
-    .col-period { width: 7%; font-family: monospace; color: #64748b; white-space: nowrap; }
+    .col-date { width: 11%; font-weight: 600; white-space: nowrap; }
+    .col-period { width: 8%; font-family: monospace; color: #64748b; white-space: nowrap; }
     .col-type { width: 11%; white-space: nowrap; }
-    .col-desc { width: 22%; font-weight: 500; word-break: break-word; }
+    .col-desc { width: 20%; font-weight: 500; word-break: break-word; }
     .col-num { width: 9%; text-align: right; font-family: "Courier New", Courier, monospace; font-weight: 600; white-space: nowrap; }
     .col-ref { width: 4%; text-align: center; font-family: monospace; color: #94a3b8; font-size: 9px; }
+
+    .date-greg { font-weight: 700; color: #0f172a; }
+    .date-jalali { font-size: 8.5px; color: #4338ca; font-family: monospace; font-weight: 600; margin-top: 1px; }
+    .period-jalali { font-size: 8.5px; color: #64748b; margin-top: 1px; }
 
     .text-blue { color: #2563eb; }
     .text-green { color: #16a34a; }
@@ -219,6 +251,15 @@ export function generateEmployeeLedgerPrintHtml({
     .badge-red { background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; }
     .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .badge-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Table Footer */
+    table.ledger-table tfoot td {
+      background: #f1f5f9;
+      font-weight: 800;
+      border-top: 2px solid #94a3b8;
+      border-bottom: none;
+      padding: 6px 8px;
+    }
 
     /* Footer & Signatures */
     .footer-section {
@@ -262,7 +303,7 @@ export function generateEmployeeLedgerPrintHtml({
     </div>
     <div class="doc-meta">
       <div class="doc-title">Employee Salary Ledger</div>
-      <div class="doc-date">Generated on: ${escapeHtml(printedAt)}</div>
+      <div class="doc-date">Generated on: ${escapeHtml(printedAt)} • ${escapeHtml(printedAtJalali)}</div>
     </div>
   </div>
 
@@ -307,8 +348,8 @@ export function generateEmployeeLedgerPrintHtml({
   <table class="ledger-table">
     <thead>
       <tr>
-        <th class="col-date">Date</th>
-        <th class="col-period">Period</th>
+        <th class="col-date">Date / تاریخ</th>
+        <th class="col-period">Period / دوره</th>
         <th class="col-type">Entry Type</th>
         <th class="col-desc">Description</th>
         <th style="text-align: right;">Accrued</th>
@@ -323,6 +364,18 @@ export function generateEmployeeLedgerPrintHtml({
     <tbody>
       ${rowsHtml.length ? rowsHtml : '<tr><td colspan="11" style="text-align:center; padding: 20px;">No ledger entries found.</td></tr>'}
     </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px;">Summary Totals (${displayEntries.length} entries)</td>
+        <td class="col-num text-blue">${escapeHtml(totalAccrued)}</td>
+        <td class="col-num text-green">${escapeHtml(totalPaid)}</td>
+        <td class="col-num text-teal">${totalBonusSum > 0 ? '+' + escapeHtml(formatCurrency(totalBonusSum, currency)) : '-'}</td>
+        <td class="col-num text-red">${totalDeductSum > 0 ? escapeHtml(formatCurrency(totalDeductSum, currency)) : '-'}</td>
+        <td class="col-num text-amber">${totalAdjSum !== 0 ? (totalAdjSum > 0 ? '+' : '') + escapeHtml(formatCurrency(totalAdjSum, currency)) : '-'}</td>
+        <td class="col-num text-bold">${escapeHtml(outstandingBalance)}</td>
+        <td></td>
+      </tr>
+    </tfoot>
   </table>
 
   <!-- Signatures & Verification -->
