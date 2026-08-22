@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, DollarSign, Calendar, CreditCard, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { currency as formatCurrency } from '../utils/format';
+import { currency as formatCurrency, jalaliFullDateLabel, jalaliPeriodLabel } from '../utils/format';
 
 export default function PaySalaryModal({
   isOpen,
@@ -74,19 +74,22 @@ export default function PaySalaryModal({
     { value: 12, label: 'December' }
   ];
 
+  const currentPeriodStr = `${payYear}-${String(payMonth).padStart(2, '0')}`;
+  const jalaliPeriod = jalaliPeriodLabel(currentPeriodStr);
+
   return (
     <div 
-      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="pay-salary-title"
     >
-      <div className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-slate-700 my-8">
+      <div className="bg-white dark:bg-slate-850 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200 dark:border-slate-700/80 my-4 sm:my-8">
         
         {/* Header Section */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/50">
           <div>
-            <h3 id="pay-salary-title" className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 id="pay-salary-title" className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               Process Salary Payment
             </h3>
@@ -104,7 +107,7 @@ export default function PaySalaryModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5">
           {(error || formError) && (
             <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
               <AlertCircle size={16} className="shrink-0 text-rose-500" />
@@ -113,69 +116,100 @@ export default function PaySalaryModal({
           )}
 
           {/* Balance Overview Banner */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+          <div className="p-3.5 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-amber-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 rounded-xl border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
             <div>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                 Outstanding Unpaid Balance
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">
-                Monthly Base: {formatCurrency(employee.monthly_salary || 0, currency)}
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Monthly: {formatCurrency(employee.monthly_salary || 0, currency)}
               </span>
             </div>
-            <div className="text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums">
+            <div className="text-lg sm:text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums">
               {formatCurrency(outstandingBalance, currency)}
             </div>
           </div>
 
-          {/* Salary Period (Month & Year) */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                <Calendar size={13} className="text-blue-500" /> Salary Month
+          {/* Salary Period (Month & Year) with Persian Period Pill */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Calendar size={13} className="text-blue-500" /> Salary Period / دوره حقوق
               </label>
-              <select
-                value={payMonth}
-                onChange={(e) => setPayMonth(Number(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
-              >
-                {monthOptions.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </select>
+              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 font-mono bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full border border-indigo-200/50 dark:border-indigo-800/50">
+                {jalaliPeriod}
+              </span>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Payroll Year
-              </label>
-              <input
-                type="number"
-                value={payYear}
-                onChange={(e) => setPayYear(Number(e.target.value))}
-                className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
-                required
-              />
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <select
+                  value={payMonth}
+                  onChange={(e) => setPayMonth(Number(e.target.value))}
+                  className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
+                >
+                  {monthOptions.map((m) => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <input
+                  type="number"
+                  value={payYear}
+                  onChange={(e) => setPayYear(Number(e.target.value))}
+                  className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          {/* Payment Date */}
+          {/* Payment Date with Dual Jalali Date Display */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Payment Date
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Disbursement Date / تاریخ پرداخت
+              </label>
+              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-medium">
+                {jalaliFullDateLabel(paymentDate)}
+              </span>
+            </div>
             <input
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
+              className="bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 font-medium shadow-xs"
               required
             />
           </div>
 
-          {/* Payment Amount & Currency Toggle */}
+          {/* Payment Amount & Currency Toggle & Presets */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Payment Amount
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Payment Amount
+              </label>
+              <div className="flex items-center gap-1.5">
+                {outstandingBalance > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setAmount(String(outstandingBalance))}
+                    className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/60"
+                  >
+                    Full Due (100%)
+                  </button>
+                )}
+                {employee.monthly_salary > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setAmount(String(employee.monthly_salary))}
+                    className="text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:underline bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700"
+                  >
+                    1 Month
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="relative flex rounded-xl shadow-xs">
               <input
                 type="number"
@@ -197,6 +231,7 @@ export default function PaySalaryModal({
               </select>
             </div>
           </div>
+
 
           {/* Payment Method */}
           <div>

@@ -4,12 +4,36 @@
 .currency-summary-section{gap:10px}.currency-summary-section+.currency-summary-section{padding-top:16px}.currency-metric-grid{grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px}.financial-metric-card{min-height:104px;gap:12px;padding:14px;border-radius:13px}.financial-metric-icon{width:32px;height:32px;border-radius:9px}.financial-metric-card-header>span:last-child{font-size:.83rem}.financial-metric-card strong{font-size:clamp(1.05rem,1.5vw,1.4rem)}body:not(.light) .dashboard-section-heading h3{color:#f8fafc}body:not(.light) .dashboard-section-heading{border-color:rgba(148,163,184,.22)}
 @media(max-width:720px){.dashboard-section-heading{align-items:flex-start;flex-direction:column;gap:5px}.dashboard-overview-content{grid-template-columns:1fr}.dashboard-entry-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.dashboard-entry-stats{grid-template-columns:1fr}}
 
-/* Employees & Salary: remove the stretched blank column and prioritize the directory. */
-.salary-workspace{gap:14px}.salary-workspace-header{padding:20px 24px!important}.salary-workspace-header h3{font-size:1.35rem}.salary-tabs{padding:6px}.salary-tabs button{min-height:42px;padding:0 18px;border-radius:11px}.salary-stat-grid{gap:12px}.salary-stat{min-height:118px;padding:18px}.salary-stat p{margin:12px 0 5px}.salary-stat strong{font-size:clamp(23px,1.8vw,30px)}
-.salary-overview-grid{grid-template-columns:minmax(260px,320px) minmax(0,1fr);align-items:start;gap:14px}.salary-overview-grid>.salary-panel:first-child{position:sticky;top:18px}.salary-panel{padding:18px}.salary-panel-heading{margin-bottom:14px}.salary-panel-wide{min-height:0}.salary-employee-list{gap:8px}.salary-employee-row{display:grid;grid-template-columns:auto minmax(220px,1fr) minmax(120px,auto) auto;gap:12px;padding:12px 14px;border-radius:14px}.salary-balance{margin-left:0}.salary-row-actions{display:grid;grid-template-columns:repeat(2,minmax(88px,auto));gap:6px}.salary-list-pay{min-height:36px!important;margin-left:0!important;padding:7px 10px!important;font-size:.78rem!important}.salary-row-actions .salary-list-pay:first-child{color:#fff!important;border-color:#2563eb!important;background:#2563eb!important}.salary-delete-btn{background:rgba(254,226,226,.45)!important}.salary-avatar{width:40px;height:40px;flex-basis:40px}.salary-employee-row>div:nth-child(2)>strong{font-size:.94rem}.salary-employee-row span{font-size:.76rem;line-height:1.35}
-@media(max-width:1250px){.salary-overview-grid{grid-template-columns:1fr}.salary-overview-grid>.salary-panel:first-child{position:static}.salary-employee-row{grid-template-columns:auto minmax(200px,1fr) auto}.salary-row-actions{grid-column:2/-1;display:flex;justify-content:flex-start}}
-@media(max-width:720px){.salary-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.salary-employee-row{grid-template-columns:auto minmax(0,1fr)}.salary-balance{grid-column:2;text-align:left}.salary-row-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr)}.salary-list-pay{width:100%}.salary-workspace-header{padding:18px!important}}
-@media(max-width:430px){.salary-stat-grid{grid-template-columns:1fr}.salary-row-actions{grid-template-columns:1fr}}
+/* Employees & Salary: Modern fluid flex cards and mobile responsive styling */
+.salary-workspace{gap:14px}
+.salary-workspace-header{padding:16px 20px!important}
+.salary-workspace-header h3{font-size:1.35rem}
+.salary-tabs{padding:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.salary-tabs button{min-height:42px;padding:0 16px;border-radius:12px;white-space:nowrap}
+.salary-stat-grid{gap:12px}
+.salary-stat{min-height:100px;padding:16px;border-radius:18px}
+.salary-stat p{margin:8px 0 4px}
+.salary-stat strong{font-size:clamp(20px,1.8vw,28px)}
+.salary-overview-grid{display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);align-items:start;gap:16px}
+.salary-overview-grid>.salary-panel:first-child{position:sticky;top:18px}
+.salary-panel{padding:18px;border-radius:20px}
+.salary-panel-heading{margin-bottom:14px}
+.salary-panel-wide{min-height:0}
+.salary-employee-list{display:flex;flex-direction:column;gap:10px}
+.salary-avatar{width:44px;height:44px;flex-shrink:0}
+
+@media(max-width:1250px){
+  .salary-overview-grid{grid-template-columns:1fr}
+  .salary-overview-grid>.salary-panel:first-child{position:static}
+}
+@media(max-width:720px){
+  .salary-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .salary-workspace-header{padding:14px!important}
+  .salary-panel{padding:14px}
+}
+@media(max-width:480px){
+  .salary-stat-grid{grid-template-columns:1fr}
+}
 
 /* ==================================================
    AUTHORITATIVE MOBILE TOPBAR FIX FOR IPHONE & TABLETS

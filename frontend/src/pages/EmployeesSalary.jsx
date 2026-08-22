@@ -1,11 +1,10 @@
-// cspell:ignore sparkline
-import { Banknote, BookOpenText, Briefcase, Building2, Camera, CircleDollarSign, Clock3, Download, Edit, FileSpreadsheet, MoreVertical, Printer, Search, Trash2, UsersRound } from 'lucide-react';
+import { Banknote, BookOpenText, Briefcase, Building2, Camera, CheckCircle2, CircleDollarSign, Clock3, Download, Edit, FileSpreadsheet, MoreVertical, Printer, Search, Trash2, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { currency, csvCell, dateLabel, resolveAvatarUrl } from '../utils/format';
-import { employeeSalarySnapshot } from '../utils/payroll';
+import { currency, csvCell, dateLabel, jalaliDateLabel, jalaliFullDateLabel, jalaliPeriodLabel, resolveAvatarUrl } from '../utils/format';
+import { calculatePayrollMetrics, employeeSalarySnapshot } from '../utils/payroll';
 import BaseModal from '../components/BaseModal';
 import EmployeeLedgerModal from '../components/EmployeeLedgerModal';
 import EditableCombobox from '../components/EditableCombobox';
@@ -143,9 +142,16 @@ export default function EmployeesSalary({
     () => transactions.filter((transaction) => transaction.category === 'salary' && transaction.transaction_type === 'cash_out'),
     [transactions]
   );
-  const monthlySalaryPaid = report?.summary?.total_paid_this_month ?? salaryTransactions
-    .filter((transaction) => String(transaction.salary_month || transaction.date || '').startsWith(`${filters.year}-${String(filters.month).padStart(2, '0')}`))
-    .reduce((total, transaction) => total + Number(transaction.cash_out_afn || 0), 0);
+
+  const payrollMetrics = useMemo(
+    () => calculatePayrollMetrics(employees, transactions, filters.month, filters.year),
+    [employees, transactions, filters.month, filters.year]
+  );
+
+  const monthlySalaryPaid = report?.summary?.total_paid_this_month ?? payrollMetrics.total_paid_afn;
+  const pending = report?.summary?.total_remaining_salary ?? payrollMetrics.total_remaining_afn;
+  const totalMonthlyPayroll = report?.summary?.total_monthly_salary ?? payrollMetrics.total_monthly_salary_afn;
+
   const departments = useMemo(() => [...new Set(employees.map((employee) => employee.department).filter(Boolean))].sort(), [employees]);
   const existingPositions = useMemo(() => [...new Set(employees.map((employee) => employee.position).filter(Boolean))].sort(), [employees]);
 
@@ -170,7 +176,6 @@ export default function EmployeesSalary({
     const uniqueCustom = customList.filter((c) => !defaultVals.has(c.value.toLowerCase()));
     return [...uniqueCustom, ...DEFAULT_DEPARTMENTS];
   }, [departments]);
-  const pending = report?.summary?.total_remaining_salary ?? employees.reduce((total, employee) => total + Math.max(employeeSalarySnapshot(employee, transactions)?.remaining_salary || 0, 0), 0);
 
   useEffect(() => {
     loadSalaryReport(filters.month, filters.year);
@@ -680,10 +685,124 @@ export default function EmployeesSalary({
       )}
       {activeTab === 'Salary Payments' && (
         <article className="glass-card salary-panel">
-          <div className="salary-panel-heading"><div><p className="eyebrow">{t('payroll.paymentHistory')}</p><h3>{t('payroll.salaryCashOutRecords')}</h3></div><button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.paySalary')}</button></div>
-          {salaryTransactions.length ? <div className="salary-payment-list">{salaryTransactions.slice().reverse().map((transaction) => <div className="salary-payment-row" key={transaction.id}><div><strong>{transaction.account_name}</strong><span>{transaction.detail}</span></div><div><strong>{currency(transaction.cash_out_afn)}</strong><span>{transaction.date}</span></div></div>)}</div> : <EmptyState title="No salary payments yet" body="Open the Employees Salary Report and use Pay Salary for the first payment." action="Open Report" onAction={() => setActiveTab('Reports')} />}
+          <div className="salary-panel-heading flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <p className="eyebrow">{t('payroll.paymentHistory')}</p>
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                {t('payroll.salaryCashOutRecords')}
+              </h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 block">
+                {salaryTransactions.length} recorded payroll disbursements
+              </span>
+            </div>
+            <button 
+              className="primary-btn shrink-0 flex items-center justify-center gap-1.5 self-start sm:self-auto py-2.5 px-4" 
+              type="button" 
+              onClick={() => setActiveTab('Reports')}
+            >
+              <Banknote size={16} />
+              <span>{t('payroll.paySalary')}</span>
+            </button>
+          </div>
+
+          {salaryTransactions.length ? (
+            <div className="salary-payment-cards-grid grid grid-cols-1 md:grid-cols-2 gap-3">
+              {salaryTransactions.slice().reverse().map((tx) => {
+                const emp = employees.find((e) => Number(e.id) === Number(tx.employee_id) || Number(e.account_id) === Number(tx.account_id));
+                const empName = emp?.full_name || tx.account_name || 'Employee';
+                const empCode = emp?.employee_code || (emp?.id ? `EMP-${emp.id}` : '');
+                const txDate = tx.date || new Date().toISOString().slice(0, 10);
+                const gDate = dateLabel(txDate);
+                const jDate = jalaliDateLabel(txDate);
+                const jMonth = jalaliFullDateLabel(txDate).split(' ')[1] || '';
+                const period = tx.salary_month || txDate.slice(0, 7);
+                const jPeriod = jalaliPeriodLabel(period);
+                const isUSD = (tx.currency || emp?.currency || 'AFN').toUpperCase() === 'USD';
+                const paidAmount = isUSD ? Number(tx.usd_out || tx.amount || 0) : Number(tx.cash_out_afn || tx.amount || 0);
+                const paidCurr = isUSD ? 'USD' : 'AFN';
+
+                return (
+                  <div 
+                    key={tx.id} 
+                    className="p-4 rounded-2xl bg-white/90 dark:bg-slate-850/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          {(empName || 'E').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white truncate">
+                            {unescapeText(empName)}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap text-xs text-slate-500 dark:text-slate-400">
+                            {empCode && (
+                              <span className="font-mono font-bold text-[10px] bg-slate-100 dark:bg-slate-700/80 px-1.5 py-0.2 rounded text-slate-700 dark:text-slate-300">
+                                {empCode}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-slate-400">&bull;</span>
+                            <span className="text-[11px] font-medium">{tx.payment_method || 'Cash'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <strong className="text-base sm:text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 block">
+                          {currency(paidAmount, paidCurr)}
+                        </strong>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-block mt-0.5">
+                          Disbursed
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Dual Date & Period Details */}
+                    <div className="grid grid-cols-2 gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-xs">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payment Date / تاریخ</span>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{gDate}</div>
+                        <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-medium">{jDate} ({jMonth})</div>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Payroll Period / دوره</span>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{period}</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{jPeriod}</div>
+                      </div>
+                    </div>
+
+                    {tx.detail && (
+                      <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50/50 dark:bg-slate-800/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800 italic">
+                        &ldquo;{unescapeText(tx.detail)}&rdquo;
+                      </p>
+                    )}
+
+                    {emp && (
+                      <div className="pt-1 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLedgerEmployee(emp)}
+                          className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 py-1 px-2.5 rounded-lg bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-800/50"
+                        >
+                          <BookOpenText size={13} />
+                          <span>View Employee Ledger</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState 
+              title="No salary payments yet" 
+              body="Open the Employees Salary Report and use Pay Salary for the first payment." 
+              action="Open Report" 
+              onAction={() => setActiveTab('Reports')} 
+            />
+          )}
         </article>
       )}
+
 
       {activeTab === 'Reports' && (
         <EmployeesSalaryReport
@@ -1675,7 +1794,7 @@ function EmployeeCardRow({
         </div>
       </div>
 
-      <div className="w-full lg:w-auto bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/25 rounded-2xl p-3.5 flex items-center justify-between gap-3 shrink-0 my-0.5 lg:my-0 lg:min-w-[220px]">
+      <div className="w-full lg:w-auto bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 border border-amber-500/25 rounded-2xl p-3.5 flex items-center justify-between gap-3 shrink-0 my-0.5 lg:my-0 lg:min-w-[230px]">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
             {hasJoiningDate ? t('payroll.outstandingSalary') : t('payroll.currentMonthRemaining')}
@@ -1684,25 +1803,32 @@ function EmployeeCardRow({
             {row.remaining_salary.toLocaleString()} {row.currency}
           </strong>
         </div>
-        <small className="text-[10px] text-slate-500 dark:text-slate-400 font-medium max-w-[120px] text-right leading-tight block">
-          {hasJoiningDate ? `Since ${dateLabel(employee.joining_date)}` : "Requires joining date"}
-        </small>
+        <div className="text-right">
+          <small className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block leading-tight">
+            {hasJoiningDate ? `${dateLabel(employee.joining_date)}` : "No joining date"}
+          </small>
+          {hasJoiningDate && (
+            <span className="text-[9.5px] text-indigo-600 dark:text-indigo-400 font-mono font-bold block mt-0.5">
+              {jalaliDateLabel(employee.joining_date)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 w-full lg:w-auto shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
         {onPay && (
           <button 
-            className="flex-1 lg:flex-initial px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap" 
+            className="flex-1 lg:flex-initial min-h-[42px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap" 
             type="button" 
             onClick={() => onPay(row)}
           >
-            <CircleDollarSign size={15} />
+            <Banknote size={15} />
             <span>{t('payroll.paySalary')}</span>
           </button>
         )}
 
         <button
-          className="flex-1 lg:flex-initial px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
+          className="flex-1 lg:flex-initial min-h-[42px] px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
           type="button"
           onClick={handleNavigateLedger}
           title="View Employee Salary Ledger"
@@ -1713,7 +1839,7 @@ function EmployeeCardRow({
 
         {onEditEmployee && (
           <button 
-            className="px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap" 
+            className="min-h-[42px] px-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap" 
             type="button" 
             onClick={() => onEditEmployee(employee)}
           >
@@ -1725,12 +1851,13 @@ function EmployeeCardRow({
         <div className="relative-action-menu relative">
           <button
             type="button"
-            className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-all"
+            className="min-h-[42px] min-w-[42px] p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center"
             onClick={() => setMenuOpen(!menuOpen)}
             title="More options"
           >
             <MoreVertical size={16} />
           </button>
+
 
           {menuOpen && (
             <div
