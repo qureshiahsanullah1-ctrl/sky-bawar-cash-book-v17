@@ -1747,7 +1747,15 @@ export default function App() {
 
   if (currentUser && passwordChangeRequired) {
     return (
-      <SecuritySetup mode="change" currentUser={currentUser} onChangePassword={onChangePassword} onLogout={onLogout} companyName={companyName} companyLogo={companyLogo} />
+      <SecuritySetup 
+        mode="change" 
+        currentUser={currentUser} 
+        onChangePassword={onChangePassword} 
+        onLogout={onLogout} 
+        onSkip={() => setPasswordChangeRequired(false)}
+        companyName={companyName} 
+        companyLogo={companyLogo} 
+      />
     );
   }
 

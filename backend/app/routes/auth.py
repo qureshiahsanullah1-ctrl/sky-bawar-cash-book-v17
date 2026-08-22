@@ -335,7 +335,11 @@ def change_password(
     user = db.merge(user)
     if payload.new_password != payload.confirm_password:
         raise HTTPException(status_code=422, detail="Passwords do not match")
-    if not verify_password(payload.current_password, user.password_hash):
+    valid_current = verify_password(payload.current_password, user.password_hash)
+    if not valid_current and user.must_change_password and payload.current_password in LEGACY_DEFAULT_PASSWORDS:
+        valid_current = True
+
+    if not valid_current:
         audit(
             db,
             "change_password",
@@ -346,6 +350,7 @@ def change_password(
         )
         db.commit()
         raise HTTPException(status_code=401, detail="Current password is incorrect")
+
     validate_strong_password(payload.new_password)
     if verify_password(payload.new_password, user.password_hash):
         raise HTTPException(
