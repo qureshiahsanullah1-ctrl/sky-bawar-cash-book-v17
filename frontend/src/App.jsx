@@ -146,7 +146,9 @@ export default function App() {
   const [companyLicense, setCompanyLicense] = useState('');
   const [currencyCode, setCurrencyCode] = useState('AFN');
   const [exchangeRate, setExchangeRate] = useState('64.30');
+  const [printHeader, setPrintHeader] = useState(true);
   const [language, setLanguage] = useState(() => localStorage.getItem('cashbook_language') || 'English');
+
 
   useEffect(() => {
     const lang = (language || 'English').toLowerCase();
