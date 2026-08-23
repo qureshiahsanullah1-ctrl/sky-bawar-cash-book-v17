@@ -380,9 +380,9 @@ export default function EmployeesSalary({
           <h3>{t('payroll.title')}</h3>
           <p>{t('payroll.description')}</p>
         </div>
-        <div className="salary-page-actions flex items-center gap-2 flex-wrap">
+        <div className="salary-page-actions flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 shrink-0">
           <button 
-            className="ghost-btn flex items-center gap-1.5 border border-slate-200 dark:border-slate-700" 
+            className="ghost-btn min-h-[42px] px-3.5 flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 whitespace-nowrap active:scale-95" 
             type="button" 
             onClick={() => printReport('all')}
             title="Open Print Options & Custom Reports"
@@ -390,10 +390,11 @@ export default function EmployeesSalary({
             <Printer size={16} />
             <span>Print Reports (چاپ)</span>
           </button>
-          <button className="ghost-btn" type="button" onClick={() => setActiveTab('Employees')}>{t('payroll.addEmployee')}</button>
-          <button className="primary-btn" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.salaryReport')}</button>
+          <button className="ghost-btn min-h-[42px] px-3.5 whitespace-nowrap active:scale-95" type="button" onClick={() => setActiveTab('Employees')}>{t('payroll.addEmployee')}</button>
+          <button className="primary-btn min-h-[42px] px-4 whitespace-nowrap active:scale-95 shadow-md shadow-blue-500/20" type="button" onClick={() => setActiveTab('Reports')}>{t('payroll.salaryReport')}</button>
         </div>
       </header>
+
 
 
       <nav className="salary-tabs" aria-label="Employees and salary sections">
@@ -910,53 +911,54 @@ function EmployeesSalaryReport({ rows, summary, filters, setFilters, departments
             {t('payroll.salaryReport')}
           </h3>
         </div>
-        <div className="salary-report-actions flex flex-wrap items-center gap-2">
+        <div className="salary-report-actions flex items-center gap-2 overflow-x-auto no-scrollbar w-full lg:w-auto pb-1 shrink-0">
           <button 
-            className="primary-btn flex items-center gap-1.5 py-2 px-3.5" 
+            className="primary-btn min-h-[42px] flex items-center gap-1.5 py-2 px-4 whitespace-nowrap active:scale-95 shadow-md shadow-blue-500/20" 
             type="button" 
             onClick={() => onPrint('all')}
             title="Open Print Options & Custom Filters"
           >
-            <Printer size={15} /> 
+            <Printer size={16} /> 
             <span>Print Options (چاپ راپور)</span>
           </button>
           <button 
-            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            className="ghost-btn min-h-[42px] flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold border border-slate-200 dark:border-slate-700 whitespace-nowrap active:scale-95" 
             type="button" 
             onClick={() => onPrint('salaries_only')} 
             title="Print employee list with contracted base salaries only"
           >
-            <Banknote size={14} className="text-emerald-500" />
+            <Banknote size={15} className="text-emerald-500" />
             <span>Salaries Only (فقط معاشات)</span>
           </button>
           <button 
-            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            className="ghost-btn min-h-[42px] flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold border border-slate-200 dark:border-slate-700 whitespace-nowrap active:scale-95" 
             type="button" 
             onClick={() => onPrint('payments_only')} 
             title="Print record of all disbursed salary payments (How much paid)"
           >
-            <CheckCircle2 size={14} className="text-indigo-500" />
+            <CheckCircle2 size={15} className="text-indigo-500" />
             <span>How Much Paid (ورکړل شوي)</span>
           </button>
           <button 
-            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            className="ghost-btn min-h-[42px] flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold border border-slate-200 dark:border-slate-700 whitespace-nowrap active:scale-95" 
             type="button" 
             onClick={() => onPrint('unpaid_only')} 
             title="Print list of employees with outstanding/unpaid balances only"
           >
-            <Clock3 size={14} className="text-amber-500" />
+            <Clock3 size={15} className="text-amber-500" />
             <span>Unpaid Only (پاتې طلبات)</span>
           </button>
           <button 
-            className="ghost-btn flex items-center gap-1.5 py-2 px-3 text-xs font-bold border border-slate-200 dark:border-slate-700" 
+            className="ghost-btn min-h-[42px] flex items-center gap-1.5 py-2 px-3.5 text-xs font-bold border border-slate-200 dark:border-slate-700 whitespace-nowrap active:scale-95" 
             type="button" 
             onClick={onExcel}
           >
-            <FileSpreadsheet size={14} className="text-emerald-600" /> 
+            <FileSpreadsheet size={15} className="text-emerald-600" /> 
             <span>Export Excel</span>
           </button>
         </div>
       </div>
+
 
       <div className="salary-report-summary-grid">
         <SalaryMiniStat label={t('payroll.totalEmployees')} value={summary.total_employees} />
