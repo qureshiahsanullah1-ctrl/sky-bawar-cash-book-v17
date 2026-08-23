@@ -1359,7 +1359,7 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
             <select 
               className="form-select"
               value={form.payment_method} 
-              onChange={(event) => setForm({ ...event, payment_method: event.target.value })}
+              onChange={(event) => setForm({ ...form, payment_method: event.target.value })}
             >
               <option value="cash">{t('payroll.cash')}</option>
               <option value="bank">{t('payroll.bank')}</option>
@@ -1367,6 +1367,7 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
               <option value="other">{t('payroll.other')}</option>
             </select>
           </label>
+
 
           <label className="form-field form-field--full">
             <span className="form-label">{t('payroll.notes')}</span>
