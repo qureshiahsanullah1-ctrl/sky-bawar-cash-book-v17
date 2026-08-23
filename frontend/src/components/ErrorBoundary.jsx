@@ -8,11 +8,36 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      /failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '') ||
+      /importing a module script failed/i.test(error?.message || '') ||
+      /loading chunk [\d]+ failed/i.test(error?.message || '');
+
+    return { hasError: true, error, isChunkError };
   }
 
   componentDidCatch(error, errorInfo) {
     console.error("ErrorBoundary caught an unhandled rendering crash:", error, errorInfo);
+    
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      /failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '') ||
+      /importing a module script failed/i.test(error?.message || '') ||
+      /loading chunk [\d]+ failed/i.test(error?.message || '');
+
+    if (isChunkError) {
+      const lastReload = Number(sessionStorage.getItem('last_error_boundary_reload') || '0');
+      if (Date.now() - lastReload > 10000) {
+        sessionStorage.setItem('last_error_boundary_reload', String(Date.now()));
+        console.warn('New deployment detected. Auto-refreshing app to load latest bundle...');
+        window.location.reload();
+        return;
+      }
+    }
+
     if (this.props.onError) {
       try {
         this.props.onError(error, errorInfo);
@@ -21,6 +46,7 @@ class ErrorBoundary extends React.Component {
       }
     }
   }
+
 
   componentDidUpdate(prevProps) {
     if (this.state.hasError && this.props.resetKey !== prevProps.resetKey) {
@@ -108,7 +134,9 @@ class ErrorBoundary extends React.Component {
               color: 'var(--text, #fafafa)',
               lineHeight: '1.2'
             }}>
-              {t('errorBoundary.somethingWentWrong', 'Something went wrong')}
+              {this.state.isChunkError
+                ? t('errorBoundary.updateAvailable', 'New Version Available / نوې بڼه شتون لري')
+                : t('errorBoundary.somethingWentWrong', 'Something went wrong')}
             </h1>
             
             <p style={{
@@ -117,8 +145,11 @@ class ErrorBoundary extends React.Component {
               color: 'var(--text-soft, #a1a1aa)',
               marginBottom: '32px'
             }}>
-              {t('errorBoundary.sectionCouldNotBeDisplayed', 'This section could not be displayed. Try again or refresh the application.')}
+              {this.state.isChunkError
+                ? t('errorBoundary.updateDesc', 'A new software update is available. Click below to load the latest features.')
+                : t('errorBoundary.sectionCouldNotBeDisplayed', 'This section could not be displayed. Try again or refresh the application.')}
             </p>
+
 
             <div style={{
               display: 'flex',

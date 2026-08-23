@@ -22,19 +22,21 @@ import useDebouncedValue from './hooks/useDebouncedValue';
 import { transactionSchema } from './utils/validation';
 import { useCompany } from './context/CompanyContext';
 import WorkspaceLoader from './components/WorkspaceLoader';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-const AccountLedger = lazy(() => import('./pages/AccountLedger'));
-const TenantModuleRouter = lazy(() => import('./components/layout/TenantModuleRouter'));
-const BawarStarLedger = lazy(() => import('./pages/BawarStarLedger'));
-const Accounts = lazy(() => import('./pages/Accounts'));
-const Reports = lazy(() => import('./pages/Reports'));
-const BackupRestore = lazy(() => import('./pages/BackupRestore'));
-const CurrencyConverter = lazy(() => import('./pages/CurrencyConverter'));
-const Settings = lazy(() => import('./pages/Settings'));
-const EmployeesSalary = lazy(() => import('./pages/EmployeesSalary'));
-const EmployeeLedgerPage = lazy(() => import('./pages/EmployeeLedgerPage'));
-const PlasticErpDashboard = lazy(() => import('./pages/PlasticErpDashboard'));
-const GlassPrintPreview = lazy(() => import('./components/GlassPrintPreview'));
+const AccountLedger = lazyWithRetry(() => import('./pages/AccountLedger'));
+const TenantModuleRouter = lazyWithRetry(() => import('./components/layout/TenantModuleRouter'));
+const BawarStarLedger = lazyWithRetry(() => import('./pages/BawarStarLedger'));
+const Accounts = lazyWithRetry(() => import('./pages/Accounts'));
+const Reports = lazyWithRetry(() => import('./pages/Reports'));
+const BackupRestore = lazyWithRetry(() => import('./pages/BackupRestore'));
+const CurrencyConverter = lazyWithRetry(() => import('./pages/CurrencyConverter'));
+const Settings = lazyWithRetry(() => import('./pages/Settings'));
+const EmployeesSalary = lazyWithRetry(() => import('./pages/EmployeesSalary'));
+const EmployeeLedgerPage = lazyWithRetry(() => import('./pages/EmployeeLedgerPage'));
+const PlasticErpDashboard = lazyWithRetry(() => import('./pages/PlasticErpDashboard'));
+const GlassPrintPreview = lazyWithRetry(() => import('./components/GlassPrintPreview'));
+
 
 
 const appTranslations = {

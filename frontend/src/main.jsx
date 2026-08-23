@@ -14,6 +14,17 @@ import { injectSpeedInsights } from '@vercel/speed-insights';
 
 injectSpeedInsights();
 
+// Automatically reload if a new version was deployed and dynamic chunk load failed
+window.addEventListener('vite:preloadError', (event) => {
+  const lastReload = Number(sessionStorage.getItem('last_vite_preload_reload') || '0');
+  if (Date.now() - lastReload > 10000) {
+    sessionStorage.setItem('last_vite_preload_reload', String(Date.now()));
+    console.warn('Vite preload error detected. Reloading to get latest application version...');
+    window.location.reload();
+  }
+});
+
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
