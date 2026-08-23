@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import GoogleIcon from '../GoogleIcon';
 
 export default function TopHeader({ 
@@ -11,8 +12,11 @@ export default function TopHeader({
   companyLogo, 
   theme, 
   onSearchClick, 
-  setMobileOpen 
+  setMobileOpen,
+  language,
+  setLanguage
 }) {
+  const { i18n } = useTranslation();
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -20,8 +24,19 @@ export default function TopHeader({
     return () => window.clearInterval(timer);
   }, []);
 
+  const handleLanguageSwitch = (langName) => {
+    const code = langName === 'Pashto' ? 'ps' : langName === 'Dari' ? 'fa' : 'en';
+    i18n.changeLanguage(code);
+    localStorage.setItem('cashbook_language', langName);
+    localStorage.setItem('i18nextLng', code);
+    if (setLanguage) setLanguage(langName);
+  };
+
+  const currentLang = language || (i18n.language === 'ps' ? 'Pashto' : i18n.language === 'fa' ? 'Dari' : 'English');
+
   const dateLabel = now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
   const timeLabel = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
 
   return (
     <header className="app-topbar bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 sticky top-0 z-30 print-only-hide print:hidden no-print transition-colors">
@@ -86,8 +101,24 @@ export default function TopHeader({
           </span>
         </div>
 
+        {/* Language Selector Pill */}
+        <div className="language-selector-pill flex items-center gap-1.5 px-2.5 h-10 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 text-xs font-bold shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all shrink-0">
+          <GoogleIcon name="translate" size={16} className="text-blue-500 shrink-0" />
+          <select 
+            value={currentLang} 
+            onChange={(e) => handleLanguageSwitch(e.target.value)}
+            className="bg-transparent text-slate-800 dark:text-slate-200 font-bold text-xs focus:outline-none cursor-pointer border-none p-0 pr-1"
+            aria-label="Language selector"
+          >
+            <option value="English" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">English</option>
+            <option value="Pashto" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">پښتو (Pashto)</option>
+            <option value="Dari" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">دری (Dari)</option>
+          </select>
+        </div>
+
         {/* Action Buttons (100% Equal Height & Icon Size) */}
         <div className="topbar-buttons flex items-center gap-1.5 sm:gap-2">
+
           <button 
             type="button"
             className="w-10 h-10 rounded-xl flex md:hidden items-center justify-center bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-200 transition-all shadow-xs shrink-0 active:scale-95" 

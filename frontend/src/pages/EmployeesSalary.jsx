@@ -1276,38 +1276,75 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
         <>
           <button 
             type="button" 
-            className="ghost-btn modal-btn-cancel" 
+            className="ghost-btn modal-btn-cancel font-bold text-xs" 
             onClick={onClose} 
             disabled={saving}
           >
-            {t('payroll.cancel')}
+            {t('payroll.cancel')} / لغوه کول
           </button>
           <button 
             type="submit" 
             form="salaryPaymentForm" 
-            className="primary-btn modal-btn-save" 
+            className="primary-btn modal-btn-save font-black text-xs shadow-md" 
             disabled={saving || payableLimit <= 0}
           >
-            {saving ? 'Saving...' : 'Save Salary Payment'}
+            {saving ? 'Saving...' : 'Save Salary Payment / معاش تادیه ثبتول'}
           </button>
+
         </>
       }
     >
       <form id="salaryPaymentForm" className="modal-form" onSubmit={submit}>
         <div className="salary-pay-grid">
-          <ReadOnlyMetric label="Employee name" value={row.employee_name} />
-          <ReadOnlyMetric label="Base monthly salary" value={currency(row.monthly_salary)} />
-          <ReadOnlyMetric label="Previous carry forward" value={currency(row.previous_carry_forward_balance || 0)} tone={Number(row.previous_carry_forward_balance || 0) < 0 ? 'amber' : 'green'} />
-          <ReadOnlyMetric label="Total payable salary" value={currency(row.total_payable_salary ?? row.monthly_salary)} />
-          <ReadOnlyMetric label="Already paid amount" value={currency(row.paid_salary)} tone="green" />
-          <ReadOnlyMetric label="Current carry forward" value={currency(currentCarryForward)} tone={currentCarryForward < 0 ? 'amber' : 'green'} />
-          <ReadOnlyMetric label="After this payment" value={currency(closingCarryForward)} tone={closingCarryForward < 0 ? 'amber' : 'green'} />
+          <ReadOnlyMetric 
+            label="Employee name" 
+            subLabel="د کارکوونکي نوم" 
+            value={row.employee_name} 
+          />
+          <ReadOnlyMetric 
+            label="Base monthly salary" 
+            subLabel="میاشتنی اساسي معاش" 
+            value={currency(row.monthly_salary)} 
+          />
+          <ReadOnlyMetric 
+            label="Previous carry forward" 
+            subLabel="مخکینی پاتې طلب" 
+            value={currency(row.previous_carry_forward_balance || 0)} 
+            tone={Number(row.previous_carry_forward_balance || 0) < 0 ? 'amber' : 'green'} 
+          />
+          <ReadOnlyMetric 
+            label="Total payable salary" 
+            subLabel="ټول د ورکړې وړ معاش" 
+            value={currency(row.total_payable_salary ?? row.monthly_salary)} 
+          />
+          <ReadOnlyMetric 
+            label="Already paid amount" 
+            subLabel="تر اوسه ورکړل شوي" 
+            value={currency(row.paid_salary)} 
+            tone="green" 
+          />
+          <ReadOnlyMetric 
+            label="Current carry forward" 
+            subLabel="اوسنی پاتې طلب" 
+            value={currency(currentCarryForward)} 
+            tone={currentCarryForward < 0 ? 'amber' : 'green'} 
+          />
+          <ReadOnlyMetric 
+            label="After this payment" 
+            subLabel="د دې ورکړې وروسته" 
+            value={currency(closingCarryForward)} 
+            tone={closingCarryForward < 0 ? 'amber' : 'green'} 
+          />
         </div>
 
         <div className="salary-edit-grid">
           <label className="form-field">
             <div className="flex items-center justify-between mb-1">
-              <span className="form-label">{t('payroll.amountToPay')} *</span>
+              <span className="form-label font-bold flex items-center gap-1">
+                <span>{t('payroll.amountToPay')}</span>
+                <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold">/ د ورکړې اندازه</span>
+                <span className="text-rose-500">*</span>
+              </span>
               {payableLimit > 0 && (
                 <div className="flex items-center gap-1">
                   <button
@@ -1348,7 +1385,11 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
           </label>
 
           <label className="form-field">
-            <span className="form-label">{t('payroll.paymentDate')} *</span>
+            <span className="form-label font-bold flex items-center gap-1">
+              <span>{t('payroll.paymentDate')}</span>
+              <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold">/ د ورکړې نېټه</span>
+              <span className="text-rose-500">*</span>
+            </span>
             <input 
               className="form-control"
               type="date" 
@@ -1359,18 +1400,23 @@ function SalaryPaymentModal({ row, month, year, onClose, onSave }) {
           </label>
 
           <label className="form-field">
-            <span className="form-label">{t('payroll.paymentMethod')} *</span>
+            <span className="form-label font-bold flex items-center gap-1">
+              <span>{t('payroll.paymentMethod')}</span>
+              <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold">/ د ورکړې طریقه</span>
+              <span className="text-rose-500">*</span>
+            </span>
             <select 
               className="form-select"
               value={form.payment_method} 
               onChange={(event) => setForm({ ...form, payment_method: event.target.value })}
             >
-              <option value="cash">{t('payroll.cash')}</option>
-              <option value="bank">{t('payroll.bank')}</option>
-              <option value="hawala">{t('payroll.hawala')}</option>
-              <option value="other">{t('payroll.other')}</option>
+              <option value="cash">نغدي (Cash)</option>
+              <option value="bank">بانک (Bank)</option>
+              <option value="hawala">حواله (Hawala)</option>
+              <option value="other">نور (Other)</option>
             </select>
           </label>
+
 
 
           <label className="form-field form-field--full">
@@ -1691,9 +1737,22 @@ function SalaryMiniStat({ label, value, tone = 'blue' }) {
   return <div className={`salary-mini-stat salary-mini-stat-${tone}`}><span>{label}</span><strong>{value}</strong></div>;
 }
 
-function ReadOnlyMetric({ label, value, tone = '' }) {
-  return <div className={`salary-readonly ${tone}`}><span>{label}</span><strong>{value}</strong></div>;
+function ReadOnlyMetric({ label, subLabel, value, tone = '' }) {
+  return (
+    <div className={`salary-readonly ${tone}`}>
+      <div className="flex items-center justify-between gap-1 w-full mb-0.5">
+        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{label}</span>
+        {subLabel && (
+          <span className="text-[10.5px] font-extrabold text-indigo-600 dark:text-indigo-400 font-sans">
+            {subLabel}
+          </span>
+        )}
+      </div>
+      <strong>{value}</strong>
+    </div>
+  );
 }
+
 
 function SalaryStat({ icon: Icon, label, value, tone }) {
   const sparklineData = [12, 19, 10, 24, 18, 30, 28];

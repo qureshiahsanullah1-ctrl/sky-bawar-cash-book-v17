@@ -23,6 +23,8 @@ import { transactionSchema } from './utils/validation';
 import { useCompany } from './context/CompanyContext';
 import WorkspaceLoader from './components/WorkspaceLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import i18n from './i18n';
+
 
 const AccountLedger = lazyWithRetry(() => import('./pages/AccountLedger'));
 const TenantModuleRouter = lazyWithRetry(() => import('./components/layout/TenantModuleRouter'));
@@ -144,8 +146,16 @@ export default function App() {
   const [companyLicense, setCompanyLicense] = useState('');
   const [currencyCode, setCurrencyCode] = useState('AFN');
   const [exchangeRate, setExchangeRate] = useState('64.30');
-  const [printHeader, setPrintHeader] = useState(true);
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState(() => localStorage.getItem('cashbook_language') || 'English');
+
+  useEffect(() => {
+    const lang = (language || 'English').toLowerCase();
+    const langCode = lang === 'pashto' ? 'ps' : lang === 'dari' ? 'fa' : 'en';
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('cashbook_language', language || 'English');
+    localStorage.setItem('i18nextLng', langCode);
+  }, [language]);
+
 
   const effectiveCompanyName = currentCompany?.name || companyName || 'BAWAR STAR PLASTIC INDUSTRY';
   const effectiveCompanyLogo = currentCompany?.logo || companyLogo || '';
@@ -1811,7 +1821,10 @@ export default function App() {
           currentUser={currentUser}
           onLogout={onLogout}
           onSearchClick={() => setSearchOpen(true)}
+          language={language}
+          setLanguage={setLanguage}
         >
+
           <Suspense fallback={<WorkspaceLoader />}>
             <>
               {isLoading && transactions.length === 0 && <div className="loading-strip">{t('Loading latest cash book data...')}</div>}

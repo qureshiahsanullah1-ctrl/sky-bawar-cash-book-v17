@@ -36,7 +36,9 @@ export default function AppShell({
   onLogout, 
   companyLogo, 
   theme, 
-  onSearchClick 
+  onSearchClick,
+  language,
+  setLanguage
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(getDefaultSidebarState);
@@ -81,7 +83,10 @@ export default function AppShell({
           onSearchClick={onSearchClick}
           setMobileOpen={setMobileOpen}
           isCollapsed={isCollapsed}
+          language={language}
+          setLanguage={setLanguage}
         />
+
         
         <main className="app-main-scroll pb-16 md:pb-0 print:p-0 print:m-0 print:w-full print:block print:overflow-visible w-full min-w-0 max-w-full overflow-x-hidden">
           {children || <Outlet />}
