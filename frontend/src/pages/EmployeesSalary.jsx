@@ -137,11 +137,13 @@ export default function EmployeesSalary({
   const [filters, setFilters] = useState({ search: '', department: '', status: '', ...currentMonthYear() });
   const [payingRow, setPayingRow] = useState(null);
   const [editingSalaryRow, setEditingSalaryRow] = useState(null);
+  const [salaryChanges, setSalaryChanges] = useState([]);
   const [deletingEmployeeId, setDeletingEmployeeId] = useState(null);
   const [uploadingAvatarId, setUploadingAvatarId] = useState(null);
   const [selectedLedgerEmployee, setSelectedLedgerEmployee] = useState(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [defaultPrintMode, setDefaultPrintMode] = useState('all');
+
 
 
   const salaryTransactions = useMemo(
