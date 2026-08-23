@@ -234,10 +234,29 @@ def _salary_rows_for_month(
         )
         .all()
     )
+    valid_payments = []
+    for p in payments:
+        if p.cashbook_entry_id:
+            tx = db.query(models.Transaction).filter(models.Transaction.id == p.cashbook_entry_id).first()
+            if not tx or getattr(tx, "is_deleted", False):
+                continue
+        valid_payments.append(p)
+    payments = valid_payments
+
+    valid_payments_through = []
+    for p in payments_through_month:
+        if p.cashbook_entry_id:
+            tx = db.query(models.Transaction).filter(models.Transaction.id == p.cashbook_entry_id).first()
+            if not tx or getattr(tx, "is_deleted", False):
+                continue
+        valid_payments_through.append(p)
+    payments_through_month = valid_payments_through
+
     linked_ids = _linked_cashbook_ids(db)
     legacy_transactions = (
         db.query(models.Transaction)
         .filter(
+            models.Transaction.is_deleted == False,
             models.Transaction.transaction_type == "cash_out",
             models.Transaction.category == "salary",
             models.Transaction.salary_month == salary_month,
@@ -248,6 +267,7 @@ def _salary_rows_for_month(
     legacy_transactions_through_month = (
         db.query(models.Transaction)
         .filter(
+            models.Transaction.is_deleted == False,
             models.Transaction.transaction_type == "cash_out",
             models.Transaction.category == "salary",
             models.Transaction.salary_month <= salary_month,
@@ -257,6 +277,7 @@ def _salary_rows_for_month(
     legacy_transactions_through_month = [
         tx for tx in legacy_transactions_through_month if tx.id not in linked_ids
     ]
+
 
     by_employee: dict[int, dict] = {}
     paid_through_employee: dict[int, float] = {}
@@ -575,6 +596,10 @@ def calculate_employee_salary_ledger(
     )
 
     for p in payments:
+        if p.cashbook_entry_id:
+            tx = db.query(models.Transaction).filter(models.Transaction.id == p.cashbook_entry_id).first()
+            if not tx or getattr(tx, "is_deleted", False):
+                continue
         target_date = date(p.year, p.month, monthrange(p.year, p.month)[1])
         active = effective_salary(db, employee, target_date)
         p_currency = active["currency"]
@@ -582,6 +607,7 @@ def calculate_employee_salary_ledger(
             notes_text = (
                 p.notes or f"Salary payment for {_month_label(p.month, p.year)}"
             )
+
             entries.append(
                 {
                     "id": f"payment-{p.id}",

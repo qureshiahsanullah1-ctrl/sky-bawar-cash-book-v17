@@ -231,3 +231,18 @@ def add_employee_salary_adjustment(
         )
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.delete(
+    "/{employee_id}/adjustments/{adjustment_id}",
+    status_code=200,
+)
+def delete_employee_salary_adjustment(
+    employee_id: int,
+    adjustment_id: int,
+    db: Session = Depends(get_db),
+    administrator=Depends(require_administrator_request),
+):
+    payroll_crud.delete_salary_adjustment(db, adjustment_id)
+    return {"ok": True, "message": "Salary adjustment deleted successfully"}
+

@@ -355,14 +355,32 @@ def delete_transaction(db: Session, transaction: models.Transaction) -> None:
     try:
         transaction.is_deleted = True
         transaction.updated_at = utcnow()
+        
+        # Cascade: delete any linked SalaryPayment record so employee ledger stays in sync
+        linked_payments = (
+            db.query(models.SalaryPayment)
+            .filter(models.SalaryPayment.cashbook_entry_id == transaction.id)
+            .all()
+        )
+        for payment in linked_payments:
+            db.delete(payment)
+
         db.commit()
     except Exception:
         db.rollback()
         try:
+            linked_payments = (
+                db.query(models.SalaryPayment)
+                .filter(models.SalaryPayment.cashbook_entry_id == transaction.id)
+                .all()
+            )
+            for payment in linked_payments:
+                db.delete(payment)
             db.delete(transaction)
             db.commit()
         except Exception as err:
             db.rollback()
             raise err
+
 
 

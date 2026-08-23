@@ -299,6 +299,17 @@ def ensure_database_schema(bind_engine=None):
             except Exception:
                 pass
 
+        if "salary_payments" in tables and "transactions" in tables:
+            try:
+                conn.execute(
+                    text(
+                        "DELETE FROM salary_payments WHERE cashbook_entry_id IS NOT NULL AND cashbook_entry_id IN (SELECT id FROM transactions WHERE is_deleted = true OR is_deleted = 1)"
+                    )
+                )
+            except Exception:
+                pass
+
+
 
 def ensure_sqlite_schema(bind_engine=None):
     ensure_database_schema(bind_engine)

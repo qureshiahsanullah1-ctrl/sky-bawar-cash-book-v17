@@ -308,7 +308,9 @@ export const api = {
   },
   getEmployeeSalaryAdjustments: (id) => request(`/api/employees/${id}/adjustments`),
   createEmployeeSalaryAdjustment: (id, payload) => request(`/api/employees/${id}/adjustments`, { method: 'POST', body: JSON.stringify(payload) }),
+  deleteEmployeeSalaryAdjustment: (employeeId, adjId) => request(`/api/employees/${employeeId}/adjustments/${adjId}`, { method: 'DELETE' }),
   getEmployeeSalaryHistory: (id) => request(`/api/employees/${id}/salary-history`),
+
   changeEmployeeSalary: (id, payload) => request(`/api/employees/${id}/salary-history`, { method: 'POST', body: JSON.stringify(payload) }),
   getSalaryChangeReport: () => request('/api/employees/salary-changes'),
   getDailyReport: () => request('/api/summary/daily'),

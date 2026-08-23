@@ -281,8 +281,10 @@ def delete_salary_payment(db: Session, payment: models.SalaryPayment) -> None:
     )
     db.delete(payment)
     if transaction:
-        db.delete(transaction)
+        transaction.is_deleted = True
+        transaction.updated_at = datetime.utcnow()
     db.commit()
+
 
 
 def create_salary_history(
@@ -415,5 +417,13 @@ def list_salary_adjustments(
         )
         .all()
     )
+
+
+def delete_salary_adjustment(db: Session, adjustment_id: int) -> None:
+    adj = db.query(models.EmployeeSalaryAdjustment).filter(models.EmployeeSalaryAdjustment.id == adjustment_id).first()
+    if adj:
+        db.delete(adj)
+        db.commit()
+
 
 

@@ -135,7 +135,31 @@ export default function EmployeeLedgerModal({
     }
   }
 
+  const [deletingId, setDeletingId] = useState(null);
+
+  async function handleDeleteEntry(entry) {
+    if (!window.confirm(`Are you sure you want to delete this ${entry.entry_type.replace('_', ' ')} (${entry.reference || entry.description})? This will also remove any linked cash transactions.`)) {
+      return;
+    }
+    setDeletingId(entry.id);
+    try {
+      if (entry.entry_type === 'salary_payment') {
+        const paymentId = parseInt(entry.id.replace('payment-', ''));
+        await api.deleteSalaryPayment(paymentId);
+      } else if (['bonus', 'deduction', 'adjustment', 'advance', 'reversal'].includes(entry.entry_type)) {
+        const adjId = parseInt(entry.id.replace('adjustment-', ''));
+        await api.deleteEmployeeSalaryAdjustment(employee.id, adjId);
+      }
+      await loadLedger();
+    } catch (err) {
+      setError(err.message || 'Failed to delete ledger entry');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   function exportCsv() {
+
     if (!ledgerData?.entries?.length) return;
     const headers = [
       'Date',
@@ -495,6 +519,7 @@ export default function EmployeeLedgerModal({
                   <th className="py-3 px-3 text-right whitespace-nowrap min-w-[105px]">Adjustment</th>
                   <th className="py-3 px-4 text-right whitespace-nowrap min-w-[120px]">Balance / باقیمانده</th>
                   <th className="py-3 px-3 text-center whitespace-nowrap min-w-[75px]">Ref</th>
+                  <th className="py-3 px-2.5 text-center whitespace-nowrap min-w-[60px]">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -537,6 +562,21 @@ export default function EmployeeLedgerModal({
                       {formatCurrency(entry.running_balance, entry.currency)}
                     </td>
                     <td className="py-2.5 px-3 text-center font-mono text-slate-400 text-[10.5px] whitespace-nowrap">{entry.reference || '-'}</td>
+                    <td className="py-2.5 px-2.5 text-center whitespace-nowrap">
+                      {['salary_payment', 'bonus', 'deduction', 'adjustment', 'advance', 'reversal'].includes(entry.entry_type) ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEntry(entry)}
+                          disabled={deletingId === entry.id}
+                          className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer disabled:opacity-50"
+                          title="Delete / Void Entry"
+                        >
+                          <GoogleIcon name="delete" size={15} />
+                        </button>
+                      ) : (
+                        <span className="text-slate-600">-</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -558,11 +598,12 @@ export default function EmployeeLedgerModal({
                   <td className="py-3 px-4 text-right font-mono font-black text-white tabular-nums text-sm">
                     {formatCurrency(ledgerData.summary?.outstanding_balance || 0, selectedCurrency)}
                   </td>
-                  <td className="py-3 px-3 text-center">
+                  <td colSpan="2" className="py-3 px-3 text-center">
                     <GoogleIcon name="check_circle" size={14} className="text-emerald-400 inline" />
                   </td>
                 </tr>
               </tfoot>
+
             </table>
           </div>
         )}
