@@ -1967,10 +1967,12 @@ export default function App() {
                     companyName={companyName}
                     companyLogo={companyLogo}
                     currentUser={currentUser}
+                    currencyCode={currencyCode}
                     onEmployeeSalaryChanged={onEmployeeSalaryChanged}
                     onEmployeeAvatarChanged={onEmployeeAvatarChanged}
                     onEmployeeDeleted={onEmployeeDeleted}
                   />
+
                 } />
                 <Route path="/employees/:employeeId/ledger" element={
                   <EmployeeLedgerPage

@@ -119,8 +119,10 @@ export default function EmployeesSalary({
   onEmployeeDeleted,
   currentUser,
   companyName = 'Cashbook Of All companies',
-  companyLogo = ''
+  companyLogo = '',
+  currencyCode = 'AFN'
 }) {
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { companies = [] } = useCompany();
